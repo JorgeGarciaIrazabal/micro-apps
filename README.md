@@ -2,13 +2,13 @@
 
 A collection of small web apps hosted on GitHub Pages.
 
-**Live site:** https://jorgegarcairazabal.github.io/micro-apps/
+**Live site:** https://jorgegarciairazabal.github.io/micro-apps/
 
 ## Apps
 
 | App | Link |
 |-----|------|
-| Clara's Easter Egg Hunt | [Play](https://jorgegarcairazabal.github.io/micro-apps/clara-egg-hunt/) |
+| Clara's Easter Egg Hunt | [Play](https://jorgegarciairazabal.github.io/micro-apps/clara-egg-hunt/) |
 
 ## Adding a new app
 
