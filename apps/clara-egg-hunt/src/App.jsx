@@ -153,8 +153,9 @@ function playSuccessChime() {
   playNote(1047, 0.3, 0.36, 'sine', 0.3);
 }
 
-function playEmojiTap() {
-  playNote(880, 0.08, 0, 'sine', 0.15);
+function playEmojiTap(slotIndex = 0) {
+  const pitches = [660, 784, 988];
+  playNote(pitches[slotIndex] || 880, 0.1, 0, 'sine', 0.18);
 }
 
 function playWrongBuzz() {
@@ -180,6 +181,55 @@ function playStartJingle() {
   playNote(392, 0.2, 0, 'sine', 0.2);
   playNote(523, 0.2, 0.15, 'sine', 0.2);
   playNote(659, 0.3, 0.3, 'sine', 0.25);
+}
+
+function playScreenTransition() {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(400, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.06, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+}
+
+function playMapOpen() {
+  playNote(440, 0.08, 0, 'sine', 0.1);
+  playNote(554, 0.08, 0.06, 'sine', 0.1);
+}
+
+function playMapClose() {
+  playNote(554, 0.08, 0, 'sine', 0.1);
+  playNote(440, 0.08, 0.06, 'sine', 0.1);
+}
+
+function playEggFoundCelebration() {
+  playNote(523, 0.15, 0, 'sine', 0.2);
+  playNote(659, 0.15, 0.1, 'sine', 0.2);
+  playNote(784, 0.2, 0.2, 'triangle', 0.25);
+  for (let i = 0; i < 4; i++) {
+    playNote(1000 + Math.random() * 800, 0.1, 0.3 + i * 0.08, 'sine', 0.06);
+  }
+}
+
+function playMilestone() {
+  [523, 659, 784, 1047, 1319].forEach((f, i) => {
+    playNote(f, 0.2, i * 0.1, 'sine', 0.15);
+    playNote(f * 1.5, 0.15, i * 0.1 + 0.05, 'triangle', 0.05);
+  });
+}
+
+function playButtonPress() {
+  playNote(600, 0.04, 0, 'square', 0.05);
+}
+
+function haptic(style = 'light') {
+  if (navigator.vibrate) {
+    navigator.vibrate(style === 'light' ? 10 : style === 'medium' ? 25 : 50);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -421,6 +471,7 @@ function HouseMap({ activeRoom, foundRooms }) {
         return (
           <g key={room.id}>
             <rect
+              className="room-rect"
               x={room.x} y={room.y} width={room.w} height={room.h}
               fill={fillColor}
               stroke={isActive ? '#F59E0B' : '#94a3b8'}
@@ -554,6 +605,40 @@ function Fireworks() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   FLOATING PARTICLES — ambient background emojis
+   ═══════════════════════════════════════════════════════════════ */
+
+const PARTICLE_EMOJIS = ['✨','🌸','⭐','💫','🦋'];
+
+function FloatingParticles() {
+  const particles = useRef(
+    Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      size: 12 + Math.random() * 10,
+      duration: 8 + Math.random() * 10,
+      delay: Math.random() * 12,
+      emoji: PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length],
+    }))
+  ).current;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          left: `${p.left}%`,
+          bottom: '-5%',
+          fontSize: p.size,
+          animation: `floatParticle ${p.duration}s ease-in-out ${p.delay}s infinite`,
+          opacity: 0,
+        }}>{p.emoji}</div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    DECORATIVE EGGS — background floating eggs
    ═══════════════════════════════════════════════════════════════ */
 
@@ -602,8 +687,26 @@ export default function App() {
   const [wrongAttempt, setWrongAttempt] = useState(false);
   const [foundRooms, setFoundRooms] = useState([]);
   const [showMap, setShowMap] = useState(false);
+  const [screenPhase, setScreenPhase] = useState('visible'); // visible | fading-out | fading-in
 
   const egg = EGGS[currentEgg];
+
+  const transitionTo = useCallback((newScreen, preTransition) => {
+    playScreenTransition();
+    setScreenPhase('fading-out');
+    setTimeout(() => {
+      if (preTransition) preTransition();
+      setScreen(newScreen);
+      setScreenPhase('fading-in');
+      setTimeout(() => setScreenPhase('visible'), 220);
+    }, 200);
+  }, []);
+
+  const transitionStyle = {
+    opacity: screenPhase === 'fading-out' ? 0 : 1,
+    transform: screenPhase === 'fading-out' ? 'scale(0.96)' : 'scale(1)',
+    transition: 'opacity 200ms ease, transform 200ms ease',
+  };
 
   // Build a shuffled emoji grid for the current egg (always includes the 3 correct ones + 6 random)
   const [emojiGrid, setEmojiGrid] = useState([]);
@@ -621,17 +724,21 @@ export default function App() {
 
   const handleStart = useCallback(() => {
     playStartJingle();
-    setScreen('clue');
-  }, []);
+    haptic('medium');
+    transitionTo('clue');
+  }, [transitionTo]);
 
   const handleShowPasscode = useCallback(() => {
-    setScreen('passcode');
-  }, []);
+    playButtonPress();
+    haptic('light');
+    transitionTo('passcode');
+  }, [transitionTo]);
 
   const handleEmojiTap = useCallback((emoji) => {
-    playEmojiTap();
     setSelectedEmojis(prev => {
       if (prev.length >= 3) return prev;
+      playEmojiTap(prev.length);
+      haptic('light');
       return [...prev, emoji];
     });
   }, []);
@@ -650,33 +757,45 @@ export default function App() {
       selectedEmojis[2] === correct[2]
     ) {
       playSuccessChime();
+      haptic('medium');
       setFoundRooms(prev => [...prev, egg.room]);
       if (currentEgg === EGGS.length - 1) {
-        setScreen('finale');
-        setTimeout(() => playFanfare(), 300);
+        transitionTo('finale');
+        setTimeout(() => playFanfare(), 500);
       } else {
-        setScreen('success');
+        playEggFoundCelebration();
+        const isMilestone = currentEgg === 5 || currentEgg === 9;
+        if (isMilestone) setTimeout(() => playMilestone(), 400);
+        transitionTo('success');
       }
     } else {
       playWrongBuzz();
+      haptic('heavy');
       setWrongAttempt(true);
       setTimeout(() => {
         setSelectedEmojis([]);
         setWrongAttempt(false);
       }, 1200);
     }
-  }, [selectedEmojis, egg, currentEgg]);
+  }, [selectedEmojis, egg, currentEgg, transitionTo]);
 
   const handleNextEgg = useCallback(() => {
-    setCurrentEgg(prev => prev + 1);
-    setScreen('clue');
-    setShowMap(false);
-  }, []);
+    transitionTo('clue', () => {
+      setCurrentEgg(prev => prev + 1);
+      setShowMap(false);
+    });
+  }, [transitionTo]);
+
+  const handleMapToggle = useCallback(() => {
+    if (showMap) playMapClose(); else playMapOpen();
+    setShowMap(prev => !prev);
+  }, [showMap]);
 
   /* ── START SCREEN ── */
   if (screen === 'start') {
     return (
-      <div style={styles.container}>
+      <div style={{ ...styles.container, ...transitionStyle }}>
+        <FloatingParticles/>
         <div style={styles.startCard}>
           <div className="bounce-egg" style={{ fontSize: 80, marginBottom: 8 }}>🥚</div>
           <h1 style={styles.title}>Clara&apos;s Easter Egg Hunt!</h1>
@@ -693,7 +812,7 @@ export default function App() {
           <p style={{ ...styles.subtitle, fontSize: 16, color: '#9CA3AF' }}>
             Read each clue, find the egg, then enter the secret emoji code!
           </p>
-          <button style={styles.bigButton} onClick={handleStart} className="pulse">
+          <button style={styles.bigButton} onClick={handleStart} className="pulse btn-big">
             🐰 Start the Hunt! 🐰
           </button>
         </div>
@@ -714,32 +833,39 @@ export default function App() {
   /* ── CLUE SCREEN ── */
   if (screen === 'clue') {
     return (
-      <div style={styles.container}>
-        <div style={styles.card} className="slide-up">
+      <div style={{ ...styles.container, ...transitionStyle }}>
+        <FloatingParticles/>
+        <div style={styles.card} className="pop-in">
           {/* Progress */}
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progressFill, width: `${(currentEgg / EGGS.length) * 100}%` }}/>
+          <div className="stagger-1">
+            <div style={styles.progressBar}>
+              <div style={{ ...styles.progressFill, width: `${(currentEgg / EGGS.length) * 100}%` }}/>
+            </div>
+            <p style={styles.progressText}>Egg {currentEgg + 1} of {EGGS.length}</p>
           </div>
-          <p style={styles.progressText}>Egg {currentEgg + 1} of {EGGS.length}</p>
 
           {/* Room label */}
-          <div style={styles.roomBadge}>
+          <div className="stagger-2" style={styles.roomBadge}>
             📍 Go to: <strong>{egg.roomLabel}</strong>
           </div>
 
           {/* Map toggle */}
-          <button style={styles.mapToggle} onClick={() => setShowMap(!showMap)}>
+          <button style={styles.mapToggle} onClick={handleMapToggle} className="btn-map stagger-2">
             {showMap ? '🗺️ Hide Map' : '🗺️ Show Map'}
           </button>
 
-          {showMap && (
-            <div style={{ margin: '8px 0' }} className="pop-in">
-              <HouseMap activeRoom={egg.room} foundRooms={foundRooms}/>
-            </div>
-          )}
+          <div style={{
+            maxHeight: showMap ? 500 : 0,
+            overflow: 'hidden',
+            transition: 'max-height 0.4s ease, opacity 0.3s ease',
+            opacity: showMap ? 1 : 0,
+            margin: showMap ? '8px 0' : '0',
+          }}>
+            <HouseMap activeRoom={egg.room} foundRooms={foundRooms}/>
+          </div>
 
           {/* Clue */}
-          <div style={styles.clueBox}>
+          <div style={styles.clueBox} className="stagger-3">
             <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {egg.icons.map((iconName, i) => (
                 <div key={i} style={styles.iconBubble} className="pop-in">
@@ -751,13 +877,15 @@ export default function App() {
           </div>
 
           {/* Bouncing egg */}
-          <div className="bounce-egg" style={{ fontSize: 56, textAlign: 'center', margin: '8px 0' }}>
+          <div className="bounce-egg stagger-4" style={{ fontSize: 56, textAlign: 'center', margin: '8px 0' }}>
             🥚
           </div>
 
-          <button style={styles.bigButton} onClick={handleShowPasscode}>
-            ✅ I Found It!
-          </button>
+          <div className="stagger-5">
+            <button style={styles.bigButton} onClick={handleShowPasscode} className="btn-big">
+              ✅ I Found It!
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -766,8 +894,9 @@ export default function App() {
   /* ── PASSCODE SCREEN ── */
   if (screen === 'passcode') {
     return (
-      <div style={styles.container}>
-        <div style={styles.card} className="slide-up">
+      <div style={{ ...styles.container, ...transitionStyle }}>
+        <FloatingParticles/>
+        <div style={styles.card} className={`slide-up ${wrongAttempt ? 'shake' : ''}`}>
           <h2 style={styles.heading}>Enter the Secret Code!</h2>
           <p style={styles.subtitle}>
             Look at the paper next to the egg.<br/>
@@ -783,11 +912,15 @@ export default function App() {
                   ...styles.passcodeSlot,
                   borderColor: wrongAttempt ? '#EF4444' : (selectedEmojis[i] ? '#10B981' : '#D1D5DB'),
                   backgroundColor: wrongAttempt ? '#FEE2E2' : (selectedEmojis[i] ? '#D1FAE5' : '#F9FAFB'),
-                  animation: wrongAttempt ? 'wiggle 0.5s ease-in-out' : 'none',
                 }}
-                className={selectedEmojis[i] ? 'pop-in' : ''}
+                className={`${wrongAttempt ? 'wiggle' : ''} ${selectedEmojis.length === 3 && !wrongAttempt ? 'slot-glow' : ''}`}
               >
-                <span style={{ fontSize: 36 }}>{selectedEmojis[i] || '?'}</span>
+                <span
+                  style={{ fontSize: 36 }}
+                  className={selectedEmojis[i] ? 'slot-filled' : ''}
+                >
+                  {selectedEmojis[i] || '?'}
+                </span>
               </div>
             ))}
           </div>
@@ -806,8 +939,8 @@ export default function App() {
                 style={{
                   ...styles.emojiBtn,
                   opacity: selectedEmojis.length >= 3 ? 0.5 : 1,
-                  transform: selectedEmojis.includes(emoji) && selectedEmojis.length < 3 ? 'scale(0.9)' : 'scale(1)',
                 }}
+                className={`emoji-btn ${selectedEmojis.includes(emoji) && selectedEmojis.length < 3 ? 'emoji-btn--selected' : ''}`}
                 onClick={() => handleEmojiTap(emoji)}
                 disabled={selectedEmojis.length >= 3}
               >
@@ -818,7 +951,7 @@ export default function App() {
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button style={styles.secondaryButton} onClick={handleClearEmojis}>
+            <button style={styles.secondaryButton} onClick={handleClearEmojis} className="btn-secondary">
               🔄 Clear
             </button>
             <button
@@ -828,12 +961,13 @@ export default function App() {
                 flex: 1,
                 maxWidth: 220,
               }}
+              className="btn-big"
               onClick={handleCheckPasscode}
               disabled={selectedEmojis.length < 3}
             >
               🔓 Check!
             </button>
-            <button style={styles.secondaryButton} onClick={() => setScreen('clue')}>
+            <button style={styles.secondaryButton} onClick={() => transitionTo('clue')} className="btn-secondary">
               ← Back
             </button>
           </div>
@@ -844,25 +978,59 @@ export default function App() {
 
   /* ── SUCCESS SCREEN (between eggs) ── */
   if (screen === 'success') {
+    const isMilestone = currentEgg === 5 || currentEgg === 9;
+    const milestoneMsg = currentEgg === 5 ? 'Halfway there! Keep going!' : currentEgg === 9 ? 'Almost done! Just 2 more!' : null;
+    const celebrationEmojis = ['🎉','⭐','✨','🌟','💫','🎊'];
+
     return (
-      <div style={styles.container}>
-        <Confetti count={30}/>
+      <div style={{ ...styles.container, ...transitionStyle }}>
+        <Confetti count={isMilestone ? 60 : 50}/>
+        {/* Floating celebration emojis */}
+        {celebrationEmojis.map((em, i) => (
+          <div key={i} style={{
+            position: 'fixed',
+            left: `${15 + i * 14}%`,
+            top: '50%',
+            fontSize: 28 + Math.random() * 12,
+            animation: `floatUp 1.5s ease-out ${i * 0.15}s both`,
+            pointerEvents: 'none',
+            zIndex: 9999,
+          }}>{em}</div>
+        ))}
         <div style={styles.card} className="pop-in">
-          <div style={{ fontSize: 72, textAlign: 'center' }}>🎉</div>
-          <h2 style={{ ...styles.heading, color: '#10B981' }}>
+          <div style={{ fontSize: 72, textAlign: 'center' }} className="bounce-text">🎉</div>
+          <h2 style={{ ...styles.heading, color: '#10B981' }} className="bounce-text">
             You Found Egg #{currentEgg + 1}!
           </h2>
+          {milestoneMsg && (
+            <p style={{
+              fontSize: 20,
+              fontWeight: 800,
+              textAlign: 'center',
+              margin: '4px 0',
+              background: 'linear-gradient(135deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF)',
+              backgroundSize: '200% auto',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              animation: 'rainbowBg 2s linear infinite',
+            }}>{milestoneMsg}</p>
+          )}
           <p style={styles.subtitle}>
             Great job! {EGGS.length - currentEgg - 1} more egg{EGGS.length - currentEgg - 1 !== 1 ? 's' : ''} to go!
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 4, margin: '8px 0', flexWrap: 'wrap' }}>
             {EGGS.map((_, i) => (
-              <span key={i} style={{ fontSize: 24, opacity: i <= currentEgg ? 1 : 0.25 }}>
+              <span key={i} style={{
+                fontSize: 24,
+                opacity: i <= currentEgg ? 1 : 0.25,
+                animation: i <= currentEgg ? `popIn 0.3s ease-out ${i * 0.05}s both` : 'none',
+                display: 'inline-block',
+              }}>
                 {i <= currentEgg ? '🥚' : '⬜'}
               </span>
             ))}
           </div>
-          <button style={styles.bigButton} onClick={handleNextEgg} className="pulse">
+          <button style={styles.bigButton} onClick={handleNextEgg} className="pulse btn-big">
             🔍 Next Clue! →
           </button>
         </div>
@@ -873,7 +1041,7 @@ export default function App() {
   /* ── FINALE SCREEN ── */
   if (screen === 'finale') {
     return (
-      <div style={{ ...styles.container, background: 'linear-gradient(135deg, #fdf2f8, #ede9fe, #e0f2fe, #ecfccb)', backgroundSize: '400% 400%', animation: 'rainbowBg 4s ease infinite' }}>
+      <div style={{ ...styles.container, ...transitionStyle, background: 'linear-gradient(135deg, #fdf2f8, #ede9fe, #e0f2fe, #ecfccb)', backgroundSize: '400% 400%', animation: 'rainbowBg 4s ease infinite' }}>
         <Confetti count={100}/>
         <Fireworks/>
         <div style={{ ...styles.card, maxWidth: 500, textAlign: 'center', zIndex: 10000, position: 'relative' }} className="pop-in">
@@ -1017,9 +1185,12 @@ const styles = {
   },
   progressFill: {
     height: '100%',
-    background: 'linear-gradient(90deg, #A78BFA, #7C3AED)',
+    background: 'linear-gradient(90deg, #A78BFA 0%, #C4B5FD 40%, #E9D5FF 50%, #C4B5FD 60%, #7C3AED 100%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 2s linear infinite',
     borderRadius: 5,
     transition: 'width 0.5s ease',
+    boxShadow: '0 0 8px rgba(124,58,237,0.4)',
   },
   progressText: {
     fontSize: 14,
