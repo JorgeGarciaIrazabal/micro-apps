@@ -60,10 +60,10 @@ const EGGS = [
     id: 6,
     room: 'cbath',
     roomLabel: 'Clara\'s Bathroom',
-    clue: 'Under the unicorn picture!',
+    clue: 'Under the unicorn bunny picture!',
     icons: ['unicorn','wall'],
     passcode: ['🐞','🎈','🌺'],
-    hint: 'Under the unicorn picture',
+    hint: 'Under the unicorn bunny picture',
   },
   {
     id: 7,
@@ -398,8 +398,8 @@ const ROOMS = [
   { id: 'pbath',  name: 'Bath',               x: 110, y: 230, w: 150, h: 60,  fill: '#e0f2fe' },
   { id: 'cbath',  name: 'Clara\'s\nBath',     x: 260, y: 230, w: 220, h: 60,  fill: '#e0f2fe' },
   // Kitchen & living area
-  { id: 'kitchen', name: 'Kitchen',           x: 40,  y: 290, w: 180, h: 140, fill: '#fef3c7' },
-  { id: 'pantry',  name: 'Pantry',            x: 220, y: 290, w: 40,  h: 50,  fill: '#f1f5f9' },
+  { id: 'kitchen', name: 'Kitchen',           x: 40,  y: 290, w: 220, h: 140, fill: '#fef3c7' },
+  { id: 'pantry',  name: 'Pantry',            x: 40,  y: 380, w: 40,  h: 50,  fill: '#f1f5f9' },
   { id: 'living',  name: 'Living\nRoom',      x: 260, y: 290, w: 220, h: 240, fill: '#fae8ff' },
   // Dining (below kitchen)
   { id: 'dining',  name: 'Dining',            x: 40,  y: 430, w: 220, h: 100, fill: '#ffedd5' },
