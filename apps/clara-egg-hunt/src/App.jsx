@@ -113,7 +113,7 @@ const EGGS = [
   {
     id: 12,
     room: 'office',
-    roomLabel: 'Sunroom',
+    roomLabel: 'Office',
     clue: 'In the cat tree cubby!',
     icons: ['cat','tree'],
     passcode: ['🐰','🍓','🌺'],
@@ -388,23 +388,29 @@ const ICONS = {
    ═══════════════════════════════════════════════════════════════ */
 
 const ROOMS = [
-  { id: 'pbed', name: 'Mom & Dad\'s\nRoom', x: 120, y: 50, w: 150, h: 160, fill: '#f3e8ff' },
-  { id: 'pbath', name: 'Bath', x: 40, y: 50, w: 80, h: 90, fill: '#e0f2fe' },
-  { id: 'pcloset', name: 'Big\nCloset', x: 40, y: 140, w: 80, h: 70, fill: '#f1f5f9' },
-  { id: 'cbed', name: 'Clara\'s\nRoom', x: 120, y: 210, w: 150, h: 140, fill: '#fce7f3' },
-  { id: 'cbath', name: 'Clara\'s\nBath', x: 40, y: 210, w: 80, h: 80, fill: '#e0f2fe' },
-  { id: 'hall', name: 'Hall', x: 270, y: 50, w: 50, h: 300, fill: '#f8fafc' },
-  { id: 'kitchen', name: 'Kitchen', x: 320, y: 50, w: 180, h: 140, fill: '#fef3c7' },
-  { id: 'pantry', name: 'Pantry', x: 460, y: 50, w: 40, h: 40, fill: '#f1f5f9' },
-  { id: 'dining', name: 'Dining', x: 320, y: 190, w: 180, h: 100, fill: '#ffedd5' },
-  { id: 'living', name: 'Living\nRoom', x: 320, y: 290, w: 220, h: 180, fill: '#fae8ff' },
-  { id: 'office', name: 'Sunroom', x: 540, y: 290, w: 160, h: 180, fill: '#ecfccb' },
+  // Top — hall spans width
+  { id: 'hall',    name: 'Hall',               x: 40,  y: 40,  w: 440, h: 40,  fill: '#f8fafc' },
+  // Bedrooms
+  { id: 'pbed',   name: 'Mom & Dad\'s\nRoom', x: 40,  y: 80,  w: 220, h: 150, fill: '#f3e8ff' },
+  { id: 'cbed',   name: 'Clara\'s\nRoom',     x: 260, y: 80,  w: 220, h: 150, fill: '#fce7f3' },
+  // Closet & baths (closet in M&D area, next to bath)
+  { id: 'pcloset', name: 'Big\nCloset',       x: 40,  y: 230, w: 70,  h: 60,  fill: '#f1f5f9' },
+  { id: 'pbath',  name: 'Bath',               x: 110, y: 230, w: 150, h: 60,  fill: '#e0f2fe' },
+  { id: 'cbath',  name: 'Clara\'s\nBath',     x: 260, y: 230, w: 220, h: 60,  fill: '#e0f2fe' },
+  // Kitchen & living area
+  { id: 'kitchen', name: 'Kitchen',           x: 40,  y: 290, w: 180, h: 140, fill: '#fef3c7' },
+  { id: 'pantry',  name: 'Pantry',            x: 220, y: 290, w: 40,  h: 50,  fill: '#f1f5f9' },
+  { id: 'living',  name: 'Living\nRoom',      x: 260, y: 290, w: 220, h: 240, fill: '#fae8ff' },
+  // Dining (below kitchen)
+  { id: 'dining',  name: 'Dining',            x: 40,  y: 430, w: 220, h: 100, fill: '#ffedd5' },
+  // Office at bottom, touches living room
+  { id: 'office',  name: 'Office',            x: 120, y: 530, w: 360, h: 80,  fill: '#ecfccb' },
 ];
 
 function HouseMap({ activeRoom, foundRooms }) {
   return (
-    <svg viewBox="20 30 700 460" style={{ width: '100%', maxWidth: 420, height: 'auto', borderRadius: 16, filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.08))' }}>
-      <rect x="20" y="30" width="700" height="460" rx="12" fill="white" opacity="0.5"/>
+    <svg viewBox="20 20 480 610" style={{ width: '100%', maxWidth: 420, height: 'auto', borderRadius: 16, filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.08))' }}>
+      <rect x="20" y="20" width="480" height="610" rx="12" fill="white" opacity="0.5"/>
       {ROOMS.map((room) => {
         const isActive = room.id === activeRoom;
         const isFound = foundRooms.includes(room.id);
