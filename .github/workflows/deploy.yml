@@ -31,12 +31,21 @@ jobs:
           npm ci
           npm run build
 
+      # Build clara-summer-camps
+      - name: Install & build clara-summer-camps
+        working-directory: apps/clara-summer-camps
+        run: |
+          npm ci
+          npm run build
+
       # Assemble final site
       - name: Assemble site
         run: |
           mkdir -p _site/clara-egg-hunt
+          mkdir -p _site/clara-summer-camps
           cp index.html _site/
           cp -r apps/clara-egg-hunt/dist/* _site/clara-egg-hunt/
+          cp -r apps/clara-summer-camps/dist/* _site/clara-summer-camps/
 
       - uses: actions/upload-pages-artifact@v3
         with:

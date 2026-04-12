@@ -4,7 +4,7 @@ opencode:
 	ollama run opencode --model glm-5.1:cloud
 
 serve:
-	python3 -m http.server 8000
+	cd .. && python3 -m http.server 8000
 
 claude:
 	claude --dangerously-skip-permissions
