@@ -1,0 +1,281 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* Header */
+.app-header {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #dc2626 0%, #7c3aed 50%, #0ea5e9 100%);
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 1rem;
+}
+.app-header h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+.app-header .subtitle { font-size: 1.1rem; opacity: 0.9; }
+.app-header .context { font-size: 0.85rem; opacity: 0.75; margin-top: 0.5rem; }
+
+/* Urgency banner */
+.urgency-banner {
+  background: #fef2f2;
+  border: 2px solid #fca5a5;
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #7f1d1d;
+}
+.urgency-banner a {
+  color: #dc2626;
+  font-weight: 600;
+  text-underline-offset: 2px;
+}
+
+/* Strategy section */
+.strategy-section {
+  background: #eff6ff;
+  border: 2px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.strategy-section h2 { font-size: 1.15rem; color: #1e40af; margin-bottom: 0.5rem; }
+.strategy-section > p { font-size: 0.9rem; color: #475569; margin-bottom: 1rem; }
+.strategy-options { display: grid; gap: 0.75rem; grid-template-columns: 1fr 1fr 1fr; }
+.strategy-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 4px solid #3b82f6;
+}
+.strategy-weeks {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1e40af;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+.strategy-card strong { display: block; margin-bottom: 0.25rem; }
+.strategy-card p { font-size: 0.85rem; color: #64748b; }
+
+/* Price comparison */
+.price-comparison {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.price-comparison h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+.price-table-wrapper { overflow-x: auto; }
+.comparison-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.comparison-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.comparison-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.camp-name-cell .camp-name { font-weight: 500; }
+.camp-name-cell .ineligible-mark { color: #dc2626; font-size: 0.75rem; }
+.price-cell { font-weight: 600; white-space: nowrap; }
+.bar-col { min-width: 180px; }
+.price-bar-container { position: relative; height: 22px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.price-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.price-bar-label {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  font-size: 0.7rem; font-weight: 600; color: #334155;
+}
+.no-price-row td { color: #94a3b8; font-style: italic; }
+
+/* Filters */
+.filters {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.filter-group > label { font-size: 0.85rem; font-weight: 500; color: #475569; white-space: nowrap; }
+.filter-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.chip {
+  padding: 4px 12px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #475569;
+}
+.chip:hover { border-color: #94a3b8; background: #f8fafc; }
+.chip.active { background: #1e293b; color: white; border-color: #1e293b; }
+.filter-group select {
+  padding: 4px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: white;
+}
+.filter-group input[type="checkbox"] { accent-color: #3b82f6; }
+
+/* Camps list */
+.camps-section h2 { font-size: 1.15rem; margin-bottom: 1rem; }
+.camps-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.no-results { text-align: center; color: #94a3b8; padding: 2rem; font-style: italic; }
+
+/* Camp card */
+.camp-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+.camp-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.camp-card.tier-1 { border-left: 4px solid #16a34a; }
+.camp-card.tier-2 { border-left: 4px solid #ca8a04; }
+.camp-card.tier-3 { border-left: 4px solid #dc2626; }
+
+.camp-header {
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+.camp-title-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem; }
+.camp-title-row h3 { font-size: 1.05rem; }
+.tier-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.camp-subtitle {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
+}
+.camp-price-quick { font-weight: 600; color: #0f172a; }
+.camp-price-quick.unknown { color: #94a3b8; }
+.camp-eligible { font-size: 0.8rem; margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.eligible-yes { color: #16a34a; font-weight: 600; }
+.eligible-no { color: #dc2626; font-weight: 600; }
+.eligible-note { color: #94a3b8; font-size: 0.75rem; }
+
+.camp-activities-preview { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.activity-tag {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.activity-tag.more { background: #e2e8f0; font-weight: 500; }
+
+.expand-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+.expand-btn:hover { text-decoration: underline; }
+
+/* Camp details */
+.camp-details {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid #f1f5f9;
+}
+.detail-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.detail-section { margin-top: 1rem; }
+.detail-section h4 { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.detail-section ul { padding-left: 1.25rem; font-size: 0.85rem; }
+.detail-section li { margin-bottom: 0.2rem; }
+.pros-list li::marker { content: "+ "; color: #16a34a; font-weight: bold; }
+.cons-list li::marker { content: "- "; color: #dc2626; font-weight: bold; }
+
+.schedule-info p { font-size: 0.85rem; margin-bottom: 0.15rem; }
+
+.pricing-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.25rem; }
+.pricing-table th { text-align: left; padding: 0.35rem 0.5rem; border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.75rem; }
+.pricing-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid #f1f5f9; }
+.pricing-table .price-cell { font-weight: 600; }
+.pricing-note { font-size: 0.8rem; color: #64748b; margin-top: 0.35rem; font-style: italic; }
+
+.deadline-warning {
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.activities-full { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+.camp-links { margin-top: 1rem; }
+.contact-info { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.link-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #f1f5f9;
+  color: #334155;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.link-btn:hover { background: #e2e8f0; }
+
+/* Footer */
+.app-footer {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  background: #f1f5f9;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.app-footer p + p { margin-top: 0.25rem; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .app { padding: 1rem 0.75rem 2rem; }
+  .app-header h1 { font-size: 1.4rem; }
+  .strategy-options { grid-template-columns: 1fr; }
+  .detail-columns { grid-template-columns: 1fr; }
+  .comparison-table .bar-col { display: none; }
+  .filter-group { flex-direction: column; align-items: flex-start; }
+}
