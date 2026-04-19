@@ -6,11 +6,13 @@ import Filters, { activityCategories } from './components/Filters'
 import './App.css'
 
 const distanceOrder = {
+  "Peñagrande (~9 min caminando)": 0,
   "Montecarmelo (~7 min)": 0,
   "Tres Olivos (~8 min)": 0,
   "Fuencarral (~10 min)": 1,
   "Ciudad Universitaria (~12 min)": 1,
   "Francos Rodriguez (~12 min)": 1,
+  "Ciudad de los Periodistas (~18 min caminando)": 2,
   "Salamanca (~20 min)": 2,
   "Valdebebas (~25 min)": 3,
 }
