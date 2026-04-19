@@ -6,12 +6,13 @@ import Filters, { activityCategories } from './components/Filters'
 import './App.css'
 
 const distanceOrder = {
-  "Mirasierra (~2 min)": 0,
-  "Montecarmelo (~7 min)": 1,
-  "Tres Olivos (~8 min)": 1,
-  "Fuencarral (~10 min)": 2,
-  "Francos Rodriguez (~12 min)": 2,
-  "Madrid centro (~20 min)": 3,
+  "Montecarmelo (~7 min)": 0,
+  "Tres Olivos (~8 min)": 0,
+  "Fuencarral (~10 min)": 1,
+  "Ciudad Universitaria (~12 min)": 1,
+  "Francos Rodriguez (~12 min)": 1,
+  "Salamanca (~20 min)": 2,
+  "Valdebebas (~25 min)": 3,
 }
 
 function getWeeklyPrice(camp) {
