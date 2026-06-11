@@ -1,10 +1,36 @@
-.PHONY: opencode serve claude claude-ollama claude-qwen
+.PHONY: opencode build kill-port serve claude claude-ollama claude-qwen
 
 opencode:
-	ollama run opencode --model glm-5.1:cloud
+	opencode -m ollama/minimax-v3:claude
 
-serve:
-	cd .. && python3 -m http.server 8000
+build:
+	@echo "Building all micro apps..."
+	@for app in apps/*; do \
+		if [ -d "$$app" ]; then \
+			echo "----------------------------------------"; \
+			echo "Building $$app..."; \
+			echo "----------------------------------------"; \
+			(cd "$$app" && npm install && npm run build) || exit 1; \
+			name=$$(basename "$$app"); \
+			echo "Copying built files for $$name to root directory..."; \
+			rm -rf "$$name"; \
+			mkdir -p "$$name"; \
+			cp -r "$$app/dist/"* "$$name/"; \
+		fi; \
+	done
+	@echo "----------------------------------------"
+	@echo "All apps built and copied successfully!"
+	@echo "----------------------------------------"
+
+kill-port:
+	@echo "Clearing port 8000 if in use..."
+	@lsof -t -i:8000 | xargs kill -9 2>/dev/null || true
+
+serve: build kill-port
+	@echo "Creating self-referential symlink for asset mapping..."
+	@ln -sfn . micro-apps
+	@echo "Starting server. Open: http://localhost:8000/"
+	python3 -m http.server 8000
 
 claude:
 	claude --dangerously-skip-permissions

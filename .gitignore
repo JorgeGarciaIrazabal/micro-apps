@@ -2,3 +2,10 @@ node_modules/
 dist/
 _site/
 .DS_Store
+/micro-apps
+/clara-egg-hunt/
+/clara-summer-camps/
+/clara-summer-camps-madrid/
+/andalucia-scouting-2026/
+/opencode.json
+

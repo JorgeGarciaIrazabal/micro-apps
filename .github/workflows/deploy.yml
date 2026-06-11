@@ -45,16 +45,25 @@ jobs:
           npm ci
           npm run build
 
+      # Build andalucia-scouting-2026
+      - name: Install & build andalucia-scouting-2026
+        working-directory: apps/andalucia-scouting-2026
+        run: |
+          npm ci
+          npm run build
+
       # Assemble final site
       - name: Assemble site
         run: |
           mkdir -p _site/clara-egg-hunt
           mkdir -p _site/clara-summer-camps
           mkdir -p _site/clara-summer-camps-madrid
+          mkdir -p _site/andalucia-scouting-2026
           cp index.html _site/
           cp -r apps/clara-egg-hunt/dist/* _site/clara-egg-hunt/
           cp -r apps/clara-summer-camps/dist/* _site/clara-summer-camps/
           cp -r apps/clara-summer-camps-madrid/dist/* _site/clara-summer-camps-madrid/
+          cp -r apps/andalucia-scouting-2026/dist/* _site/andalucia-scouting-2026/
 
       - uses: actions/upload-pages-artifact@v3
         with:
