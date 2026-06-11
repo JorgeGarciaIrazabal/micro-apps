@@ -96,6 +96,14 @@ const UI_STRINGS = {
     consLabel: 'Cons',
     viewVideo: 'Watch Video Tour 🎥',
     viewImages: 'View Photos & Streets 📸',
+    selectPlan: 'Route Option Itinerary',
+    planLabelA: 'Plan A: Southern Loop (with Sevilla)',
+    planLabelB: 'Plan B: Inland & Mountains (no Sevilla)',
+    difficulty: 'Difficulty',
+    urbanization: 'Neighborhood/Urbanization',
+    price: 'Price',
+    nights: 'nights',
+    base: 'Base',
   },
   es: {
     tripGoal: 'Objetivo del Viaje',
@@ -152,14 +160,24 @@ const UI_STRINGS = {
     consLabel: 'Contras',
     viewVideo: 'Ver Video Tour 🎥',
     viewImages: 'Ver Fotos y Calles 📸',
+    selectPlan: 'Ruta e Itinerario',
+    planLabelA: 'Plan A: Bucle del Sur (con Sevilla)',
+    planLabelB: 'Plan B: Interior y Montañas (sin Sevilla)',
+    difficulty: 'Dificultad',
+    urbanization: 'Urbanización/Zona',
+    price: 'Precio',
+    nights: 'noches',
+    base: 'Base',
   }
 }
 
 export default function App() {
   const [lang, setLang] = useState('en')
+  const [plan, setPlan] = useState('A')
   const [active, setActive] = useState('overview')
 
-  const { tripMeta, overview, townsComparison, days, obraNueva, parkingInfo, supermarkets, bases, restaurants, terrenos, resaleClusters, questions, caveats } = content[lang]
+  const { plans, townsComparison, obraNueva, parkingInfo, supermarkets, bases, restaurants, terrenos, resaleClusters, questions, caveats } = content[lang]
+  const { tripMeta, overview, days } = plans[plan]
   const ui = UI_STRINGS[lang]
   const sections = SECTIONS[lang]
 
@@ -178,6 +196,24 @@ export default function App() {
         <h1>{tripMeta.title}</h1>
         <p className="subtitle">{tripMeta.dates} · {tripMeta.party}</p>
         <p className="context">{tripMeta.vehicle} · {tripMeta.origin} → {tripMeta.return}</p>
+        
+        <div className="plan-selector">
+          <span className="plan-selector-label">{ui.selectPlan}:</span>
+          <div className="plan-buttons">
+            <button 
+              className={`plan-btn ${plan === 'A' ? 'active' : ''}`} 
+              onClick={() => { setPlan('A'); setActive('overview'); }}
+            >
+              {ui.planLabelA}
+            </button>
+            <button 
+              className={`plan-btn ${plan === 'B' ? 'active' : ''}`} 
+              onClick={() => { setPlan('B'); setActive('overview'); }}
+            >
+              {ui.planLabelB}
+            </button>
+          </div>
+        </div>
       </header>
 
       <nav className="tab-bar" aria-label="Sections">
