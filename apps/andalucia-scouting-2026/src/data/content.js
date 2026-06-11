@@ -58,6 +58,8 @@ export const content = {
         price: '€ (Very Cheap)',
         climate: 'Warm days, cool mountain nights',
         parking: 'Excellent street parking & modern garages',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+las+gabias+granada+residencial',
+        images: 'https://www.google.com/search?tbm=isch&q=las+gabias+granada+residencial+calles',
         pros: [
           'Most affordable properties in the Granada belt (condos under €150k)',
           'Future Metro extension will connect it directly to Granada city',
@@ -74,6 +76,8 @@ export const content = {
         price: '€€ (Cheap)',
         climate: 'Warm days, cool mountain nights',
         parking: 'Superb in the new "Vial" zone; extremely tight in historic core',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+churriana+de+la+vega+granada',
+        images: 'https://www.google.com/search?tbm=isch&q=churriana+de+la+vega+vial+nuevo+calles',
         pros: [
           'Highly flat and pedestrian-friendly layout',
           'Granada Metro construction is active (excellent future connectivity)',
@@ -90,6 +94,8 @@ export const content = {
         price: '€ (Very Cheap)',
         climate: 'Slightly cooler due to mountain foothills altitude',
         parking: 'Very easy; wide streets in modern urbanizaciones',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+alhendin+granada',
+        images: 'https://www.google.com/search?tbm=isch&q=alhendin+granada+los+llanos+calles',
         pros: [
           'Outstanding detached villa value-for-money (€240k–€340k)',
           'Immediate, hassle-free access to the A-44 highway',
@@ -106,6 +112,8 @@ export const content = {
         price: '€€€ (Moderate)',
         climate: 'Temperate maritime sea breezes; escapes extreme heat',
         parking: 'Good in Poniente beach area; extremely congested in summer',
+        video: 'https://www.youtube.com/results?search_query=retire+in+torre+del+mar+malaga+living',
+        images: 'https://www.google.com/search?tbm=isch&q=torre+del+mar+poniente+avenida+beach',
         pros: [
           'Flat walkability to the beach and 4 km seafront promenade',
           'Established year-round international expat community',
@@ -122,6 +130,8 @@ export const content = {
         price: '€€€ (Moderate)',
         climate: 'Temperate coastal Mediterranean air; mild all year',
         parking: 'Good in Añoreta/Cotomar; tight along beachfront and old core',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+rincon+de+la+victoria+malaga',
+        images: 'https://www.google.com/search?tbm=isch&q=rincon+de+la+victoria+anoreta+calles',
         pros: [
           'Direct beachfront access without the heavy tourist crowds of Western Málaga',
           'Only 15 minutes east of Málaga city center (easy drive)',
@@ -138,6 +148,8 @@ export const content = {
         price: '€ (Very Cheap)',
         climate: 'Mild Mediterranean climate; escapes coastal marine dampness',
         parking: 'Excellent in northwest expansions; very tight in historic core',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+velez+malaga',
+        images: 'https://www.google.com/search?tbm=isch&q=velez+malaga+el+ingenio+expansion',
         pros: [
           'Highly affordable (3-bed condos around €120k–€180k, comparable to Granada)',
           'Traditional working town with active local shops, schools, and services',
@@ -154,6 +166,8 @@ export const content = {
         price: '€€ (Cheap)',
         climate: 'Extreme summer heat (often exceeding 40°C in August)',
         parking: 'Excellent; built as a modern vehicle-centric suburb',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+bormujos+sevilla+aljarafe',
+        images: 'https://www.google.com/search?tbm=isch&q=bormujos+sevilla+avenidas+residencial',
         pros: [
           'Spacious modern avenues and large parking lots',
           'Excellent suburban services, supermarkets, and shopping malls',
@@ -606,6 +620,8 @@ export const content = {
         price: '€ (Muy Barato)',
         climate: 'Días calurosos, noches frescas de montaña',
         parking: 'Excelente en la calle y garajes modernos',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+las+gabias+granada+residencial',
+        images: 'https://www.google.com/search?tbm=isch&q=las+gabias+granada+residencial+calles',
         pros: [
           'Viviendas más económicas del cinturón de Granada (pisos bajo 150k)',
           'Próxima ampliación del Metro lo conectará directo con Granada',
@@ -622,6 +638,8 @@ export const content = {
         price: '€€ (Barato)',
         climate: 'Días calurosos, noches frescas de montaña',
         parking: 'Excelente en la zona del "Vial"; intransitable en el casco antiguo',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+churriana+de+la+vega+granada',
+        images: 'https://www.google.com/search?tbm=isch&q=churriana+de+la+vega+vial+nuevo+calles',
         pros: [
           'Municipio totalmente llano y cómodo para pasear',
           'Ampliación del Metro activa (magnífica conectividad futura)',
@@ -638,6 +656,8 @@ export const content = {
         price: '€ (Muy Barato)',
         climate: 'Ligeramente más fresco por la altitud al pie de la sierra',
         parking: 'Muy fácil; calles anchas en urbanizaciones modernas',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+alhendin+granada',
+        images: 'https://www.google.com/search?tbm=isch&q=alhendin+granada+los+llanos+calles',
         pros: [
           'Excelente relación calidad-precio para chalets (€240k–€340k)',
           'Acceso inmediato y sin atascos a la autovía A-44',
@@ -654,6 +674,8 @@ export const content = {
         price: '€€€ (Moderado)',
         climate: 'Brisas marinas templadas; escapa al calor extremo',
         parking: 'Bueno en zona de Poniente; muy masificado en verano',
+        video: 'https://www.youtube.com/results?search_query=retire+in+torre+del+mar+malaga+living',
+        images: 'https://www.google.com/search?tbm=isch&q=torre+del+mar+poniente+avenida+beach',
         pros: [
           'Llano y cómodo para ir a pie a la playa y al paseo de 4 km',
           'Comunidad internacional de jubilados activa todo el año',
@@ -670,6 +692,8 @@ export const content = {
         price: '€€€ (Moderado)',
         climate: 'Clima mediterráneo costero templado; suave todo el año',
         parking: 'Bueno en Añoreta/Cotomar; saturado en primera línea de playa',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+rincon+de+la+victoria+malaga',
+        images: 'https://www.google.com/search?tbm=isch&q=rincon+de+la+victoria+anoreta+calles',
         pros: [
           'Acceso directo a la playa sin la masificación turística de Málaga Oeste',
           'A solo 15 minutos al este del centro de Málaga (carretera rápida)',
@@ -686,6 +710,8 @@ export const content = {
         price: '€ (Muy Barato)',
         climate: 'Clima mediterráneo suave; evita la humedad marina directa',
         parking: 'Excelente en expansiones del noroeste; intransitables en casco antiguo',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+velez+malaga',
+        images: 'https://www.google.com/search?tbm=isch&q=velez+malaga+el+ingenio+expansion',
         pros: [
           'Muy económico (pisos de 3 dorm. entre €120k–€180k, similar a Granada)',
           'Ciudad tradicional activa todo el año con todos los servicios y comercios',
@@ -702,6 +728,8 @@ export const content = {
         price: '€€ (Barato)',
         climate: 'Calor extremo en verano (superando los 40°C en agosto)',
         parking: 'Excelente; diseñado como suburbio moderno adaptado al coche',
+        video: 'https://www.youtube.com/results?search_query=vivir+en+bormujos+sevilla+aljarafe',
+        images: 'https://www.google.com/search?tbm=isch&q=bormujos+sevilla+avenidas+residencial',
         pros: [
           'Avenidas amplias y parkings libres de gran capacidad',
           'Excelentes servicios, centros comerciales y supermercados',

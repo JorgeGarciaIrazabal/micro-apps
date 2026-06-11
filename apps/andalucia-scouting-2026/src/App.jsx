@@ -94,6 +94,8 @@ const UI_STRINGS = {
     parkingLabel: 'Parking Logistics',
     prosLabel: 'Pros',
     consLabel: 'Cons',
+    viewVideo: 'Watch Video Tour 🎥',
+    viewImages: 'View Photos & Streets 📸',
   },
   es: {
     tripGoal: 'Objetivo del Viaje',
@@ -148,6 +150,8 @@ const UI_STRINGS = {
     parkingLabel: 'Logística de Parking',
     prosLabel: 'Pros',
     consLabel: 'Contras',
+    viewVideo: 'Ver Video Tour 🎥',
+    viewImages: 'Ver Fotos y Calles 📸',
   }
 }
 
@@ -277,6 +281,10 @@ function ComparisonSection({ townsComparison, ui }) {
             <div className="comparison-meta">
               <p>🌤️ <strong>{ui.climateLabel}:</strong> {t.climate}</p>
               <p>🚗 <strong>{ui.parkingLabel}:</strong> {t.parking}</p>
+            </div>
+            <div className="comparison-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+              {t.video && <a className="maps-btn" href={t.video} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontSize: '0.72rem', padding: '5px 8px' }}>{ui.viewVideo}</a>}
+              {t.images && <a className="maps-btn secondary" href={t.images} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', fontSize: '0.72rem', padding: '5px 8px', margin: 0 }}>{ui.viewImages}</a>}
             </div>
             <div className="pros-cons">
               <div className="pros-block">
