@@ -110,24 +110,6 @@ export const content = {
         ]
       },
       {
-        "name": "Bormujos",
-        "province": "Sevilla",
-        "price": "€€ (Cheap)",
-        "climate": "Extreme summer heat (often exceeding 40°C in August)",
-        "parking": "Excellent; built as a modern vehicle-centric suburb",
-        "video": "https://www.youtube.com/results?search_query=vivir+en+bormujos+sevilla+aljarafe",
-        "images": "https://www.google.com/search?tbm=isch&q=bormujos+sevilla+avenidas+residencial",
-        "pros": [
-          "Spacious modern avenues and large parking lots",
-          "Excellent suburban services, supermarkets, and shopping malls",
-          "Only 15 minutes from Sevilla city center"
-        ],
-        "cons": [
-          "Extreme dry heat makes outdoor life difficult in summer",
-          "Commuting to central Sevilla is slow if driving (must use Metro)"
-        ]
-      },
-      {
         "name": "Antequera",
         "province": "Málaga",
         "price": "€ (Very Cheap)",
@@ -291,17 +273,6 @@ export const content = {
         "area": "Poniente Beach, Torre del Mar",
         "day": 3,
         "maps": "https://www.google.com/maps/search/?api=1&query=Horus+V+Torre+del+Mar"
-      },
-      {
-        "name": "Alma Bormujos",
-        "developer": "Grupo Q",
-        "type": "Apartments 1-4 Bed (Gated Community)",
-        "units": 62,
-        "priceFrom": "€260,000",
-        "handover": "2027",
-        "area": "Suburban Corridor, Bormujos (Sevilla)",
-        "day": 4,
-        "maps": "https://www.google.com/maps/search/?api=1&query=Alma+Bormujos+Grupo+Q"
       }
     ],
     "parkingInfo": [
@@ -342,10 +313,10 @@ export const content = {
         "note": "Modern northwest zones and areas surrounding El Ingenio mall have very wide roads and massive free parking lots. Historic core has extremely narrow one-way streets."
       },
       {
-        "town": "Bormujos (Sevilla)",
+        "town": "Alhaurín el Grande (Málaga)",
         "parkingScore": "⭐⭐⭐⭐⭐ Excellent",
         "difficulty": "Very Low",
-        "note": "Built as a modern suburban car-centric town. Wide streets, massive free shopping center parking lots. Metro park-and-ride (Ciudad Expo) is adjacent and has massive capacity."
+        "note": "Wide modern avenues in the new residential extensions. Very easy curbside parking near Mercadona and along the main commercial strips."
       }
     ],
     "supermarkets": [
@@ -368,16 +339,10 @@ export const content = {
         "note": "Highly accessible, kid-friendly parking."
       },
       {
-        "name": "Mercadona Bormujos",
-        "cluster": "sevilla",
-        "address": "Avenida San Juan de Dios s/n, Bormujos",
-        "note": "Convenient Aljarafe location with wide parking spots."
-      },
-      {
-        "name": "Lidl Bormujos",
-        "cluster": "sevilla",
-        "address": "Avenida de la Universidad, Bormujos",
-        "note": "Next to the CEU San Pablo university complex."
+        "name": "Mercadona Alhaurín el Grande",
+        "cluster": "coast",
+        "address": "Calle de la Cruz, Alhaurín el Grande, Málaga",
+        "note": "Convenient inland Málaga location with wide parking spots."
       },
       {
         "name": "Mercadona Torre del Mar",
@@ -388,20 +353,23 @@ export const content = {
     ],
     "bases": [
       {
-        "name": "Granada Vega (Alhendín / Las Gabias)",
-        "nights": "Nights 1 & 2 (Wed 12 + Thu 13 Aug)",
-        "why": "Quiet, residential, very close to the 3 target towns. Offers private pool villas at a fraction of coastal costs. Safe parking for a large 7-seater van.",
-        "filters": "\"Las Gabias\" or \"Alhendín\" + \"villa\" + \"private pool\" + \"parking\"",
-        "priceBand": "€180–€280/night (3-4 bed villa with pool in August — highly competitive)",
-        "caution": "Check if AC is fully operational in all bedrooms. Summer nights in Granada are cooler than Málaga/Sevilla due to altitude, but still require AC."
+        "name": "Airbnb — Apartamento con parking (Alhendín, Granada)",
+        "nights": "Nights 1 & 2 (Tue 4 + Wed 5 Aug)",
+        "why": "Confirmed booking. Entire apartment with private parking, 15 minutes to Granada center. Hosted by Manuel. Auto check-in with door codes — no physical key handover needed.",
+        "filters": "Airbnb confirmation code (e.g. ABC1234567) + check-in 4 Aug / check-out 6 Aug",
+        "priceBand": "Airbnb confirmed (see receipt)",
+        "caution": "Register arrival via the auto check-in link 48h before arrival. Address: Calle Aljancira, Número 2, Bloque 2 1H, 18620 Alhendín, Granada. Check-in Tue Aug 4 after 3:00 PM, check-out Thu Aug 6 by 11:00 AM.",
+        "checkinLink": "https://checkin.es.ibutlers.com/form/VV5A/",
+        "maps": "https://www.google.com/maps/search/?api=1&query=Calle+Aljancira+2+Alhendin+Granada"
       },
       {
-        "name": "Sevilla Aljarafe (Bormujos / Tomares)",
-        "nights": "Night 3 (Fri 14 Aug)",
-        "why": "Perfect launchpad for Day 4 vehicle audits and highway access. Close to A-4 highway for an easy drive back to Madrid on Saturday afternoon.",
-        "filters": "\"Bormujos\" or \"Tomares\" + \"villa\" + \"private pool\" + \"parking\"",
-        "priceBand": "€200–€300/night (3-4 bed villa with pool)",
-        "caution": "August temperatures in Sevilla regularly exceed 40°C in the afternoon. Pool access and 24h AC are mandatory for the child’s safety."
+        "name": "Booking.com — Apartamentos Santa Clara (Alhaurín de la Torre, Málaga)",
+        "nights": "Night 3 (Thu 6 Aug)",
+        "why": "Confirmed booking. 2 rooms (Standard Studio + Superior Double Room) for 4 adults. Coastal Málaga location — perfect base for the inland Málaga scouting day and the drive back to Madrid.",
+        "filters": "Booking.com confirmation #6865243131 · PIN 3122",
+        "priceBand": "€141.95 total (2 rooms, 1 night, VAT included)",
+        "caution": "Check-in Thu Aug 6 (3:00 PM – 10:30 PM), check-out Fri Aug 7 by 12:00 PM. Reception hours Mon–Sat 10:00–14:00 & 17:00–21:00 — inform arrival time in advance. Keys at on-site reception. Non-refundable rate. Address: Seguidillas s/n, 29130 Alhaurín de la Torre, Málaga. Phone +34 952 41 65 24.",
+        "maps": "https://www.google.com/maps/search/?api=1&query=Apartamentos+Santa+Clara+Alhaurin+de+la+Torre+Malaga"
       }
     ],
     "restaurants": [
@@ -426,14 +394,14 @@ export const content = {
         "area": "Torre del Mar beach, Málaga"
       },
       {
-        "name": "Venta Pazo",
+        "name": "Venta Los Naranjos",
         "when": "Day 3 dinner",
-        "area": "Sanlúcar la Mayor (near Bormujos), Sevilla"
+        "area": "Alhaurín el Grande, Málaga"
       },
       {
-        "name": "Venta La Masía",
+        "name": "Casa Paco",
         "when": "Day 4 lunch",
-        "area": "Bollullos de la Mitación, Sevilla"
+        "area": "Alhaurín el Grande, Málaga"
       }
     ],
     "terrenos": {
@@ -461,12 +429,6 @@ export const content = {
           "municipality": "Churriana (Granada)",
           "price": "€150–€220/m²",
           "note": "Extremely scarce urban plots due to high density and metro expansion."
-        },
-        {
-          "name": "Bormujos Aljarafe",
-          "municipality": "Bormujos (Sevilla)",
-          "price": "€180–€260/m²",
-          "note": "High demand from local developers. Good value but check occupancy coefficients."
         }
       ],
       "coast": [
@@ -536,27 +498,6 @@ export const content = {
             "price": "€280,000–€360,000"
           }
         ]
-      },
-      {
-        "cluster": "Sevilla Aljarafe",
-        "subtitle": "Premier residential commuter suburbs",
-        "entries": [
-          {
-            "urbanization": "Bormujos (Av. Universidad)",
-            "type": "3-Bed Condo / Apartment with Garage",
-            "price": "€150,000–€220,000"
-          },
-          {
-            "urbanization": "Tomares (Bordering Bormujos)",
-            "type": "3-Bed Modern Condo in Gated Community",
-            "price": "€190,000–€270,000"
-          },
-          {
-            "urbanization": "Bollullos de la Mitación",
-            "type": "4-Bed Villa near CBS British School",
-            "price": "€230,000–€340,000"
-          }
-        ]
       }
     ],
     "questions": {
@@ -581,326 +522,19 @@ export const content = {
     },
     "caveats": [
       "August closures in Andalucia — call developer sales offices and restaurants 48 hours in advance. August is peak holidays for Spanish agents.",
-      "Extreme Seville Heat — August temperatures in Sevilla and Bormujos regularly reach 42°C. Ensure your rental bases and cars have outstanding air conditioning.",
+      "Extreme inland heat — August afternoon temperatures in Antequera and the Guadalhorce valley can reach 38–40°C. Ensure your rental base and car have outstanding air conditioning.",
       "Legal and tax counsel — when buying resale property in Spain, hire a local independent lawyer (abogado) to verify the status of the property. Budget 1% of the purchase price for legal fees."
     ],
     "plans": {
-      "A": {
-        "tripMeta": {
-          "title": "Andalucía Real-Estate Scouting Trip (Granada & Southern Loop)",
-          "dates": "12–15 August 2026 (4 nights)",
-          "party": "5 people · 1 young child",
-          "vehicle": "Mercedes V-Class 7-seater (Android Auto)",
-          "origin": "Madrid Atocha",
-          "return": "Madrid Atocha — Saturday evening",
-          "flyOut": "Early Sunday 16 August 2026",
-          "researchDate": "June 2026"
-        },
-        "overview": {
-          "goal": "Evaluate family retirement locations focusing on condos and easy parking in Granada (Las Gabias, Churriana, Alhendín) under €380k. Compare with Málaga Coast (Torre del Mar, Rincón de la Victoria, Vélez-Málaga) and Bormujos (Sevilla - suburban base).",
-          "clusters": [
-            {
-              "id": "granada",
-              "name": "Granada Vega (Primary Goal)",
-              "nights": 2,
-              "base": "Alhendín / Las Gabias",
-              "strongFor": [
-                "Condos/Apartments (€120k–€220k) — way under the €380k budget limit",
-                "Cooler mountain air (Sierra Nevada) & lower summer nights",
-                "Spacious modern avenues with excellent street and garage parking",
-                "Granada Metro connection (easy access to city center without driving)"
-              ]
-            },
-            {
-              "id": "coast",
-              "name": "Málaga Coast (Torre del Mar, Rincón, Vélez)",
-              "nights": 0,
-              "base": "On the road (scouting)",
-              "strongFor": [
-                "Beachfront lifestyle in Torre del Mar & Rincón de la Victoria",
-                "Temperate coastal climate (cooler in summer than Seville)",
-                "Highly affordable inland condos in Vélez-Málaga (€120k–€180k)",
-                "Modern suburbs with wide avenues and spacious parking in Rincón"
-              ]
-            },
-            {
-              "id": "sevilla",
-              "name": "Sevilla Aljarafe (Bormujos)",
-              "nights": 1,
-              "base": "Bormujos (Sevilla)",
-              "strongFor": [
-                "Modern suburban condo developments (€180k–€260k)",
-                "Extremely vehicle-friendly layout (wide avenues, large shopping lots)",
-                "15 mins to Sevilla center (utilizing Metro park-and-ride to avoid city parking)"
-              ]
-            }
-          ]
-        },
-        "days": [
-          {
-            "id": "d1",
-            "number": 1,
-            "weekday": "Wednesday",
-            "date": "12 Aug",
-            "title": "Madrid → Granada Vega (Las Gabias & Alhendín)",
-            "subtitle": "Drive day + evening orientation in Granada suburban towns",
-            "driveKm": 430,
-            "driveHours": 4.2,
-            "padel": false,
-            "sections": [
-              {
-                "time": "09:00",
-                "kind": "departure",
-                "title": "Pick up van at Madrid Atocha Station",
-                "note": "Mercedes V-Class 7-seater. Confirm child seat is correctly installed and Android Auto is paired for navigation before departing."
-              },
-              {
-                "time": "10:00",
-                "kind": "drive",
-                "title": "A-4 south → A-44 south to Granada Vega",
-                "note": "~430 km / 4 hours with one major family rest stop. A-4 and A-44 are completely toll-free."
-              },
-              {
-                "time": "12:00",
-                "kind": "lunch",
-                "title": "Venta El Cordobés (Bailén / Jaén)",
-                "note": "Perfect mid-point family lunch stop. Huge parking lot for a van, traditional children-friendly menus, and rapid service. Allow 45 minutes.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+El+Cordobes+Bailen+Jaen+restaurante"
-              },
-              {
-                "time": "14:30",
-                "kind": "checkin",
-                "title": "Check-in: Granada Vega Base Villa (Alhendín / Las Gabias)",
-                "note": "First 2 nights. Ensure the villa has a wide driveway for the 7-seater van and check that air conditioning is active in all bedrooms for the child.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Las+Gabias+Granada+Spain+accommodation"
-              },
-              {
-                "time": "15:30",
-                "kind": "supermarket",
-                "title": "Stock up: Mercadona Las Gabias",
-                "note": "Located on Calle Real. Features large, family-friendly underground parking. Buy bottled water, breakfast essentials, and snacks for the baby.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Mercadona+Calle+Real+Las+Gabias"
-              },
-              {
-                "time": "16:30",
-                "kind": "scout",
-                "title": "Las Gabias — Condo & Parking Scouting",
-                "note": "Scout the residential districts of Híjar, Las Tejeras, and around the Granada Club de Golf. Las Gabias is cheap, flat, and features a future metro link extension. Notice the wide streets and easy street parking in the newer sectors.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Granada+Club+de+Golf+Las+Gabias"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Restaurante Los Naranjos (Alhendín)",
-                "note": "Excellent family-friendly restaurant with a spacious outdoor dining patio, local cuisine, and easy parking for large vehicles.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Restaurante+Los+Naranjos+Alhendin+Granada"
-              }
-            ]
-          },
-          {
-            "id": "d2",
-            "number": 2,
-            "weekday": "Thursday",
-            "date": "13 Aug",
-            "title": "Granada Vega Loop — Churriana & Alhendín",
-            "subtitle": "Deep dive into Granada’s most retirement-friendly suburbs under €380k",
-            "driveKm": 40,
-            "driveHours": 1.2,
-            "padel": false,
-            "sections": [
-              {
-                "time": "09:30",
-                "kind": "scout",
-                "title": "Churriana de la Vega — Metro Corridor & Condo Scouting",
-                "note": "Churriana is highly popular due to its flat landscape and the ongoing Granada Metro extension. Scout the modern \"Vial de Churriana\" district. Condos here go for €120k–€200k (with parking garage options). Notice how wide the avenues are for double parking or guest spaces.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Churriana+de+la+Vega+Granada+Spain"
-              },
-              {
-                "time": "11:30",
-                "kind": "scout",
-                "title": "Alhendín — Condo Complex & Parking Audit",
-                "note": "Scout new condo blocks on the edge of the A-44 highway. These complexes feature modern underground parking layouts and wide, quiet streets with abundant free curbside parking.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhendin+Granada+Spain"
-              },
-              {
-                "time": "13:45",
-                "kind": "lunch",
-                "title": "Restaurante Mesón El Ventorrillo",
-                "note": "Located on the edge of Churriana. Traditional Andalusian grilled meats, highly welcoming of children, and features a huge parking lot.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Meson+El+Ventorrillo+Churriana+de+la+Vega+restaurante"
-              },
-              {
-                "time": "15:30",
-                "kind": "showhome",
-                "title": "Obra Nueva: Residencial Triana (Las Gabias) & Vial (Churriana)",
-                "note": "Do a street scout of new-build townhouse and condo sites. Residencial Triana features adosados from €259k. Churriana Vial builds start around €329k with private pools.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Residencial+Triana+Las+Gabias"
-              },
-              {
-                "time": "17:30",
-                "kind": "scout",
-                "title": "Granada Metro Station Check (Armilla / Fernando de los Ríos)",
-                "note": "Check the park-and-ride station near Nevada Shopping Center. This is where retirees from Alhendín/Las Gabias park to hop on the metro to Granada city center in 15 mins.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Nevada+Shopping+Granada"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Dinner at Base Villa or local Granada tapas",
-                "note": "Enjoy a relaxed dinner at the villa or check out family-friendly plazas in Armilla."
-              }
-            ]
-          },
-          {
-            "id": "d3",
-            "number": 3,
-            "weekday": "Friday",
-            "date": "14 Aug",
-            "title": "Granada → Málaga Coast (Vélez, Torre del Mar, Rincón) → Sevilla (Bormujos)",
-            "subtitle": "Relocation day: Compare coastal Axarquía/Málaga with Seville’s premier family suburbs",
-            "driveKm": 375,
-            "driveHours": 4,
-            "padel": false,
-            "sections": [
-              {
-                "time": "08:30",
-                "kind": "checkin",
-                "title": "Check out of Granada base → Drive to Torre del Mar (1h 15m)",
-                "note": "Scenic drive down A-44 towards the coast, then A-7 east to Torre del Mar (115 km)."
-              },
-              {
-                "time": "09:45",
-                "kind": "scout",
-                "title": "Torre del Mar — Seafront Condo & Public Parking Check",
-                "note": "Walk the Paseo Marítimo. Evaluate the large public dirt parking lots near the beach and lighthouse. Check the Poniente beach modern condo complexes. Properties (3-bed condos) under €380k are highly common here (€240k–€320k) and include underground garages.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Paseo+Maritimo+Torre+del+Mar+Malaga"
-              },
-              {
-                "time": "10:45",
-                "kind": "scout",
-                "title": "Vélez-Málaga — Inland Modern Expansion Audit",
-                "note": "Drive 5 mins inland. Evaluate the wide avenues, modern condos (€120k–€180k), and massive parking lots around El Ingenio shopping mall. Highly driveable outside the historic core.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Centro+Comercial+El+Ingenio+Velez+Malaga"
-              },
-              {
-                "time": "11:45",
-                "kind": "scout",
-                "title": "Scout: Caleta de Vélez Marina & Parking",
-                "note": "Caleta de Vélez has a quieter port vibe, easy parking in the marina lot, and excellent coastal condos with easy access to the highway.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Puerto+de+Caleta+de+Velez+Malaga"
-              },
-              {
-                "time": "12:45",
-                "kind": "lunch",
-                "title": "Chiringuito El Playazo (Torre del Mar)",
-                "note": "Authentic beachside chiringuito. Known for fresh espetos (sardine skewers), paella, and kid-friendly atmosphere right on the sand. Flat public parking nearby.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Chiringuito+El+Playazo+Torre+del+Mar+restaurante"
-              },
-              {
-                "time": "14:00",
-                "kind": "scout",
-                "title": "Scout: Rincón de la Victoria (Añoreta & Promenade)",
-                "note": "Drive 20 mins west. Evaluate the modern layout, easy access parking, and sea-view family condos (€220k–€320k) with garages in Añoreta/Cotomar expansions.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Rincon+de+la+Victoria+Paseo+Maritimo"
-              },
-              {
-                "time": "14:45",
-                "kind": "drive",
-                "title": "Rincón de la Victoria → Bormujos (Sevilla) via A-7 / A-92",
-                "note": "Drive inland via A-7 and A-92 (225 km / 2 hours 30 mins). Sevilla will be hot in the afternoon — ensure the van AC is fully operational."
-              },
-              {
-                "time": "17:15",
-                "kind": "checkin",
-                "title": "Check-in: Bormujos Base Villa (Sevilla Aljarafe)",
-                "note": "Final night base. Park V-Class and check the cooling system. Ensure the pool is operational for a refreshing splash.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Bormujos+Sevilla+Spain+accommodation"
-              },
-              {
-                "time": "17:50",
-                "kind": "scout",
-                "title": "Bormujos — Suburban Aljarafe Walkthrough & Parking Audit",
-                "note": "Scout Bormujos suburban avenues, local family parks, and supermarket layout (Mercadona Bormujos). Check townhouse/condo developments around Avenida San Juan de Dios (pricing: €230k–€340k). Verify easy roadside parking.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Mercadona+Avenida+San+Juan+de+Dios+Bormujos"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Dinner: Venta Pazo (Sanlúcar la Mayor outskirts)",
-                "note": "Just a 10 min drive from Bormujos. Historic family-friendly venta featuring a massive garden, play areas, and easy parking.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+Pazo+Sanlucar+la+Mayor+restaurante"
-              }
-            ]
-          },
-          {
-            "id": "d4",
-            "number": 4,
-            "weekday": "Saturday",
-            "date": "15 Aug",
-            "title": "Sevilla Scouting + Return to Madrid",
-            "subtitle": "Transit check, final town audit, and the long drive north to Madrid",
-            "driveKm": 540,
-            "driveHours": 5,
-            "padel": false,
-            "sections": [
-              {
-                "time": "10:30",
-                "kind": "checkin",
-                "title": "Check out of Sevilla villa → drive to Mairena del Aljarafe",
-                "note": "Pack all luggage into the Mercedes V-Class."
-              },
-              {
-                "time": "11:00",
-                "kind": "scout",
-                "title": "Scout: Ciudad Expo Metro Park-and-Ride (Mairena del Aljarafe)",
-                "note": "Inspect the massive park-and-ride lot next to the Metro terminal. This is where Aljarafe residents park their cars for free to take the Metro directly into central Seville, bypassing the city center parking nightmare.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Ciudad+Expo+Metro+Sevilla"
-              },
-              {
-                "time": "12:00",
-                "kind": "scout",
-                "title": "Final Condo Scout — Bormujos / Tomares",
-                "note": "Check modern condo blocks in Tomares and Bormujos. Notice that almost all buildings feature double-basement garages. Rate Bormujos’ ease of vehicle movement."
-              },
-              {
-                "time": "13:30",
-                "kind": "lunch",
-                "title": "Venta La Masía (Bollullos de la Mitación)",
-                "note": "Family-friendly rustic restaurant, huge parking lot, quick kids meals before starting the long highway drive.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+La+Masia+Bollullos+de+la+Mitacion+restaurante"
-              },
-              {
-                "time": "14:30",
-                "kind": "drive",
-                "title": "Sevilla → Madrid via A-4 North",
-                "note": "530 km, ~5 hours drive. High temperature during afternoon — check tire pressure and coolant level."
-              },
-              {
-                "time": "17:30",
-                "kind": "rest",
-                "title": "Refuel & Rest: Repsol Service Area (Manzanares, Ciudad Real)",
-                "note": "A-4 km 173. Clean restrooms, child-friendly play space, large truck/van parking.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Area+de+servicio+Manzanares+A-4+Repsol"
-              },
-              {
-                "time": "20:00",
-                "kind": "arrival",
-                "title": "Arrive Madrid Atocha → Drop off V-Class → Hotel check-in",
-                "note": "Drop off rental vehicle. Prepare for flight home on Sunday morning."
-              }
-            ]
-          }
-        ]
-      },
       "B": {
         "tripMeta": {
           "title": "Andalucía Real-Estate Inland & Mountain Scouting Trip",
-          "dates": "12–15 August 2026 (4 nights)",
+          "dates": "4–7 August 2026 (3 nights)",
           "party": "5 people · 1 young child",
           "vehicle": "Mercedes V-Class 7-seater (Android Auto)",
           "origin": "Madrid Atocha",
-          "return": "Madrid Atocha — Saturday evening",
-          "flyOut": "Early Sunday 16 August 2026",
+          "return": "Madrid Atocha — Friday evening",
+          "flyOut": "Early Saturday 8 August 2026",
           "researchDate": "June 2026"
         },
         "overview": {
@@ -910,7 +544,7 @@ export const content = {
               "id": "granada",
               "name": "Granada Vega & Valley (Primary)",
               "nights": 2,
-              "base": "Alhendín / Las Gabias",
+              "base": "Alhendín (confirmed Airbnb)",
               "strongFor": [
                 "Unbeatable value (3-bed condos €110k–€210k)",
                 "Cooler mountain air (Sierra Nevada) & Alhama thermal gorge",
@@ -921,7 +555,7 @@ export const content = {
               "id": "malaga_inland",
               "name": "Málaga Inland (Antequera & Alhaurín)",
               "nights": 1,
-              "base": "Alhaurín el Grande / Antequera",
+              "base": "Alhaurín de la Torre (confirmed Booking.com)",
               "strongFor": [
                 "Antequera: Strategic hub, flat modern avenues, Torcal views",
                 "Alhaurín: Very green, large expat community, wide avenues",
@@ -945,10 +579,10 @@ export const content = {
           {
             "id": "d1",
             "number": 1,
-            "weekday": "Wednesday",
-            "date": "12 Aug",
-            "title": "Madrid → Jaén (Alcalá la Real) → Granada Vega",
-            "subtitle": "Scout a historical fortress town en route to your Granada base",
+            "weekday": "Tuesday",
+            "date": "4 Aug",
+            "title": "Madrid → Jaén (Alcalá la Real) → Granada Vega (Alhendín)",
+            "subtitle": "Scout a historical fortress town en route to your confirmed Alhendín base",
             "driveKm": 460,
             "driveHours": 4.5,
             "sections": [
@@ -976,14 +610,14 @@ export const content = {
                 "time": "15:00",
                 "kind": "drive",
                 "title": "Alcalá la Real → Alhendín (Granada Vega Base)",
-                "note": "Short 45-minute drive (55 km) via N-432 and A-44 south to your villa base."
+                "note": "Short 45-minute drive (55 km) via N-432 and A-44 south to your confirmed Airbnb apartment."
               },
               {
                 "time": "16:00",
                 "kind": "checkin",
-                "title": "Check-in: Granada Vega Base Villa",
-                "note": "Unpack the V-Class. Confirm secure driveway/garage space. Pool check.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhendin+Granada+accommodation"
+                "title": "Check-in: Airbnb Apartment (Alhendín) — Auto check-in",
+                "note": "Confirmed booking. Entire apartment with private parking, hosted by Manuel. Auto check-in with door codes (no physical key handover). Register via the ibutlers link 48h before arrival. Address: Calle Aljancira, Número 2, Bloque 2 1H, 18620 Alhendín. Check-in after 3:00 PM.",
+                "maps": "https://www.google.com/maps/search/?api=1&query=Calle+Aljancira+2+Alhendin+Granada"
               },
               {
                 "time": "17:30",
@@ -1004,8 +638,8 @@ export const content = {
           {
             "id": "d2",
             "number": 2,
-            "weekday": "Thursday",
-            "date": "13 Aug",
+            "weekday": "Wednesday",
+            "date": "5 Aug",
             "title": "Granada Vega & Mountain Valley (Monachil & Alhama)",
             "subtitle": "Evaluate Sierra foothills air and Alhama’s scenic thermal canyon",
             "driveKm": 130,
@@ -1076,8 +710,8 @@ export const content = {
           {
             "id": "d3",
             "number": 3,
-            "weekday": "Friday",
-            "date": "14 Aug",
+            "weekday": "Thursday",
+            "date": "6 Aug",
             "title": "Granada → Málaga Inland (Antequera & Alhaurín)",
             "subtitle": "Transition to Málaga’s premier inland residential valley hubs",
             "driveKm": 175,
@@ -1086,8 +720,8 @@ export const content = {
               {
                 "time": "08:30",
                 "kind": "checkin",
-                "title": "Check out of Granada base → Drive to Antequera (1h 10m)",
-                "note": "Scenic drive west along the A-92 highway to Antequera (100 km)."
+                "title": "Check out of Alhendín Airbnb → Drive to Antequera (1h 10m)",
+                "note": "Scenic drive west along the A-92 highway to Antequera (100 km). Check-out from the Airbnb apartment by 11:00 AM."
               },
               {
                 "time": "09:40",
@@ -1119,14 +753,14 @@ export const content = {
               {
                 "time": "15:30",
                 "kind": "checkin",
-                "title": "Check-in: Málaga Inland Base Villa",
-                "note": "Overnight base. Park V-Class and check vehicle levels.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhaurin+el+Grande+accommodation"
+                "title": "Check-in: Booking.com — Apartamentos Santa Clara (Alhaurín de la Torre)",
+                "note": "Confirmed booking. 2 rooms (Standard Studio + Superior Double Room) for 4 adults. €141.95 total. Confirmation #6865243131, PIN 3122. Check-in 3:00 PM – 10:30 PM. Keys at on-site reception. Address: Seguidillas s/n, 29130 Alhaurín de la Torre, Málaga.",
+                "maps": "https://www.google.com/maps/search/?api=1&query=Apartamentos+Santa+Clara+Alhaurin+de+la+Torre+Malaga"
               },
               {
                 "time": "17:30",
                 "kind": "scout",
-                "title": "Scout: Coin modern outskirts (Adjacent to Alhaurín)",
+                "title": "Scout: Coín modern outskirts (Adjacent to Alhaurín)",
                 "note": "Scout Coín’s new commercial parks and residential extensions. Do not drive the V-Class into the old historic core.",
                 "maps": "https://www.google.com/maps/search/?api=1&query=La+Trocha+Centro+Comercial+Coin"
               },
@@ -1142,8 +776,8 @@ export const content = {
           {
             "id": "d4",
             "number": 4,
-            "weekday": "Saturday",
-            "date": "15 Aug",
+            "weekday": "Friday",
+            "date": "7 Aug",
             "title": "Málaga Inland → Loja (Granada) → Madrid",
             "subtitle": "Final mountain-valley audit and the long drive north",
             "driveKm": 580,
@@ -1152,8 +786,8 @@ export const content = {
               {
                 "time": "09:00",
                 "kind": "checkin",
-                "title": "Check out of Málaga Inland base → Drive to Loja (1h)",
-                "note": "Pack the van. Drive via A-92 north-east to Loja (75 km)."
+                "title": "Check out of Apartamentos Santa Clara → Drive to Loja (1h)",
+                "note": "Pack the van. Check-out by 12:00 PM. Drive via A-92 north-east to Loja (75 km)."
               },
               {
                 "time": "10:00",
@@ -1192,7 +826,7 @@ export const content = {
                 "time": "19:30",
                 "kind": "arrival",
                 "title": "Arrive Madrid Atocha → Drop off V-Class → Hotel check-in",
-                "note": "Final trip check. Drop off the 7-seater rental van. Prepare for flights home."
+                "note": "Final trip check. Drop off the 7-seater rental van. Prepare for flights home on Saturday morning."
               }
             ]
           }
@@ -1308,24 +942,6 @@ export const content = {
         "cons": [
           "Municipio de interior; no es posible ir a la playa a pie",
           "Las calles del casco histórico son extremadamente estrechas para la furgoneta"
-        ]
-      },
-      {
-        "name": "Bormujos",
-        "province": "Sevilla",
-        "price": "€€ (Barato)",
-        "climate": "Calor extremo en verano (superando los 40°C en agosto)",
-        "parking": "Excelente; diseñado como suburbio moderno adaptado al coche",
-        "video": "https://www.youtube.com/results?search_query=vivir+en+bormujos+sevilla+aljarafe",
-        "images": "https://www.google.com/search?tbm=isch&q=bormujos+sevilla+avenidas+residencial",
-        "pros": [
-          "Avenidas amplias y parkings libres de gran capacidad",
-          "Excelentes servicios, centros comerciales y supermercados",
-          "A solo 15 minutos del centro de Sevilla"
-        ],
-        "cons": [
-          "Calor seco extremo que limita la vida exterior en verano",
-          "Tráfico denso hacia Sevilla en hora punta (requiere metro)"
         ]
       },
       {
@@ -1492,17 +1108,6 @@ export const content = {
         "area": "Playa de Poniente, Torre del Mar",
         "day": 3,
         "maps": "https://www.google.com/maps/search/?api=1&query=Horus+V+Torre+del+Mar"
-      },
-      {
-        "name": "Alma Bormujos",
-        "developer": "Grupo Q",
-        "type": "Apartamentos de 1-4 dorm. (urbanización cerrada)",
-        "units": 62,
-        "priceFrom": "€260,000",
-        "handover": "2027",
-        "area": "Corredor Suburbano, Bormujos (Sevilla)",
-        "day": 4,
-        "maps": "https://www.google.com/maps/search/?api=1&query=Alma+Bormujos+Grupo+Q"
       }
     ],
     "parkingInfo": [
@@ -1543,10 +1148,10 @@ export const content = {
         "note": "Zonas modernas del noroeste y el entorno del C.C. El Ingenio tienen viales muy anchos y grandes bolsas de parking gratis. Evitar el casco antiguo con la furgoneta."
       },
       {
-        "town": "Bormujos (Sevilla)",
+        "town": "Alhaurín el Grande (Málaga)",
         "parkingScore": "⭐⭐⭐⭐⭐ Excelente",
         "difficulty": "Muy baja",
-        "note": "Municipio diseñado para coches. Avenidas espaciosas, grandes zonas de parking libre comercial. El park-and-ride de la estación Ciudad Expo se encuentra al lado y es enorme."
+        "note": "Avenidas amplias en las nuevas extensiones residenciales. Aparcamiento en batería muy fácil junto al Mercadona y en las principales zonas comerciales."
       }
     ],
     "supermarkets": [
@@ -1569,16 +1174,10 @@ export const content = {
         "note": "Muy accesible y con aparcamiento cómodo para familias."
       },
       {
-        "name": "Mercadona Bormujos",
-        "cluster": "sevilla",
-        "address": "Avenida San Juan de Dios s/n, Bormujos",
-        "note": "Excelente ubicación en el Aljarafe con plazas de aparcamiento amplias."
-      },
-      {
-        "name": "Lidl Bormujos",
-        "cluster": "sevilla",
-        "address": "Avenida de la Universidad, Bormujos",
-        "note": "Situado junto al complejo universitario CEU San Pablo."
+        "name": "Mercadona Alhaurín el Grande",
+        "cluster": "coast",
+        "address": "Calle de la Cruz, Alhaurín el Grande, Málaga",
+        "note": "Excelente ubicación de interior de Málaga con plazas de aparcamiento amplias."
       },
       {
         "name": "Mercadona Torre del Mar",
@@ -1589,20 +1188,23 @@ export const content = {
     ],
     "bases": [
       {
-        "name": "Granada Vega (Alhendín / Las Gabias)",
-        "nights": "Noches 1 y 2 (Mié 12 + Jue 13 Ago)",
-        "why": "Tranquilo, residencial y muy cerca de los 3 municipios de Granada. Ofrece villas con piscina privada a una fracción del coste costero. Aparcamiento seguro para la Clase V.",
-        "filters": "\"Las Gabias\" o \"Alhendín\" + \"villa\" + \"piscina privada\" + \"aparcamiento\"",
-        "priceBand": "€180–€280/noche (villa de 3-4 dorm. con piscina en agosto — muy competitivo)",
-        "caution": "Asegurar aire acondicionado en todas las habitaciones. Las noches de verano en Granada son más frescas por la altitud, pero el aire es necesario."
+        "name": "Airbnb — Apartamento con parking (Alhendín, Granada)",
+        "nights": "Noches 1 y 2 (Mar 4 + Mié 5 Ago)",
+        "why": "Reserva confirmada. Apartamento completo con parking privado, a 15 minutos del centro de Granada. Anfitrión: Manuel. Auto check-in con códigos de puerta — sin entrega física de llaves.",
+        "filters": "Código de confirmación de Airbnb (ej. ABC1234567) + entrada 4 Ago / salida 6 Ago",
+        "priceBand": "Airbnb confirmado (ver recibo)",
+        "caution": "Registrar la llegada vía el enlace de auto check-in 48h antes de llegar. Dirección: Calle Aljancira, Número 2, Bloque 2 1H, 18620 Alhendín, Granada. Entrada Mar 4 Ago a partir de las 15:00, salida Jue 6 Ago antes de las 11:00.",
+        "checkinLink": "https://checkin.es.ibutlers.com/form/VV5A/",
+        "maps": "https://www.google.com/maps/search/?api=1&query=Calle+Aljancira+2+Alhendin+Granada"
       },
       {
-        "name": "Sevilla Aljarafe (Bormujos / Tomares)",
-        "nights": "Noche 3 (Vie 14 Ago)",
-        "why": "Base perfecta para las visitas del Día 4 y salida rápida hacia la A-4 dirección Madrid por la tarde.",
-        "filters": "\"Bormujos\" o \"Tomares\" + \"villa\" + \"piscina\" + \"aparcamiento\"",
-        "priceBand": "€200–€300/noche (villa de 3-4 dorm. con piscina)",
-        "caution": "Las temperaturas de agosto en Sevilla superan a menudo los 40°C. Imprescindible piscina y aire acondicionado 24h para el bienestar del niño."
+        "name": "Booking.com — Apartamentos Santa Clara (Alhaurín de la Torre, Málaga)",
+        "nights": "Noche 3 (Jue 6 Ago)",
+        "why": "Reserva confirmada. 2 habitaciones (Estudio Estándar + Habitación Doble Superior) para 4 adultos. Ubicación costera de Málaga — base perfecta para el día de reconocimiento del interior de Málaga y el regreso a Madrid.",
+        "filters": "Booking.com confirmación #6865243131 · PIN 3122",
+        "priceBand": "€141.95 en total (2 habitaciones, 1 noche, IVA incluido)",
+        "caution": "Entrada Jue 6 Ago (15:00 – 22:30), salida Vie 7 Ago antes de las 12:00. Horario de recepción Lun–Sáb 10:00–14:00 y 17:00–21:00 — informar la hora de llegada con antelación. Llaves en recepción. Tarifa no reembolsable. Dirección: Seguidillas s/n, 29130 Alhaurín de la Torre, Málaga. Teléfono +34 952 41 65 24.",
+        "maps": "https://www.google.com/maps/search/?api=1&query=Apartamentos+Santa+Clara+Alhaurin+de+la+Torre+Malaga"
       }
     ],
     "restaurants": [
@@ -1627,14 +1229,14 @@ export const content = {
         "area": "Playa de Torre del Mar, Málaga"
       },
       {
-        "name": "Venta Pazo",
+        "name": "Venta Los Naranjos",
         "when": "Día 3 cena",
-        "area": "Sanlúcar la Mayor (cerca de Bormujos), Sevilla"
+        "area": "Alhaurín el Grande, Málaga"
       },
       {
-        "name": "Venta La Masía",
+        "name": "Casa Paco",
         "when": "Día 4 almuerzo",
-        "area": "Bollullos de la Mitación, Sevilla"
+        "area": "Alhaurín el Grande, Málaga"
       }
     ],
     "terrenos": {
@@ -1662,12 +1264,6 @@ export const content = {
           "municipality": "Churriana (Granada)",
           "price": "€150–€220/m²",
           "note": "Suelo urbano muy escaso por la alta densidad y la expansión del metro."
-        },
-        {
-          "name": "Bormujos Aljarafe",
-          "municipality": "Bormujos (Sevilla)",
-          "price": "€180–€260/m²",
-          "note": "Mucha demanda de promotores locales. Buenos precios, pero vigilar los coeficientes de ocupación."
         }
       ],
       "coast": [
@@ -1737,27 +1333,6 @@ export const content = {
             "price": "€280,000–€360,000"
           }
         ]
-      },
-      {
-        "cluster": "Sevilla Aljarafe",
-        "subtitle": "Suburbios residenciales familiares de primer nivel",
-        "entries": [
-          {
-            "urbanization": "Bormujos (Av. Universidad)",
-            "type": "Apartamento de 3 dorm. con garaje",
-            "price": "€150,000–€220,000"
-          },
-          {
-            "urbanization": "Tomares (límite Bormujos)",
-            "type": "Piso moderno de 3 dorm. en urbanización cerrada",
-            "price": "€190,000–€270,000"
-          },
-          {
-            "urbanization": "Bollullos de la Mitación",
-            "type": "Chalet de 4 dorm. en urbanización residencial",
-            "price": "€230,000–€340,000"
-          }
-        ]
       }
     ],
     "questions": {
@@ -1782,326 +1357,19 @@ export const content = {
     },
     "caveats": [
       "Cierres de agosto en Andalucía — es imprescindible confirmar por teléfono con 48h de antelación con inmobiliarias y restaurantes, ya que muchos cierran por vacaciones.",
-      "Calor extremo en Sevilla — las temperaturas en Sevilla y Bormujos en agosto rondan los 42°C. Asegurar que los alojamientos y el coche tengan aire acondicionado excelente.",
+      "Calor extremo en el interior — las tardes de agosto en Antequera y el valle del Guadalhorce pueden alcanzar los 38–40°C. Asegurar que el alojamiento y el coche tengan aire acondicionado excelente.",
       "Asesoramiento legal y fiscal — al comprar una vivienda en España, contrate a un abogado local independiente para verificar el estado de cargas de la finca. Prever un 1% del precio de compra para honorarios."
     ],
     "plans": {
-      "A": {
-        "tripMeta": {
-          "title": "Viaje de Reconocimiento Inmobiliario en Andalucía (Granada y Bucle Sur)",
-          "dates": "12–15 de agosto de 2026 (4 noches)",
-          "party": "5 personas · 1 niño pequeño",
-          "vehicle": "Mercedes Clase V de 7 plazas (Android Auto)",
-          "origin": "Madrid Atocha",
-          "return": "Madrid Atocha — Sábado por la tarde",
-          "flyOut": "Domingo temprano 16 de agosto de 2026",
-          "researchDate": "Junio de 2026"
-        },
-        "overview": {
-          "goal": "Evaluar ubicaciones para jubilación familiar centradas en apartamentos y estacionamiento fácil en Granada (Las Gabias, Churriana, Alhendín) bajo 380k. Comparar con Costa de Málaga (Torre del Mar, Rincón de la Victoria, Vélez-Málaga) y Bormujos (Sevilla - base suburbana).",
-          "clusters": [
-            {
-              "id": "granada",
-              "name": "Granada Vega (Objetivo Principal)",
-              "nights": 2,
-              "base": "Alhendín / Las Gabias",
-              "strongFor": [
-                "Apartamentos (€120k–€220k) — muy por debajo del límite de 380.000 €",
-                "Aire de montaña más fresco (Sierra Nevada) y noches más templadas",
-                "Avenidas amplias y modernas con excelente aparcamiento libre y garaje",
-                "Conexión con el Metro de Granada (fácil acceso al centro sin conducir)"
-              ]
-            },
-            {
-              "id": "coast",
-              "name": "Costa de Málaga (Torre del Mar, Rincón, Vélez)",
-              "nights": 0,
-              "base": "En ruta (scouting)",
-              "strongFor": [
-                "Estilo de vida frente al mar en Torre del Mar y Rincón de la Victoria",
-                "Clima templado costero (más fresco en verano que Sevilla)",
-                "Apartamentos de interior muy económicos en Vélez-Málaga (€120k–€180k)",
-                "Suburbios modernos con avenidas anchas y parking amplio en Rincón"
-              ]
-            },
-            {
-              "id": "sevilla",
-              "name": "Sevilla Aljarafe (Bormujos)",
-              "nights": 1,
-              "base": "Bormujos (Sevilla)",
-              "strongFor": [
-                "Promociones modernas de apartamentos suburbanos (€180k–€260k)",
-                "Diseño muy cómodo para vehículos (avenidas amplias, grandes parkings)",
-                "A 15 min de Sevilla centro (usando park-and-ride del metro para evitar aparcar)"
-              ]
-            }
-          ]
-        },
-        "days": [
-          {
-            "id": "d1",
-            "number": 1,
-            "weekday": "Miércoles",
-            "date": "12 Ago",
-            "title": "Madrid → Granada Vega (Las Gabias y Alhendín)",
-            "subtitle": "Día de viaje en coche + orientación por la tarde en la periferia de Granada",
-            "driveKm": 430,
-            "driveHours": 4.2,
-            "padel": false,
-            "sections": [
-              {
-                "time": "09:00",
-                "kind": "departure",
-                "title": "Recoger furgoneta en la estación de Madrid Atocha",
-                "note": "Mercedes Clase V de 7 plazas. Confirmar que la silla infantil está correctamente instalada y que Android Auto funciona para la navegación antes de salir."
-              },
-              {
-                "time": "10:00",
-                "kind": "drive",
-                "title": "A-4 sur → A-44 sur hacia Granada Vega",
-                "note": "~430 km / 4 horas con una parada principal de descanso familiar. La A-4 y la A-44 son totalmente libres de peaje."
-              },
-              {
-                "time": "12:00",
-                "kind": "lunch",
-                "title": "Venta El Cordobés (Bailén / Jaén)",
-                "note": "Parada ideal a mitad de camino. Parking amplio para la furgoneta, menús infantiles tradicionales y servicio rápido. Prever 45 minutos.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+El+Cordobes+Bailen+Jaen+restaurante"
-              },
-              {
-                "time": "14:30",
-                "kind": "checkin",
-                "title": "Registro en el alojamiento: Villa base en Granada Vega (Alhendín / Las Gabias)",
-                "note": "Primeras 2 noches. Asegurar que la villa tiene entrada amplia para la Clase V y verificar que el aire acondicionado funcione en todas las habitaciones.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Las+Gabias+Granada+Spain+accommodation"
-              },
-              {
-                "time": "15:30",
-                "kind": "supermarket",
-                "title": "Abastecimiento: Mercadona Las Gabias",
-                "note": "Situado en la Calle Real. Cuenta con parking subterráneo amplio y cómodo para furgonetas. Comprar agua embotellada, desayuno y comida para el niño.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Mercadona+Calle+Real+Las+Gabias"
-              },
-              {
-                "time": "16:30",
-                "kind": "scout",
-                "title": "Reconocimiento en Las Gabias — Apartamentos y Aparcamiento",
-                "note": "Recorrer las zonas residenciales de Híjar, Las Tejeras y alrededor del Club de Golf. Precios económicos, plano y con futura ampliación de metro. Observar las calles anchas y el fácil aparcamiento.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Granada+Club+de+Golf+Las+Gabias"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Cena: Restaurante Los Naranjos (Alhendín)",
-                "note": "Excelente restaurante familiar con gran patio exterior, cocina local y aparcamiento fácil para vehículos grandes.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Restaurante+Los+Naranjos+Alhendin+Granada"
-              }
-            ]
-          },
-          {
-            "id": "d2",
-            "number": 2,
-            "weekday": "Jueves",
-            "date": "13 Ago",
-            "title": "Bucle de Granada Vega — Churriana y Alhendín",
-            "subtitle": "Análisis detallado de la periferia más cómoda y barata de Granada (bajo 380k)",
-            "driveKm": 40,
-            "driveHours": 1.2,
-            "padel": false,
-            "sections": [
-              {
-                "time": "09:30",
-                "kind": "scout",
-                "title": "Reconocimiento en Churriana de la Vega — Apartamentos y Metro",
-                "note": "Muy demandado por su geografía llana y la ampliación del metro. Recorrer el distrito del \"Vial\". Apartamentos desde 120k–200k (con opción de garaje). Observar las amplias avenidas para aparcamiento.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Churriana+de+la+Vega+Granada+Spain"
-              },
-              {
-                "time": "11:30",
-                "kind": "scout",
-                "title": "Reconocimiento en Alhendín — Bloques de Apartamentos y Aparcamiento",
-                "note": "Analizar los nuevos bloques de apartamentos cerca del enlace A-44. Cuentan con modernos garajes subterráneos y calles anchas y tranquilas con mucho aparcamiento libre.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhendin+Granada+Spain"
-              },
-              {
-                "time": "13:45",
-                "kind": "lunch",
-                "title": "Almuerzo: Restaurante Mesón El Ventorrillo",
-                "note": "Situado a las afueras de Churriana. Carnes a la brasa tradicionales, muy familiar y con un aparcamiento enorme.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Meson+El+Ventorrillo+Churriana+de+la+Vega+restaurante"
-              },
-              {
-                "time": "15:30",
-                "kind": "showhome",
-                "title": "Obra Nueva: Residencial Triana (Las Gabias) y Vial (Churriana)",
-                "note": "Visitar exterior de promociones nuevas. Residencial Triana tiene adosados desde 259k. Las promociones en el Vial de Churriana rondan los 329k con piscina privada.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Residencial+Triana+Las+Gabias"
-              },
-              {
-                "time": "17:30",
-                "kind": "scout",
-                "title": "Comprobación de Estación de Metro (Armilla / Fernando de los Ríos)",
-                "note": "Inspeccionar la estación de metro con park-and-ride junto al C.C. Nevada. Aquí se aparca gratis para ir al centro en 15 minutos en metro.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Nevada+Shopping+Granada"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Cena en la Villa o Tapas locales en Granada",
-                "note": "Cena tranquila en la casa o tapeo familiar en las plazas de Armilla."
-              }
-            ]
-          },
-          {
-            "id": "d3",
-            "number": 3,
-            "weekday": "Viernes",
-            "date": "14 Ago",
-            "title": "Granada → Costa de Málaga (Vélez, Torre del Mar, Rincón) → Sevilla (Bormujos)",
-            "subtitle": "Día de traslado: Comparar la costa de Málaga/Axarquía con el Aljarafe sevillano",
-            "driveKm": 375,
-            "driveHours": 4,
-            "padel": false,
-            "sections": [
-              {
-                "time": "08:30",
-                "kind": "checkin",
-                "title": "Salida del alojamiento de Granada → Viaje a Torre del Mar (1h 15m)",
-                "note": "Ruta por la A-44 hacia la costa y luego la A-7 este hasta Torre del Mar (115 km)."
-              },
-              {
-                "time": "09:45",
-                "kind": "scout",
-                "title": "Reconocimiento en Torre del Mar — Paseo Marítimo y Apartamentos",
-                "note": "Caminar por el Paseo Marítimo (plano, ideal para pasear). Evaluar los grandes parkings públicos de tierra cerca del faro. Comprobar los bloques de Poniente. Los apartamentos de 3 dormitorios aquí rondan los 240k–320k.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Paseo+Maritimo+Torre+del+Mar+Malaga"
-              },
-              {
-                "time": "10:45",
-                "kind": "scout",
-                "title": "Vélez-Málaga — Inspección de la Expansión de Interior",
-                "note": "Conducir 5 min al interior. Evaluar avenidas anchas, pisos modernos (€120k–€180k) y amplios parkings junto al C.C. El Ingenio. Muy transitable fuera del casco histórico.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Centro+Comercial+El+Ingenio+Velez+Malaga"
-              },
-              {
-                "time": "11:45",
-                "kind": "scout",
-                "title": "Reconocimiento: Puerto Deportivo de Caleta de Vélez y Parking",
-                "note": "Ambiente de puerto más tranquilo, parking fácil en el puerto y excelentes apartamentos costeros cerca de la autovía.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Puerto+de+Caleta+de+Velez+Malaga"
-              },
-              {
-                "time": "12:45",
-                "kind": "lunch",
-                "title": "Almuerzo: Chiringuito El Playazo (Torre del Mar)",
-                "note": "Chiringuito de playa auténtico. Famoso por sus espetos de sardinas frescos, arroces y ambiente familiar sobre la arena. Parking cercano cómodo.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Chiringuito+El+Playazo+Torre+del+Mar+restaurante"
-              },
-              {
-                "time": "14:00",
-                "kind": "scout",
-                "title": "Reconocimiento: Rincón de la Victoria (Añoreta y Paseo)",
-                "note": "Conducir 20 min al oeste. Evaluar trazado moderno, parking de fácil acceso y pisos familiares con vistas al mar (€220k–€320k) con garaje en Añoreta/Cotomar.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Rincon+de+la+Victoria+Paseo+Maritimo"
-              },
-              {
-                "time": "14:45",
-                "kind": "drive",
-                "title": "Rincón de la Victoria → Bormujos (Sevilla) por A-7 / A-92",
-                "note": "Viaje por el interior por la A-7 y la A-92 (225 km / 2h 30m). Sevilla estará calurosa por la tarde — asegurar aire acondicionado a tope."
-              },
-              {
-                "time": "17:15",
-                "kind": "checkin",
-                "title": "Registro en el alojamiento: Villa base en Bormujos (Sevilla Aljarafe)",
-                "note": "Alojamiento para la última noche. Aparcar y comprobar que el aire enfría bien. Piscina disponible para refrescarse.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Bormujos+Sevilla+Spain+accommodation"
-              },
-              {
-                "time": "17:50",
-                "kind": "scout",
-                "title": "Reconocimiento en Bormujos — Paseo por el Aljarafe y Aparcamiento",
-                "note": "Avenidas residenciales, parques infantiles y Mercadona Bormujos. Ver apartamentos y adosados cerca de la Av. San Juan de Dios (230k–340k). Comprobar facilidad de parking.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Mercadona+Avenida+San+Juan+de+Dios+Bormujos"
-              },
-              {
-                "time": "20:30",
-                "kind": "dinner",
-                "title": "Cena: Venta Pazo (afueras de Sanlúcar la Mayor)",
-                "note": "A solo 10 minutos de Bormujos. Venta histórica muy familiar con gran jardín, zona de juegos infantil y parking amplio.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+Pazo+Sanlucar+la+Mayor+restaurante"
-              }
-            ]
-          },
-          {
-            "id": "d4",
-            "number": 4,
-            "weekday": "Sábado",
-            "date": "15 Ago",
-            "title": "Reconocimiento en Sevilla y Vuelta a Madrid",
-            "subtitle": "Control de transporte metropolitano, última auditoría urbana y viaje de vuelta",
-            "driveKm": 540,
-            "driveHours": 5,
-            "padel": false,
-            "sections": [
-              {
-                "time": "10:30",
-                "kind": "checkin",
-                "title": "Salida del alojamiento de Sevilla → Viaje a Mairena del Aljarafe",
-                "note": "Cargar todo el equipaje en la Mercedes Clase V."
-              },
-              {
-                "time": "11:00",
-                "kind": "scout",
-                "title": "Reconocimiento: Park-and-Ride Metro Ciudad Expo (Mairena del Aljarafe)",
-                "note": "Inspeccionar el gran parking disuasorio junto a la cabecera de metro. Aquí aparcan los residentes del Aljarafe gratis para ir en metro al centro, evitando el tráfico y los parkings caros de Sevilla.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Ciudad+Expo+Metro+Sevilla"
-              },
-              {
-                "time": "12:00",
-                "kind": "scout",
-                "title": "Reconocimiento Final de Apartamentos — Bormujos / Tomares",
-                "note": "Ver bloques modernos en Tomares y Bormujos. Observar que casi todos incluyen garaje en sótano. Valorar la facilidad de conducción."
-              },
-              {
-                "time": "13:30",
-                "kind": "lunch",
-                "title": "Almuerzo: Venta La Masía (Bollullos de la Mitación)",
-                "note": "Restaurante rústico familiar, gran aparcamiento, comida rápida para el niño antes de emprender el viaje largo.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Venta+La+Masia+Bollullos+de+la+Mitacion+restaurante"
-              },
-              {
-                "time": "14:30",
-                "kind": "drive",
-                "title": "Viaje: Sevilla → Madrid por A-4 Norte",
-                "note": "530 km, ~5 horas. Altas temperaturas por la tarde — vigilar presión de neumáticos y niveles."
-              },
-              {
-                "time": "17:30",
-                "kind": "rest",
-                "title": "Reposo: Área de Servicio Repsol (Manzanares, Ciudad Real)",
-                "note": "A-4 km 173. Baños limpios, zona de juegos para el niño y aparcamiento grande.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Area+de+servicio+Manzanares+A-4+Repsol"
-              },
-              {
-                "time": "20:00",
-                "kind": "arrival",
-                "title": "Llegada a Madrid Atocha → Devolución del coche → Registro en Hotel",
-                "note": "Devolver coche de alquiler. Preparar maletas para el vuelo del domingo."
-              }
-            ]
-          }
-        ]
-      },
       "B": {
         "tripMeta": {
           "title": "Viaje de Reconocimiento de Interior y Montaña en Andalucía",
-          "dates": "12–15 de agosto de 2026 (4 noches)",
+          "dates": "4–7 de agosto de 2026 (3 noches)",
           "party": "5 personas · 1 niño pequeño",
           "vehicle": "Mercedes Clase V de 7 plazas (Android Auto)",
           "origin": "Madrid Atocha",
-          "return": "Madrid Atocha — Sábado por la tarde",
-          "flyOut": "Domingo 16 de agosto de 2026 (Temprano)",
+          "return": "Madrid Atocha — Viernes por la tarde",
+          "flyOut": "Sábado 8 de agosto de 2026 (Temprano)",
           "researchDate": "Junio 2026"
         },
         "overview": {
@@ -2111,7 +1379,7 @@ export const content = {
               "id": "granada",
               "name": "Vega y Valles de Granada (Principal)",
               "nights": 2,
-              "base": "Alhendín / Las Gabias",
+              "base": "Alhendín (Airbnb confirmado)",
               "strongFor": [
                 "Precio excepcional (pisos de 3 dorm. entre €110k–€210k)",
                 "Aire de montaña fresco (Sierra Nevada) y cañón termal de Alhama",
@@ -2122,7 +1390,7 @@ export const content = {
               "id": "malaga_inland",
               "name": "Interior de Málaga (Antequera y Alhaurín)",
               "nights": 1,
-              "base": "Alhaurín el Grande / Antequera",
+              "base": "Alhaurín de la Torre (Booking.com confirmado)",
               "strongFor": [
                 "Antequera: Nudo estratégico, avenidas amplias y planas, vistas a El Torcal",
                 "Alhaurín: Entorno verde, gran comunidad de expatriados, calles anchas",
@@ -2146,10 +1414,10 @@ export const content = {
           {
             "id": "d1",
             "number": 1,
-            "weekday": "Miércoles",
-            "date": "12 Ago",
-            "title": "Madrid → Jaén (Alcalá la Real) → Granada Vega",
-            "subtitle": "Reconocimiento en Alcalá la Real antes de llegar a la base de Granada",
+            "weekday": "Martes",
+            "date": "4 Ago",
+            "title": "Madrid → Jaén (Alcalá la Real) → Granada Vega (Alhendín)",
+            "subtitle": "Reconocimiento en Alcalá la Real antes de llegar a la base confirmada de Alhendín",
             "driveKm": 460,
             "driveHours": 4.5,
             "sections": [
@@ -2177,14 +1445,14 @@ export const content = {
                 "time": "15:00",
                 "kind": "drive",
                 "title": "Viaje: Alcalá la Real → Alhendín (Base de Granada Vega)",
-                "note": "Trayecto corto de 45 minutos (55 km) por la N-432 y la A-44 sur."
+                "note": "Trayecto corto de 45 minutos (55 km) por la N-432 y la A-44 sur hasta el apartamento confirmado en Airbnb."
               },
               {
                 "time": "16:00",
                 "kind": "checkin",
-                "title": "Registro en el alojamiento: Villa base de Granada Vega",
-                "note": "Descomprimir equipaje. Confirmar garaje/entrada amplia para la Clase V. Comprobar piscina.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhendin+Granada+accommodation"
+                "title": "Registro: Airbnb — Apartamento con parking (Alhendín) — Auto check-in",
+                "note": "Reserva confirmada. Apartamento completo con parking privado, anfitrión Manuel. Auto check-in con códigos de puerta (sin entrega física de llaves). Registrar vía el enlace de ibutlers 48h antes de llegar. Dirección: Calle Aljancira, Número 2, Bloque 2 1H, 18620 Alhendín. Entrada a partir de las 15:00.",
+                "maps": "https://www.google.com/maps/search/?api=1&query=Calle+Aljancira+2+Alhendin+Granada"
               },
               {
                 "time": "17:30",
@@ -2205,8 +1473,8 @@ export const content = {
           {
             "id": "d2",
             "number": 2,
-            "weekday": "Jueves",
-            "date": "13 Ago",
+            "weekday": "Miércoles",
+            "date": "5 Ago",
             "title": "Granada Vega y Valle de Montaña (Monachil y Alhama)",
             "subtitle": "Evaluar el aire de Sierra Nevada y el espectacular cañón termal de Alhama",
             "driveKm": 130,
@@ -2263,7 +1531,7 @@ export const content = {
                 "time": "18:30",
                 "kind": "drive",
                 "title": "Vuelta: Alhama → Base de Alhendín",
-                "note": "45 minutos de viaje de regreso (48 km) a la villa."
+                "note": "45 minutos de viaje de regreso (48 km) al apartamento de Airbnb."
               },
               {
                 "time": "20:30",
@@ -2277,9 +1545,9 @@ export const content = {
           {
             "id": "d3",
             "number": 3,
-            "weekday": "Viernes",
-            "date": "14 Ago",
-            "title": "Granada → Pueblos de Interior de Málaga (Antequera y Alhaurín)",
+            "weekday": "Jueves",
+            "date": "6 Ago",
+            "title": "Granada → Interior de Málaga (Antequera y Alhaurín)",
             "subtitle": "Traslado al verde Valle del Guadalhorce y Antequera",
             "driveKm": 175,
             "driveHours": 2.2,
@@ -2287,8 +1555,8 @@ export const content = {
               {
                 "time": "08:30",
                 "kind": "checkin",
-                "title": "Salida del alojamiento de Granada → Viaje a Antequera (1h 10m)",
-                "note": "Viaje por la A-92 hacia el oeste hasta Antequera (100 km)."
+                "title": "Salida del Airbnb de Alhendín → Viaje a Antequera (1h 10m)",
+                "note": "Viaje por la A-92 hacia el oeste hasta Antequera (100 km). Salida del apartamento antes de las 11:00."
               },
               {
                 "time": "09:40",
@@ -2320,9 +1588,9 @@ export const content = {
               {
                 "time": "15:30",
                 "kind": "checkin",
-                "title": "Registro en el alojamiento: Villa base de Málaga Interior",
-                "note": "Alojamiento para la noche de traslado. Aparcar Clase V y revisar niveles del coche.",
-                "maps": "https://www.google.com/maps/search/?api=1&query=Alhaurin+el+Grande+accommodation"
+                "title": "Registro: Booking.com — Apartamentos Santa Clara (Alhaurín de la Torre)",
+                "note": "Reserva confirmada. 2 habitaciones (Estudio Estándar + Habitación Doble Superior) para 4 adultos. €141.95 en total. Confirmación #6865243131, PIN 3122. Entrada 15:00–22:30. Llaves en recepción. Dirección: Seguidillas s/n, 29130 Alhaurín de la Torre, Málaga.",
+                "maps": "https://www.google.com/maps/search/?api=1&query=Apartamentos+Santa+Clara+Alhaurin+de+la+Torre+Malaga"
               },
               {
                 "time": "17:30",
@@ -2343,9 +1611,9 @@ export const content = {
           {
             "id": "d4",
             "number": 4,
-            "weekday": "Sábado",
-            "date": "15 Ago",
-            "title": "Málaga Interior → Loja (Granada) → Madrid",
+            "weekday": "Viernes",
+            "date": "7 Ago",
+            "title": "Interior de Málaga → Loja (Granada) → Madrid",
             "subtitle": "Última auditoría en el valle de Loja y el largo viaje de regreso",
             "driveKm": 580,
             "driveHours": 5.5,
@@ -2353,8 +1621,8 @@ export const content = {
               {
                 "time": "09:00",
                 "kind": "checkin",
-                "title": "Salida de Málaga Interior → Viaje a Loja (1h)",
-                "note": "Cargar la furgoneta. Conducir por la A-92 noreste hacia Loja (75 km)."
+                "title": "Salida de Apartamentos Santa Clara → Viaje a Loja (1h)",
+                "note": "Cargar la furgoneta. Salida antes de las 12:00. Conducir por la A-92 noreste hacia Loja (75 km)."
               },
               {
                 "time": "10:00",
@@ -2393,7 +1661,7 @@ export const content = {
                 "time": "19:30",
                 "kind": "arrival",
                 "title": "Llegada a Madrid Atocha → Devolución Clase V → Registro en Hotel",
-                "note": "Fin de la ruta. Devolver vehículo de alquiler y prepararse para el regreso."
+                "note": "Fin de la ruta. Devolver vehículo de alquiler y prepararse para el regreso el sábado por la mañana."
               }
             ]
           }

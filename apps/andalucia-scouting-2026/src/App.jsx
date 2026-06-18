@@ -7,10 +7,10 @@ const SECTIONS = {
   en: [
     { id: 'overview', label: 'Overview' },
     { id: 'comparison', label: 'Town Comparison' },
-    { id: 'day1', label: 'Day 1 · 12 Aug' },
-    { id: 'day2', label: 'Day 2 · 13 Aug' },
-    { id: 'day3', label: 'Day 3 · 14 Aug' },
-    { id: 'day4', label: 'Day 4 · 15 Aug' },
+    { id: 'day1', label: 'Day 1 · 4 Aug' },
+    { id: 'day2', label: 'Day 2 · 5 Aug' },
+    { id: 'day3', label: 'Day 3 · 6 Aug' },
+    { id: 'day4', label: 'Day 4 · 7 Aug' },
     { id: 'obra', label: 'Obra Nueva' },
     { id: 'parking', label: 'Parking & Cars' },
     { id: 'supermarkets', label: 'Supermarkets' },
@@ -24,10 +24,10 @@ const SECTIONS = {
   es: [
     { id: 'overview', label: 'Resumen' },
     { id: 'comparison', label: 'Comparativa' },
-    { id: 'day1', label: 'Día 1 · 12 Ago' },
-    { id: 'day2', label: 'Día 2 · 13 Ago' },
-    { id: 'day3', label: 'Día 3 · 14 Ago' },
-    { id: 'day4', label: 'Día 4 · 15 Ago' },
+    { id: 'day1', label: 'Día 1 · 4 Ago' },
+    { id: 'day2', label: 'Día 2 · 5 Ago' },
+    { id: 'day3', label: 'Día 3 · 6 Ago' },
+    { id: 'day4', label: 'Día 4 · 7 Ago' },
     { id: 'obra', label: 'Obra Nueva' },
     { id: 'parking', label: 'Parking y Coches' },
     { id: 'supermarkets', label: 'Supermercados' },
@@ -96,9 +96,6 @@ const UI_STRINGS = {
     consLabel: 'Cons',
     viewVideo: 'Watch Video Tour 🎥',
     viewImages: 'View Photos & Streets 📸',
-    selectPlan: 'Route Option Itinerary',
-    planLabelA: 'Plan A: Southern Loop (with Sevilla)',
-    planLabelB: 'Plan B: Inland & Mountains (no Sevilla)',
     difficulty: 'Difficulty',
     urbanization: 'Neighborhood/Urbanization',
     price: 'Price',
@@ -160,9 +157,6 @@ const UI_STRINGS = {
     consLabel: 'Contras',
     viewVideo: 'Ver Video Tour 🎥',
     viewImages: 'Ver Fotos y Calles 📸',
-    selectPlan: 'Ruta e Itinerario',
-    planLabelA: 'Plan A: Bucle del Sur (con Sevilla)',
-    planLabelB: 'Plan B: Interior y Montañas (sin Sevilla)',
     difficulty: 'Dificultad',
     urbanization: 'Urbanización/Zona',
     price: 'Precio',
@@ -173,11 +167,10 @@ const UI_STRINGS = {
 
 export default function App() {
   const [lang, setLang] = useState('en')
-  const [plan, setPlan] = useState('A')
   const [active, setActive] = useState('overview')
 
   const { plans, townsComparison, obraNueva, parkingInfo, supermarkets, bases, restaurants, terrenos, resaleClusters, questions, caveats } = content[lang]
-  const { tripMeta, overview, days } = plans[plan]
+  const { tripMeta, overview, days } = plans.B
   const ui = UI_STRINGS[lang]
   const sections = SECTIONS[lang]
 
@@ -196,24 +189,6 @@ export default function App() {
         <h1>{tripMeta.title}</h1>
         <p className="subtitle">{tripMeta.dates} · {tripMeta.party}</p>
         <p className="context">{tripMeta.vehicle} · {tripMeta.origin} → {tripMeta.return}</p>
-        
-        <div className="plan-selector">
-          <span className="plan-selector-label">{ui.selectPlan}:</span>
-          <div className="plan-buttons">
-            <button 
-              className={`plan-btn ${plan === 'A' ? 'active' : ''}`} 
-              onClick={() => { setPlan('A'); setActive('overview'); }}
-            >
-              {ui.planLabelA}
-            </button>
-            <button 
-              className={`plan-btn ${plan === 'B' ? 'active' : ''}`} 
-              onClick={() => { setPlan('B'); setActive('overview'); }}
-            >
-              {ui.planLabelB}
-            </button>
-          </div>
-        </div>
       </header>
 
       <nav className="tab-bar" aria-label="Sections">
@@ -412,8 +387,7 @@ function ParkingSection({ parkingInfo, ui }) {
 function SupermarketsSection({ supermarkets, ui }) {
   const groups = [
     { id: 'granada', label: 'Granada Vega (Las Gabias / Churriana / Armilla)' },
-    { id: 'coast', label: 'Málaga Eastern Coast (Torre del Mar)' },
-    { id: 'sevilla', label: 'Sevilla Aljarafe (Bormujos)' },
+    { id: 'coast', label: 'Málaga Coast & Inland (Torre del Mar / Alhaurín)' },
   ]
   return (
     <section>
@@ -529,7 +503,10 @@ function BasesSection({ bases, ui }) {
               <div><dt>{ui.priceBand}</dt><dd>{b.priceBand}</dd></div>
               <div><dt>{ui.caution}</dt><dd>{b.caution}</dd></div>
             </dl>
-            <a className="maps-btn" href={b.maps} target="_blank" rel="noreferrer">{ui.openMaps}</a>
+            <div className="base-actions" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {b.checkinLink && <a className="maps-btn" href={b.checkinLink} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', minWidth: '140px' }}>🔑 Auto Check-in ↗</a>}
+              <a className="maps-btn" href={b.maps} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: 'center', minWidth: '140px' }}>{ui.openMaps}</a>
+            </div>
           </article>
         ))}
       </div>
