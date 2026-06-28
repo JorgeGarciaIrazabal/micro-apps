@@ -1,8 +1,2 @@
 {
-  "mcpServers": {
-    "duckduckgo": {
-      "command": "npx",
-      "args": ["ddg-websearch"]
-    }
-  }
 }

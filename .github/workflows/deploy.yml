@@ -52,6 +52,13 @@ jobs:
           npm ci
           npm run build
 
+      # Build casa-prefab-madrid
+      - name: Install & build casa-prefab-madrid
+        working-directory: apps/casa-prefab-madrid
+        run: |
+          npm ci
+          npm run build
+
       # Assemble final site
       - name: Assemble site
         run: |
@@ -59,11 +66,13 @@ jobs:
           mkdir -p _site/clara-summer-camps
           mkdir -p _site/clara-summer-camps-madrid
           mkdir -p _site/andalucia-scouting-2026
+          mkdir -p _site/casa-prefab-madrid
           cp index.html _site/
           cp -r apps/clara-egg-hunt/dist/* _site/clara-egg-hunt/
           cp -r apps/clara-summer-camps/dist/* _site/clara-summer-camps/
           cp -r apps/clara-summer-camps-madrid/dist/* _site/clara-summer-camps-madrid/
           cp -r apps/andalucia-scouting-2026/dist/* _site/andalucia-scouting-2026/
+          cp -r apps/casa-prefab-madrid/dist/* _site/casa-prefab-madrid/
 
       - uses: actions/upload-pages-artifact@v3
         with:

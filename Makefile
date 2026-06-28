@@ -1,7 +1,7 @@
-.PHONY: opencode build kill-port serve claude claude-ollama claude-qwen
+.PHONY: opencode build kill-port serve dev claude claude-ollama claude-qwen
 
 opencode:
-	opencode -m ollama/minimax-v3:claude
+	ollama launch opencode --model micro-apps-glm --yes
 
 build:
 	@echo "Building all micro apps..."
@@ -31,6 +31,10 @@ serve: build kill-port
 	@ln -sfn . micro-apps
 	@echo "Starting server. Open: http://localhost:8000/"
 	python3 -m http.server 8000
+
+dev: kill-port
+	@echo "Starting dev server with hot reload. Open: http://localhost:8000/micro-apps/"
+	node scripts/dev-server.js
 
 claude:
 	claude --dangerously-skip-permissions
