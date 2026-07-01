@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { dist, snap, fmtWallLabel, mToUnit, uid, openingsOnWall, activeFloor } from '../lib/project.js'
+import { dist, snap, fmtWallLabel, uid, openingsOnWall, activeFloor, GRID_SIZE } from '../lib/project.js'
 import { makeFurniture, openingDefaults } from '../lib/furniture.js'
 import { FurnitureGraphic } from './FurnitureGraphic.jsx'
 import WallShape from './WallShape.jsx'
@@ -41,8 +41,7 @@ export default function Editor2D({
 
   const { settings } = project
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
-  const grid = settings.gridSize
-  const units = settings.units
+  const grid = GRID_SIZE
 
   // Floors strictly below the active one — drawn faintly as a construction guide.
   const floorsBelow = useMemo(() => {
@@ -131,6 +130,26 @@ export default function Editor2D({
     window.addEventListener('keyup', up)
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
   }, [])
+
+  // Wheel zoom: attached as a NON-passive listener so preventDefault works
+  // (React's synthetic onWheel is passive by default and can't preventDefault).
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+    const onWheel = (e) => {
+      e.preventDefault()
+      const r = svg.getBoundingClientRect()
+      const sx = e.clientX - r.left
+      const sy = e.clientY - r.top
+      const before = screenToWorld(sx, sy)
+      const factor = Math.exp(-e.deltaY * 0.0015)
+      const ns = Math.min(400, Math.max(8, scale * factor))
+      setPan({ x: sx - before.x * ns, y: sy - before.y * ns })
+      setScale(ns)
+    }
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    return () => svg.removeEventListener('wheel', onWheel)
+  }, [scale, screenToWorld])
 
   // ---- mutations --------------------------------------------------------
   // fn receives the ACTIVE FLOOR of the cloned project and mutates its arrays.
@@ -421,19 +440,6 @@ export default function Editor2D({
     svgRef.current?.releasePointerCapture?.(e.pointerId)
   }
 
-  function onWheel(e) {
-    // Zoom centered on cursor: keep world point under pointer fixed.
-    e.preventDefault()
-    const r = svgRef.current.getBoundingClientRect()
-    const sx = e.clientX - r.left
-    const sy = e.clientY - r.top
-    const before = screenToWorld(sx, sy)
-    const factor = Math.exp(-e.deltaY * 0.0015)
-    const ns = Math.min(400, Math.max(8, scale * factor))
-    setPan({ x: sx - before.x * ns, y: sy - before.y * ns })
-    setScale(ns)
-  }
-
   // Double-click a wall to select it and focus the length field in the sidebar.
   function onDoubleClick(e) {
     const world = clientToWorld(e.clientX, e.clientY)
@@ -492,7 +498,6 @@ export default function Editor2D({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onWheel={onWheel}
         onContextMenu={onContextMenu}
         onDoubleClick={onDoubleClick}
         style={{ display: 'block', cursor: cursorStyle(tool, dragRef.current, spaceRef.current) }}
@@ -539,20 +544,25 @@ export default function Editor2D({
             <WallShape key={w.id} w={w} openings={openingsOnWall(floor, w.id)} selectedId={selectedId} scale={scale} />
           ))}
 
-          {/* furniture */}
-          {floor.furniture.map((f) => {
-            const sel = f.id === selectedId
-            return (
-              <g key={f.id} transform={`translate(${f.x} ${f.y}) rotate(${(f.rotation * 180) / Math.PI})`}>
-                <FurnitureGraphic type={f.type} width={f.width} depth={f.depth} color={f.color} />
-                {sel && (
-                  <rect x={-f.width / 2} y={-f.depth / 2} width={f.width} height={f.depth}
-                    rx={Math.min(f.width, f.depth) * 0.08} fill="none" stroke="#ff8c1a"
-                    strokeWidth={2.5 / scale} />
-                )}
-              </g>
-            )
-          })}
+          {/* furniture — rugs first (bottom z-order), then everything else */}
+          {(() => {
+            const rugs = floor.furniture.filter((f) => f.type === 'rug')
+            const rest = floor.furniture.filter((f) => f.type !== 'rug')
+            const render = (f) => {
+              const sel = f.id === selectedId
+              return (
+                <g key={f.id} transform={`translate(${f.x} ${f.y}) rotate(${(f.rotation * 180) / Math.PI})`}>
+                  <FurnitureGraphic type={f.type} width={f.width} depth={f.depth} color={f.color} />
+                  {sel && (
+                    <rect x={-f.width / 2} y={-f.depth / 2} width={Math.max(f.width, 0)} height={Math.max(f.depth, 0)}
+                      rx={Math.max(0, Math.min(f.width, f.depth) * 0.08)} fill="none" stroke="#ff8c1a"
+                      strokeWidth={2.5 / scale} />
+                  )}
+                </g>
+              )
+            }
+            return [...rugs.map(render), ...rest.map(render)]
+          })()}
 
           {/* draft chain + preview */}
           {draft.map((p, i) => i > 0 && (
@@ -573,7 +583,7 @@ export default function Editor2D({
         <g>
           {floor.walls.map((w) => {
             const mid = worldToScreen((w.x1 + w.x2) / 2, (w.y1 + w.y2) / 2)
-            const lbl = fmtWallLabel(w, units)
+            const lbl = fmtWallLabel(w)
             return (
               <g key={`wl${w.id}`} transform={`translate(${mid.sx} ${mid.sy})`} style={{ pointerEvents: 'none' }}>
                 <rect x={-26} y={-9} width={52} height={18} rx={4} fill="#fffdf8" stroke="#d8d2c6" strokeWidth={1} opacity={0.92} />
@@ -598,7 +608,7 @@ export default function Editor2D({
         <g transform={`translate(${size.w - 110} ${size.h - 26})`} style={{ pointerEvents: 'none' }}>
           <rect x={-4} y={-14} width={108} height={20} rx={4} fill="rgba(255,255,255,0.85)" stroke="#d8d2c6" />
           <text x={0} y={0} fontSize={11} fill="#5a5247">
-            {scale.toFixed(0)} px/m · grid {mToUnit(grid, units).toFixed(2)} {units}
+            {scale.toFixed(0)} px/m · grid {grid.toFixed(2)} m
           </text>
         </g>
       </svg>

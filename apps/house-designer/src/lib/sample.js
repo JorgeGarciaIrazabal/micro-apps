@@ -66,7 +66,7 @@ export function sampleProject() {
   return {
     version: 1,
     name: 'Studio + Bedroom',
-    settings: { units: 'm', wallHeight: 2.7, wallThickness: 0.15, gridSize: 0.1 },
+    settings: { wallHeight: 2.7, wallThickness: 0.15 },
     floors: [ground, upper],
     activeFloorId: ground.id,
   }

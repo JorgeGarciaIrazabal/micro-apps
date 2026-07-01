@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
-import { mToUnit, unitToM, wallLength, fmtLength, activeFloor } from '../lib/project.js'
+import { wallLength, activeFloor } from '../lib/project.js'
 
 // Right sidebar. Edits the selected wall/furniture, or project settings when
 // nothing is selected. Numeric fields are unit-aware (m or ft).
 export default function PropertiesPanel({ project, selectedId, setProject, onDelete, focusLenToken,
   onAddFloor, onDeleteFloor, onFloorProp }) {
-  const units = project.settings.units
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
   const furn = floor.furniture.find((f) => f.id === selectedId) || null
   const wall = !furn ? floor.walls.find((w) => w.id === selectedId) || null : null
@@ -34,16 +33,14 @@ export default function PropertiesPanel({ project, selectedId, setProject, onDel
     setProject((p) => ({ ...p, settings: { ...p.settings, ...patch } }))
   }
 
-  const u = units === 'ft' ? 'ft' : 'm'
-
   return (
     <aside className="panel props-panel">
       {furn ? (
-        <FurnitureProps f={furn} units={u} onChange={patchSel} onDelete={onDelete} />
+        <FurnitureProps f={furn} onChange={patchSel} onDelete={onDelete} />
       ) : wall ? (
-        <WallProps w={wall} units={u} onChange={patchSel} onDelete={onDelete} focusLenToken={focusLenToken} />
+        <WallProps w={wall} onChange={patchSel} onDelete={onDelete} focusLenToken={focusLenToken} />
       ) : opening ? (
-        <OpeningProps o={opening} floor={floor} units={u} onChange={patchSel} onDelete={onDelete} />
+        <OpeningProps o={opening} floor={floor} onChange={patchSel} onDelete={onDelete} />
       ) : (
         <ProjectProps project={project} onChangeSettings={patchSettings}
           onAddFloor={onAddFloor} onDeleteFloor={onDeleteFloor} onFloorProp={onFloorProp} />
@@ -61,16 +58,15 @@ function Field({ label, children }) {
   )
 }
 
-// A number input bound to a meters value, displayed in the active unit.
-function MetersField({ label, value, unit, step, onChange, inputRef }) {
+function MetersField({ label, value, step, onChange, inputRef }) {
   return (
-    <Field label={`${label} (${unit})`}>
+    <Field label={`${label} (m)`}>
       <input
         ref={inputRef}
         type="number"
-        step={step ?? (unit === 'ft' ? 0.1 : 0.05)}
-        value={round(mToUnit(value, unit === 'ft' ? 'ft' : 'm'), 3)}
-        onChange={(e) => onChange(unitToM(Number(e.target.value), unit === 'ft' ? 'ft' : 'm'))}
+        step={step ?? 0.05}
+        value={round(value, 3)}
+        onChange={(e) => onChange(Number(e.target.value))}
       />
     </Field>
   )
@@ -81,7 +77,7 @@ function round(v, d) {
   return Math.round(v * p) / p
 }
 
-function FurnitureProps({ f, units, onChange, onDelete }) {
+function FurnitureProps({ f, onChange, onDelete }) {
   const deg = (f.rotation * 180) / Math.PI
   return (
     <div className="props-group">
@@ -93,19 +89,19 @@ function FurnitureProps({ f, units, onChange, onDelete }) {
         <input type="color" value={f.color} onChange={(e) => onChange({ color: e.target.value })} />
       </Field>
       <div className="field-row">
-        <MetersField label="Width" value={f.width} unit={units} onChange={(v) => onChange({ width: clamp(v, 0.1, 10) })} />
-        <MetersField label="Depth" value={f.depth} unit={units} onChange={(v) => onChange({ depth: clamp(v, 0.1, 10) })} />
+        <MetersField label="Width" value={f.width} onChange={(v) => onChange({ width: clamp(v, 0.1, 10) })} />
+        <MetersField label="Depth" value={f.depth} onChange={(v) => onChange({ depth: clamp(v, 0.1, 10) })} />
       </div>
       <div className="field-row">
-        <MetersField label="Height" value={f.height} unit={units} onChange={(v) => onChange({ height: clamp(v, 0.02, 4) })} />
+        <MetersField label="Height" value={f.height} onChange={(v) => onChange({ height: clamp(v, 0.02, 4) })} />
         <Field label="Rotation (°)">
           <input type="number" step={15} value={round(deg, 1)}
             onChange={(e) => onChange({ rotation: (Number(e.target.value) * Math.PI) / 180 })} />
         </Field>
       </div>
       <div className="field-row">
-        <MetersField label="X" value={f.x} unit={units} onChange={(v) => onChange({ x: v })} />
-        <MetersField label="Y" value={f.y} unit={units} onChange={(v) => onChange({ y: v })} />
+        <MetersField label="X" value={f.x} onChange={(v) => onChange({ x: v })} />
+        <MetersField label="Y" value={f.y} onChange={(v) => onChange({ y: v })} />
       </div>
       <div className="props-actions">
         <button onClick={() => onChange({ rotation: (f.rotation + Math.PI / 2) % (Math.PI * 2) })}>Rotate 90°</button>
@@ -115,7 +111,7 @@ function FurnitureProps({ f, units, onChange, onDelete }) {
   )
 }
 
-function WallProps({ w, units, onChange, onDelete, focusLenToken }) {
+function WallProps({ w, onChange, onDelete, focusLenToken }) {
   const lenRef = useRef(null)
   const len = wallLength(w)
   useEffect(() => {
@@ -133,16 +129,16 @@ function WallProps({ w, units, onChange, onDelete, focusLenToken }) {
   return (
     <div className="props-group">
       <h3>Wall</h3>
-      <MetersField label="Length" value={len} unit={units} inputRef={lenRef}
+      <MetersField label="Length" value={len} inputRef={lenRef}
         onChange={(v) => setLength(clamp(v, 0.05, 50))} />
-      <MetersField label="Thickness" value={w.thickness} unit={units} onChange={(v) => onChange({ thickness: clamp(v, 0.05, 0.6) })} />
+      <MetersField label="Thickness" value={w.thickness} onChange={(v) => onChange({ thickness: clamp(v, 0.05, 0.6) })} />
       <div className="field-row">
-        <MetersField label="X1" value={w.x1} unit={units} onChange={(v) => onChange({ x1: v })} />
-        <MetersField label="Y1" value={w.y1} unit={units} onChange={(v) => onChange({ y1: v })} />
+        <MetersField label="X1" value={w.x1} onChange={(v) => onChange({ x1: v })} />
+        <MetersField label="Y1" value={w.y1} onChange={(v) => onChange({ y1: v })} />
       </div>
       <div className="field-row">
-        <MetersField label="X2" value={w.x2} unit={units} onChange={(v) => onChange({ x2: v })} />
-        <MetersField label="Y2" value={w.y2} unit={units} onChange={(v) => onChange({ y2: v })} />
+        <MetersField label="X2" value={w.x2} onChange={(v) => onChange({ x2: v })} />
+        <MetersField label="Y2" value={w.y2} onChange={(v) => onChange({ y2: v })} />
       </div>
       <div className="props-actions">
         <button className="danger" onClick={onDelete}>Delete wall</button>
@@ -151,7 +147,7 @@ function WallProps({ w, units, onChange, onDelete, focusLenToken }) {
   )
 }
 
-function OpeningProps({ o, floor, units, onChange, onDelete }) {
+function OpeningProps({ o, floor, onChange, onDelete }) {
   const wall = floor.walls.find((w) => w.id === o.wallId)
   const wallLen = wall ? wallLength(wall) : 0
   const maxOff = Math.max(0, wallLen - o.width / 2)
@@ -164,10 +160,10 @@ function OpeningProps({ o, floor, units, onChange, onDelete }) {
           <button className={o.type === 'window' ? 'active' : ''} onClick={() => onChange({ type: 'window', sill: o.sill > 0 ? o.sill : 1.0 })}>Window</button>
         </div>
       </Field>
-      <MetersField label="Width" value={o.width} unit={units} onChange={(v) => onChange({ width: clamp(v, 0.3, 3) })} />
+      <MetersField label="Width" value={o.width} onChange={(v) => onChange({ width: clamp(v, 0.3, 3) })} />
       <div className="field-row">
-        <MetersField label="Height" value={o.height} unit={units} onChange={(v) => onChange({ height: clamp(v, 0.3, 4) })} />
-        <MetersField label="Sill" value={o.sill} unit={units} onChange={(v) => onChange({ sill: clamp(v, 0, 3) })} />
+        <MetersField label="Height" value={o.height} onChange={(v) => onChange({ height: clamp(v, 0.3, 4) })} />
+        <MetersField label="Sill" value={o.sill} onChange={(v) => onChange({ sill: clamp(v, 0, 3) })} />
       </div>
       {o.type === 'door' && (
         <Field label="Orientation">
@@ -177,7 +173,7 @@ function OpeningProps({ o, floor, units, onChange, onDelete }) {
           </div>
         </Field>
       )}
-      <MetersField label="Offset along wall" value={Math.min(o.offset, maxOff)} unit={units}
+      <MetersField label="Offset along wall" value={Math.min(o.offset, maxOff)}
         onChange={(v) => onChange({ offset: clamp(v, o.width / 2, maxOff) })} />
       <p className="catalog-hint" style={{ marginTop: 10 }}>
         {wall ? `On wall ${wallLen.toFixed(2)} m long.` : 'Wall was removed.'}
@@ -197,22 +193,14 @@ function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, on
   return (
     <div className="props-group">
       <h3>Project</h3>
-      <Field label="Units">
-        <div className="seg">
-          <button className={s.units === 'm' ? 'active' : ''} onClick={() => onChangeSettings({ units: 'm' })}>Metric (m)</button>
-          <button className={s.units === 'ft' ? 'active' : ''} onClick={() => onChangeSettings({ units: 'ft' })}>Imperial (ft)</button>
-        </div>
-      </Field>
-      <MetersField label="Wall height" value={s.wallHeight} unit={s.units} onChange={(v) => onChangeSettings({ wallHeight: clamp(v, 2.4, 6) })} />
-      <MetersField label="Wall thickness" value={s.wallThickness} unit={s.units} onChange={(v) => onChangeSettings({ wallThickness: clamp(v, 0.05, 0.6) })} />
-      <MetersField label="Grid snap" value={s.gridSize} unit={s.units} step={0.01}
-        onChange={(v) => onChangeSettings({ gridSize: clamp(v, 0.01, 1) })} />
+      <MetersField label="Wall height" value={s.wallHeight} onChange={(v) => onChangeSettings({ wallHeight: clamp(v, 2.4, 6) })} />
+      <MetersField label="Wall thickness" value={s.wallThickness} onChange={(v) => onChangeSettings({ wallThickness: clamp(v, 0.05, 0.6) })} />
 
       <h3 style={{ marginTop: 18 }}>Active floor</h3>
       <Field label="Floor name">
         <input type="text" value={fl.name} onChange={(e) => onFloorProp({ name: e.target.value })} />
       </Field>
-      <MetersField label="Elevation (level)" value={fl.level} unit={s.units}
+      <MetersField label="Elevation (level)" value={fl.level}
         onChange={(v) => onFloorProp({ level: clamp(v, -10, 30) })} />
       <div className="props-actions">
         <button onClick={onAddFloor}>＋ Add floor</button>
@@ -223,7 +211,7 @@ function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, on
         <div><span>Walls</span><b>{fl.walls.length}</b></div>
         <div><span>Items</span><b>{fl.furniture.length}</b></div>
         <div><span>Floors</span><b>{(project.floors || []).length}</b></div>
-        <div><span>Approx. area</span><b>{fmtLength(area, s.units).replace(/m$/, 'm²').replace(/ft$/, 'ft²')}</b></div>
+        <div><span>Approx. area</span><b>{area.toFixed(2)} m²</b></div>
       </div>
     </div>
   )

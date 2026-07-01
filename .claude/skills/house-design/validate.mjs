@@ -72,11 +72,14 @@ function validateProject(obj, file) {
   else {
     if (s.units !== 'm' && s.units !== 'ft') E(`"settings.units" must be "m" or "ft" (got ${JSON.stringify(s.units)})`)
     const wh = clampRange(2.4, 6)
-    if (!isNum(s.wallHeight) || !s.wallHeight.inRange(wh)) E(`"settings.wallHeight" must be a number in [2.4, 6] (got ${JSON.stringify(s.wallHeight)})`)
+    if (!isNum(s.wallHeight)) E(`"settings.wallHeight" must be a number (got ${JSON.stringify(s.wallHeight)})`)
+    else if (!s.wallHeight.inRange(wh)) warn(`"settings.wallHeight" ${s.wallHeight} is outside [2.4, 6] and will be clamped on load.`)
     const wt = clampRange(0.05, 0.6)
-    if (!isNum(s.wallThickness) || !s.wallThickness.inRange(wt)) E(`"settings.wallThickness" must be a number in [0.05, 0.6] (got ${JSON.stringify(s.wallThickness)})`)
+    if (!isNum(s.wallThickness)) E(`"settings.wallThickness" must be a number (got ${JSON.stringify(s.wallThickness)})`)
+    else if (!s.wallThickness.inRange(wt)) warn(`"settings.wallThickness" ${s.wallThickness} is outside [0.05, 0.6] and will be clamped on load.`)
     const gs = clampRange(0.01, 1)
-    if (!isNum(s.gridSize) || !s.gridSize.inRange(gs)) E(`"settings.gridSize" must be a number in [0.01, 1] (got ${JSON.stringify(s.gridSize)})`)
+    if (!isNum(s.gridSize)) E(`"settings.gridSize" must be a number (got ${JSON.stringify(s.gridSize)})`)
+    else if (!s.gridSize.inRange(gs)) warn(`"settings.gridSize" ${s.gridSize} is outside [0.01, 1] and will be clamped on load.`)
   }
 
   // floors
@@ -103,7 +106,8 @@ function validateProject(obj, file) {
 
     if (!isStr(fl.name)) E(`${where}.name must be a non-empty string (defaulted if empty is NOT allowed here).`)
     const lvl = clampRange(-10, 30)
-    if (!isNum(fl.level) || !fl.level.inRange(lvl)) E(`${where}.level must be a number in [-10, 30] (got ${JSON.stringify(fl.level)})`)
+    if (!isNum(fl.level)) E(`${where}.level must be a number (got ${JSON.stringify(fl.level)})`)
+    else if (!fl.level.inRange(lvl)) warn(`${where}.level ${fl.level} is outside [-10, 30] and will be clamped on load.`)
 
     for (const arrKey of ['walls', 'furniture', 'openings']) {
       if (!Array.isArray(fl[arrKey])) E(`${where}.${arrKey} must be an array.`)
@@ -122,7 +126,8 @@ function validateProject(obj, file) {
       const L = hypot(w.x1 ?? 0, w.y1 ?? 0, w.x2 ?? 0, w.y2 ?? 0)
       if (isNum(w.x1) && isNum(w.y1) && isNum(w.x2) && isNum(w.y2) && L < 1e-4) E(`${wwhere} has zero length (start == end).`)
       const wt = clampRange(0.05, 0.6)
-      if (!isNum(w.thickness) || !w.thickness.inRange(wt)) E(`${wwhere}.thickness must be a number in [0.05, 0.6] (got ${JSON.stringify(w.thickness)})`)
+      if (!isNum(w.thickness)) E(`${wwhere}.thickness must be a number (got ${JSON.stringify(w.thickness)})`)
+      else if (!w.thickness.inRange(wt)) warn(`${wwhere}.thickness ${w.thickness} is outside [0.05, 0.6] and will be clamped on load.`)
     })
 
     ;(Array.isArray(fl.furniture) ? fl.furniture : []).forEach((f, ii) => {
@@ -137,11 +142,14 @@ function validateProject(obj, file) {
       else if (!KNOWN_FURNITURE_TYPES.has(f.type)) warn(`${fwhere}.type "${f.type}" is not in the catalog (will render as a generic box).`)
       for (const c of ['x', 'y', 'rotation']) if (!isNum(f[c])) E(`${fwhere}.${c} must be a number (got ${JSON.stringify(f[c])})`)
       const wR = clampRange(0.05, 10)
-      if (!isNum(f.width) || !f.width.inRange(wR)) E(`${fwhere}.width must be in [0.05, 10] (got ${JSON.stringify(f.width)})`)
+      if (!isNum(f.width)) E(`${fwhere}.width must be a number (got ${JSON.stringify(f.width)})`)
+      else if (!f.width.inRange(wR)) warn(`${fwhere}.width ${f.width} is outside [0.05, 10] and will be clamped on load.`)
       const dR = clampRange(0.05, 10)
-      if (!isNum(f.depth) || !f.depth.inRange(dR)) E(`${fwhere}.depth must be in [0.05, 10] (got ${JSON.stringify(f.depth)})`)
+      if (!isNum(f.depth)) E(`${fwhere}.depth must be a number (got ${JSON.stringify(f.depth)})`)
+      else if (!f.depth.inRange(dR)) warn(`${fwhere}.depth ${f.depth} is outside [0.05, 10] and will be clamped on load.`)
       const hR = clampRange(0.05, 4)
-      if (!isNum(f.height) || !f.height.inRange(hR)) E(`${fwhere}.height must be in [0.05, 4] (got ${JSON.stringify(f.height)})`)
+      if (!isNum(f.height)) E(`${fwhere}.height must be a number (got ${JSON.stringify(f.height)})`)
+      else if (!f.height.inRange(hR)) warn(`${fwhere}.height ${f.height} is outside [0.05, 4] and will be clamped on load.`)
       if (f.color != null && !hexColor(f.color)) E(`${fwhere}.color must be a #hex string (got ${JSON.stringify(f.color)})`)
       if (f.label != null && typeof f.label !== 'string') E(`${fwhere}.label must be a string if present.`)
     })
@@ -157,13 +165,17 @@ function validateProject(obj, file) {
       if (o.type !== 'door' && o.type !== 'window') E(`${owhere}.type must be "door" or "window" (got ${JSON.stringify(o.type)})`)
       if (!isStr(o.wallId)) E(`${owhere}.wallId must be a non-empty string.`)
       else if (!wallIds.has(o.wallId)) E(`${owhere}.wallId "${o.wallId}" does not match any wall on this floor.`)
-      if (!isNum(o.offset) || o.offset < 0) E(`${owhere}.offset must be >= 0 (got ${JSON.stringify(o.offset)})`)
+      if (!isNum(o.offset)) E(`${owhere}.offset must be a number (got ${JSON.stringify(o.offset)})`)
+      else if (o.offset < 0) warn(`${owhere}.offset ${o.offset} is < 0 and will be clamped to 0 on load.`)
       const wR = clampRange(0.3, 3)
-      if (!isNum(o.width) || !o.width.inRange(wR)) E(`${owhere}.width must be in [0.3, 3] (got ${JSON.stringify(o.width)})`)
+      if (!isNum(o.width)) E(`${owhere}.width must be a number (got ${JSON.stringify(o.width)})`)
+      else if (!o.width.inRange(wR)) warn(`${owhere}.width ${o.width} is outside [0.3, 3] and will be clamped on load.`)
       const hR = clampRange(0.3, 4)
-      if (!isNum(o.height) || !o.height.inRange(hR)) E(`${owhere}.height must be in [0.3, 4] (got ${JSON.stringify(o.height)})`)
+      if (!isNum(o.height)) E(`${owhere}.height must be a number (got ${JSON.stringify(o.height)})`)
+      else if (!o.height.inRange(hR)) warn(`${owhere}.height ${o.height} is outside [0.3, 4] and will be clamped on load.`)
       const sR = clampRange(0, 3)
-      if (!isNum(o.sill) || !o.sill.inRange(sR)) E(`${owhere}.sill must be in [0, 3] (got ${JSON.stringify(o.sill)})`)
+      if (!isNum(o.sill)) E(`${owhere}.sill must be a number (got ${JSON.stringify(o.sill)})`)
+      else if (!o.sill.inRange(sR)) warn(`${owhere}.sill ${o.sill} is outside [0, 3] and will be clamped on load.`)
       if (o.hinge !== 0 && o.hinge !== 1) E(`${owhere}.hinge must be 0 or 1 (got ${JSON.stringify(o.hinge)})`)
       if (o.side !== 1 && o.side !== -1) E(`${owhere}.side must be 1 or -1 (got ${JSON.stringify(o.side)})`)
       // offset within wall span?

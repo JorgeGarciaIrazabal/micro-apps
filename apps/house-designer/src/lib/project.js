@@ -5,7 +5,8 @@
 
 export const PROJECT_VERSION = 1
 
-const FT_PER_M = 3.28084
+// Fixed grid snap step (meters). The grid is always 0.05 m; no user setting.
+export const GRID_SIZE = 0.05
 
 // ---- id generation -------------------------------------------------------
 let _seq = 0
@@ -15,23 +16,14 @@ export function uid(prefix = 'id') {
 }
 
 // ---- units --------------------------------------------------------------
-// Convert a length in meters to a display string in the active unit.
-export function fmtLength(m, units = 'm') {
+// Convert a length in meters to a display string (always metric).
+export function fmtLength(m) {
   if (m == null || Number.isNaN(m)) return ''
-  if (units === 'ft') {
-    const ft = m * FT_PER_M
-    return `${ft.toFixed(2)} ft`
-  }
   return `${m.toFixed(2)} m`
 }
 
-export function mToUnit(m, units = 'm') {
-  return units === 'ft' ? m * FT_PER_M : m
-}
-
-export function unitToM(v, units = 'm') {
-  return units === 'ft' ? v / FT_PER_M : v
-}
+export const mToUnit = (m) => m
+export const unitToM = (v) => v
 
 // ---- geometry helpers ---------------------------------------------------
 export const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1)
@@ -45,11 +37,10 @@ export function snap(v, step) {
   return Math.round(v / step) * step
 }
 
-// Format a length for display on a wall label, trimming to 2 decimals.
-export function fmtWallLabel(w, units = 'm') {
+export function fmtWallLabel(w) {
   const len = wallLength(w)
   if (len < 1e-4) return ''
-  return fmtLength(len, units).replace(/\s/, '\u00A0')
+  return fmtLength(len).replace(/\s/, '\u00A0')
 }
 
 // ---- default + serialization -------------------------------------------
@@ -62,7 +53,7 @@ export function createProject(name = 'Untitled Project') {
   return {
     version: PROJECT_VERSION,
     name,
-    settings: { units: 'm', wallHeight: 2.7, wallThickness: 0.15, gridSize: 0.1 },
+    settings: { wallHeight: 2.7, wallThickness: 0.15 },
     floors: [ground],
     activeFloorId: ground.id,
   }
@@ -75,10 +66,8 @@ export function normalizeProject(input) {
   if (typeof input?.name === 'string') p.name = input.name
 
   const s = { ...p.settings, ...(input?.settings || {}) }
-  s.units = s.units === 'ft' ? 'ft' : 'm'
   s.wallHeight = clampNum(s.wallHeight, 2.4, 6, 2.7)
   s.wallThickness = clampNum(s.wallThickness, 0.05, 0.6, 0.15)
-  s.gridSize = clampNum(s.gridSize, 0.01, 1, 0.1)
   p.settings = s
 
   if (Array.isArray(input?.floors) && input.floors.length) {

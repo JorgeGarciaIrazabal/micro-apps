@@ -9,7 +9,13 @@ import { shade } from '../lib/color.js'
 // strip + cushions, bed with pillows + headboard, toilet tank+bowl, stove 4
 // burners, etc.) so each piece reads at a glance.
 
+const clamp0 = (v) => (v > 0 ? v : 0)
+
 export function FurnitureGraphic({ type, width: w, depth: d, color }) {
+  // Guard against tiny/negative dimensions (the app clamps furniture to >= 0.1
+  // but imported data or in-flight drags can transiently be smaller).
+  w = Math.max(w, 0.1)
+  d = Math.max(d, 0.1)
   const hx = w / 2, hy = d / 2
   const dark = shade(color, 0.7)
   const light = shade(color, 1.22)
@@ -17,7 +23,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
   const foot = { fill: color, stroke: dark, strokeWidth: sw, rx: Math.min(w, d) * 0.08 }
 
   const body = (
-    <rect x={-hx} y={-hy} width={w} height={d} rx={foot.rx} fill={foot.fill}
+    <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={foot.fill}
       stroke={foot.stroke} strokeWidth={foot.strokeWidth} />
   )
 
@@ -118,7 +124,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
     case 'bathtub': {
       return <>
         {body}
-        <rect x={-hx + 0.08} y={-hy + 0.08} width={w - 0.16} height={d - 0.16} rx={foot.rx - 0.04}
+        <rect x={-hx + 0.08} y={-hy + 0.08} width={clamp0(w - 0.16)} height={clamp0(d - 0.16)} rx={clamp0(foot.rx - 0.04)}
           fill={light} stroke={dark} strokeWidth={sw * 0.5} opacity={0.9} />
         <circle cx={hx - 0.18} cy={0} r={0.05} fill={dark} opacity={0.5} />
       </>
@@ -127,7 +133,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
     case 'shower': {
       return <>
         {body}
-        <rect x={-hx + 0.05} y={-hy + 0.05} width={w - 0.1} height={d - 0.1} fill="none"
+        <rect x={-hx + 0.05} y={-hy + 0.05} width={clamp0(w - 0.1)} height={clamp0(d - 0.1)} fill="none"
           stroke={light} strokeWidth={sw * 0.7} strokeDasharray={`${sw} ${sw}`} />
         <circle cx={0} cy={0} r={Math.min(w, d) * 0.1} fill={light} stroke={dark} strokeWidth={sw * 0.5} />
         <line x1={-hx + 0.05} y1={-hy + 0.05} x2={hx - 0.05} y2={hy - 0.05} stroke={dark} strokeWidth={sw * 0.4} opacity={0.35} />
@@ -138,7 +144,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
     case 'vanity': {
       return <>
         {body}
-        <rect x={-hx + 0.1} y={-hy + 0.14} width={w - 0.2} height={d - 0.24} rx={sw}
+        <rect x={-hx + 0.1} y={-hy + 0.14} width={clamp0(w - 0.2)} height={clamp0(d - 0.24)} rx={sw}
           fill={light} stroke={dark} strokeWidth={sw * 0.5} />
         <circle cx={0} cy={-hy + 0.07} r={0.04} fill={dark} />
       </>
@@ -216,7 +222,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
     case 'island': {
       return <>
         {body}
-        <rect x={-hx + 0.06} y={-hy + 0.06} width={w - 0.12} height={d - 0.12} rx={foot.rx - 0.04}
+        <rect x={-hx + 0.06} y={-hy + 0.06} width={clamp0(w - 0.12)} height={clamp0(d - 0.12)} rx={clamp0(foot.rx - 0.04)}
           fill="none" stroke={light} strokeWidth={sw * 0.4} opacity={0.6} />
       </>
     }
@@ -245,10 +251,10 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
 
     case 'rug': {
       return <>
-        <rect x={-hx} y={-hy} width={w} height={d} rx={foot.rx} fill={color} opacity={0.55} />
-        <rect x={-hx + 0.1} y={-hy + 0.1} width={w - 0.2} height={d - 0.2} rx={foot.rx - 0.04}
+        <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={color} opacity={0.55} />
+        <rect x={-hx + 0.1} y={-hy + 0.1} width={clamp0(w - 0.2)} height={clamp0(d - 0.2)} rx={clamp0(foot.rx - 0.04)}
           fill="none" stroke={shade(color, 0.6)} strokeWidth={sw * 0.8} opacity={0.7} />
-        <rect x={-hx + 0.2} y={-hy + 0.2} width={w - 0.4} height={d - 0.4} rx={foot.rx - 0.08}
+        <rect x={-hx + 0.2} y={-hy + 0.2} width={clamp0(w - 0.4)} height={clamp0(d - 0.4)} rx={clamp0(foot.rx - 0.08)}
           fill="none" stroke={light} strokeWidth={sw * 0.5} opacity={0.5} />
       </>
     }
