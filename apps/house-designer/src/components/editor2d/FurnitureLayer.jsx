@@ -1,6 +1,7 @@
 import { FurnitureGraphic } from '../FurnitureGraphic.jsx'
 
-// Active-floor furniture. Rugs render first so everything else sits on top.
+// Active-floor furniture. Rugs render first so everything else sits on top;
+// non-rug pieces get a soft drop shadow for depth.
 export default function FurnitureLayer({ furniture, selectedId, hoverId, scale }) {
   const rugs = furniture.filter((f) => f.type === 'rug')
   const rest = furniture.filter((f) => f.type !== 'rug')
@@ -18,5 +19,15 @@ export default function FurnitureLayer({ furniture, selectedId, hoverId, scale }
       </g>
     )
   }
-  return [...rugs.map(render), ...rest.map(render)]
+  return (
+    <>
+      <defs>
+        <filter id="furn-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="0.025" stdDeviation="0.03" floodOpacity="0.28" />
+        </filter>
+      </defs>
+      <g>{rugs.map(render)}</g>
+      <g filter="url(#furn-shadow)">{rest.map(render)}</g>
+    </>
+  )
 }

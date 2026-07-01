@@ -76,11 +76,20 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       const inset = 0.06
       return <>
         {body}
+        {/* subtle grain along the width */}
+        {[0.3, 0.5, 0.7].map((t, i) => (
+          <line key={`g${i}`} x1={-hx + 0.08} y1={-hy + d * t} x2={hx - 0.08} y2={-hy + d * t}
+            stroke={dark} strokeWidth={sw * 0.4} opacity={0.18} />
+        ))}
         {/* four leg marks at the corners */}
         {[[ -1, -1 ], [ 1, -1 ], [ -1, 1 ], [ 1, 1 ]].map(([sx, sy], i) => (
           <rect key={i} x={sx * hx - sx * inset - leg / 2} y={sy * hy - sy * inset - leg / 2}
             width={leg} height={leg} rx={leg * 0.3} fill={dark} />
         ))}
+        {/* desk: chair-notch cue on the +y (sitting) edge */}
+        {type === 'desk' && (
+          <rect x={-w * 0.25} y={hy - 0.04} width={w * 0.5} height={0.04} rx={0.015} fill={dark} opacity={0.5} />
+        )}
       </>
     }
 
@@ -89,6 +98,9 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       return <>
         {body}
         <rect x={-hx} y={-hy} width={w} height={back} rx={sw} fill={shade(color, 0.7)} />
+        {/* seat inset so it reads at small sizes */}
+        <rect x={-hx + w * 0.14} y={-hy + back + d * 0.08} width={clamp0(w * 0.72)} height={clamp0(d * 0.6)}
+          rx={sw * 1.4} fill={light} opacity={0.55} />
       </>
     }
 
@@ -140,7 +152,19 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
-    case 'sink':
+    case 'sink': {
+      // Elliptical basin + faucet stub so it doesn't read as a cabinet.
+      return <>
+        {body}
+        <ellipse cx={0} cy={0.03 * d} rx={clamp0(hx - 0.12)} ry={clamp0(hy - 0.15)}
+          fill={light} stroke={dark} strokeWidth={sw * 0.6} />
+        <ellipse cx={0} cy={0.03 * d} rx={clamp0((hx - 0.12) * 0.35)} ry={clamp0((hy - 0.15) * 0.35)}
+          fill={shade(color, 1.35)} opacity={0.8} />
+        <line x1={0} y1={-hy + 0.02} x2={0} y2={-hy + 0.12} stroke={dark} strokeWidth={sw * 1.2} />
+        <circle cx={0} cy={-hy + 0.07} r={0.035} fill={dark} />
+      </>
+    }
+
     case 'vanity': {
       return <>
         {body}
@@ -214,7 +238,9 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       return <>
         {body}
         <line x1={0} y1={-hy} x2={0} y2={hy} stroke={dark} strokeWidth={sw * 0.5} opacity={0.5} />
-        <rect x={-w * 0.3} y={-hy - 0.05} width={w * 0.6} height={0.04} rx={0.02} fill={dark} />
+        {/* TV slab + stand foot, hanging off the -y (wall) edge */}
+        <rect x={-w * 0.35} y={-hy - 0.07} width={w * 0.7} height={0.06} rx={0.02} fill="#22201d" />
+        <line x1={0} y1={-hy - 0.01} x2={0} y2={-hy} stroke="#22201d" strokeWidth={sw * 1.6} />
       </>
     }
 
