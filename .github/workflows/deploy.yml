@@ -58,6 +58,13 @@ jobs:
         run: |
           npm ci
           npm run build
+      # Build house-designer
+      - name: Install & build house-designer
+        working-directory: apps/house-designer
+        run: |
+          npm ci
+          npm run build
+
 
       # Assemble final site
       - name: Assemble site
@@ -67,12 +74,14 @@ jobs:
           mkdir -p _site/clara-summer-camps-madrid
           mkdir -p _site/andalucia-scouting-2026
           mkdir -p _site/casa-prefab-madrid
+          mkdir -p _site/house-designer
           cp index.html _site/
           cp -r apps/clara-egg-hunt/dist/* _site/clara-egg-hunt/
           cp -r apps/clara-summer-camps/dist/* _site/clara-summer-camps/
           cp -r apps/clara-summer-camps-madrid/dist/* _site/clara-summer-camps-madrid/
           cp -r apps/andalucia-scouting-2026/dist/* _site/andalucia-scouting-2026/
           cp -r apps/casa-prefab-madrid/dist/* _site/casa-prefab-madrid/
+          cp -r apps/house-designer/dist/* _site/house-designer/
 
       - uses: actions/upload-pages-artifact@v3
         with:

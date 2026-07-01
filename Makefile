@@ -1,7 +1,10 @@
-.PHONY: opencode build kill-port serve dev claude claude-ollama claude-qwen
+.PHONY: opencode omp build kill-port serve dev claude claude-ollama claude-qwen
 
 opencode:
 	ollama launch opencode --model micro-apps-glm --yes
+
+omp:
+	omp
 
 build:
 	@echo "Building all micro apps..."

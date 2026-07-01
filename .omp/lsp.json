@@ -1,0 +1,29 @@
+{
+  "servers": {
+    "typescript-language-server": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "fileTypes": [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
+      "rootMarkers": ["package.json", "tsconfig.json", "jsconfig.json"]
+    },
+    "vscode-css-language-server": {
+      "command": "vscode-css-language-server",
+      "args": ["--stdio"],
+      "fileTypes": [".css"],
+      "rootMarkers": ["package.json", ".git"]
+    },
+    "vscode-html-language-server": {
+      "command": "vscode-html-language-server",
+      "args": ["--stdio"],
+      "fileTypes": [".html"],
+      "rootMarkers": ["package.json", ".git"]
+    },
+    "vscode-json-language-server": {
+      "command": "vscode-json-language-server",
+      "args": ["--stdio"],
+      "fileTypes": [".json"],
+      "rootMarkers": ["package.json", ".git"]
+    }
+  },
+  "idleTimeoutMs": 600000
+}
