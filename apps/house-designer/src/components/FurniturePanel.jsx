@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CATALOG, STRUCTURE } from '../lib/furniture.js'
+import { CATALOG, STRUCTURE } from '../lib/furniture/registry.js'
 import { FurnitureGraphic } from './FurnitureGraphic.jsx'
 import { IconSelect, IconWall, IconDoor, IconWindow } from './Icons.jsx'
 

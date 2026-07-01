@@ -1,5 +1,5 @@
 import { uid, makeFloor } from './project.js'
-import { makeFurniture } from './furniture.js'
+import { makeFurniture } from './furniture/registry.js'
 
 // A small demo so the app feels alive on first open and exercises multi-floor +
 // doors/windows. Ground = studio apartment; Upper = a bedroom stacked at 3 m.

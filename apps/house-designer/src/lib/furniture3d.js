@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { shade } from './color.js'
 import { makeWoodTexture, makeFabricTexture } from './textures.js'
+import { defFor } from './furniture/registry.js'
 
 // Composed 3D representations for furniture, built in the item's LOCAL frame:
 // x in [-w/2, w/2], z in [-d/2, d/2], y in [0, h] (bottom on the floor at y=0).
@@ -47,9 +48,8 @@ export function buildFurniture3D(type, w, d, h, color) {
   const sph = (r, x, y, z, c, opts) =>
     add(new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), mat(c, opts)), x, y, z)
 
-  switch (type) {
-    case 'sofa':
-    case 'armchair': {
+  switch (defFor(type).model) {
+    case 'seat': {
       box(w, h * 0.4, d * 0.85, 0, h * 0.2, d * 0.05, color, { finish: 'fabric' })
       box(w, h * 0.6, d * 0.22, 0, h * 0.7, -d / 2 + d * 0.11, dark, { finish: 'fabric' })
       box(w * 0.1, h * 0.55, d * 0.85, -(w / 2 - w * 0.05), h * 0.275, d * 0.05, shade(color, 0.85), { finish: 'fabric' })
@@ -57,9 +57,7 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w * 0.84, h * 0.12, d * 0.66, 0, h * 0.46, d * 0.08, light, { finish: 'fabric' })
       break
     }
-    case 'coffee-table':
-    case 'dining-table':
-    case 'desk': {
+    case 'table': {
       box(w, h * 0.08, d, 0, h - h * 0.04, 0, color, { finish: 'wood' })
       for (const sx of [-1, 1]) for (const sz of [-1, 1])
         box(w * 0.08, h * 0.92, d * 0.08, sx * (w / 2 - w * 0.06), h * 0.46, sz * (d / 2 - d * 0.06), dark, { finish: 'wood' })
@@ -79,8 +77,7 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w * 0.85, h * 0.06, d * 0.85, 0, h * 0.03, 0, dark)
       break
     }
-    case 'bed-double':
-    case 'bed-single': {
+    case 'bed': {
       const pillows = type === 'bed-double' ? 2 : 1
       const pw = type === 'bed-double' ? w * 0.4 : w * 0.55
       box(w, h * 0.3, d, 0, h * 0.15, 0, shade(color, 0.6), { finish: 'wood' })           // frame
@@ -93,16 +90,11 @@ export function buildFurniture3D(type, w, d, h, color) {
       }
       break
     }
-    case 'nightstand':
-    case 'wardrobe':
-    case 'dresser':
-    case 'bookshelf': {
+    case 'wood-box': {
       box(w, h, d, 0, h / 2, 0, color, { finish: 'wood' })
       break
     }
-    case 'filing-cabinet':
-    case 'counter':
-    case 'island': {
+    case 'plain-box': {
       box(w, h, d, 0, h / 2, 0, color)
       break
     }
@@ -111,8 +103,7 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w * 0.5, h * 0.55, d * 0.05, 0, h + h * 0.28, -d / 2 + d * 0.08, dark) // TV slab
       break
     }
-    case 'sink':
-    case 'vanity': {
+    case 'washstand': {
       box(w, h * 0.85, d, 0, h * 0.425, 0, color)                    // cabinet
       box(w * 0.7, h * 0.12, d * 0.6, 0, h * 0.92, 0, light, { finish: 'ceramic' })         // basin
       box(w * 0.05, h * 0.22, d * 0.05, 0, h * 1.02, -d / 2 + d * 0.12, dark, { finish: 'metal' }) // faucet

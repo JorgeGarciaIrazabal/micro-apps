@@ -1,4 +1,5 @@
 import { shade } from '../lib/color.js'
+import { defFor } from '../lib/furniture/registry.js'
 
 // Top-down 2D graphics for furniture, drawn in the item's LOCAL frame:
 // x in [-w/2, w/2] (width), y in [-d/2, d/2] (depth), centered at (0,0).
@@ -27,9 +28,8 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       stroke={foot.stroke} strokeWidth={foot.strokeWidth} />
   )
 
-  switch (type) {
-    case 'sofa':
-    case 'armchair': {
+  switch (defFor(type).symbol) {
+    case 'seat': {
       const seats = type === 'sofa' ? (w > 1.4 ? 3 : 2) : 1
       const back = 0.22 * d
       const arm = type === 'sofa' ? 0.1 * w : 0.14 * w
@@ -49,8 +49,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
-    case 'bed-double':
-    case 'bed-single': {
+    case 'bed': {
       const pillows = type === 'bed-double' ? 2 : 1
       const head = 0.12 * d
       const pw = (w - 0.18) / pillows
@@ -69,9 +68,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
-    case 'coffee-table':
-    case 'dining-table':
-    case 'desk': {
+    case 'table': {
       const leg = Math.min(w, d) * 0.14
       const inset = 0.06
       return <>
@@ -197,9 +194,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
-    case 'wardrobe':
-    case 'dresser':
-    case 'filing-cabinet': {
+    case 'cabinet': {
       const rows = type === 'wardrobe' ? 1 : (type === 'filing-cabinet' ? 3 : 2)
       const cols = type === 'wardrobe' ? 2 : 1
       const lines = []
@@ -244,8 +239,7 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
-    case 'counter':
-    case 'island': {
+    case 'counter': {
       return <>
         {body}
         <rect x={-hx + 0.06} y={-hy + 0.06} width={clamp0(w - 0.12)} height={clamp0(d - 0.12)} rx={clamp0(foot.rx - 0.04)}
