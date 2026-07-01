@@ -19,7 +19,7 @@ export const FURNITURE = {
   'coffee-table':   { label: 'Coffee Table', category: LIVING, width: 1.1, depth: 0.6, height: 0.45, color: '#8a5a3b', symbol: 'table', model: 'table' },
   'tv-stand':       { label: 'TV Stand', category: LIVING, width: 1.6, depth: 0.45, height: 0.55, color: '#3a3a3a', symbol: 'tv-stand', model: 'tv-stand' },
   'bookshelf':      { label: 'Bookshelf', category: LIVING, width: 0.9, depth: 0.35, height: 1.9, color: '#5a3a22', symbol: 'bookshelf', model: 'wood-box' },
-  'rug':            { label: 'Rug', category: LIVING, width: 2.4, depth: 1.6, height: 0.02, color: '#b8845a', symbol: 'rug', model: 'rug' },
+  'rug':            { label: 'Rug', category: LIVING, width: 2.4, depth: 1.6, height: 0.05, color: '#b8845a', symbol: 'rug', model: 'rug' },
   // Bedroom
   'bed-double':     { label: 'Double Bed', category: BEDROOM, width: 1.6, depth: 2.1, height: 0.55, color: '#9aa7c2', symbol: 'bed', model: 'bed' },
   'bed-single':     { label: 'Single Bed', category: BEDROOM, width: 0.9, depth: 2.0, height: 0.55, color: '#9aa7c2', symbol: 'bed', model: 'bed' },
