@@ -42,7 +42,11 @@ body {
   z-index: 5;
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.brand-mark { font-size: 1.5rem; line-height: 1; }
+.brand-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--accent-soft); color: var(--accent-ink);
+}
 .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-text strong { font-size: 1rem; letter-spacing: 0.2px; }
 .brand-sub { font-size: 0.7rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.08em; }
@@ -75,7 +79,8 @@ body {
 .floor-tab.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
 .floor-add {
   border: 1px dashed var(--line-strong); background: transparent; cursor: pointer;
-  width: 28px; height: 28px; border-radius: 999px; color: var(--ink-soft); font-size: 1rem; line-height: 1;
+  width: 28px; height: 28px; border-radius: 999px; color: var(--ink-soft);
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .floor-add:hover { border-color: var(--accent); color: var(--accent-ink); }
 
@@ -120,7 +125,7 @@ body {
   border: 1px solid var(--line); background: var(--surface-2);
   color: var(--ink-soft); font-size: 0.72rem; font-weight: 600;
 }
-.tool-btn .tool-ico { font-size: 1.1rem; }
+.tool-btn .tool-ico { display: inline-flex; width: 22px; height: 22px; }
 .tool-btn:hover { border-color: var(--line-strong); }
 .tool-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
 
@@ -146,7 +151,7 @@ body {
   border: 1px solid var(--line); background: var(--surface-2); color: var(--ink);
   font-size: 0.68rem; text-align: center;
 }
-.cat-icon { font-size: 1.15rem; line-height: 1; }
+.cat-icon { display: inline-flex; width: 26px; height: 26px; align-items: center; justify-content: center; }
 .cat-item:hover { border-color: var(--line-strong); transform: translateY(-1px); }
 .cat-item.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
 
@@ -191,7 +196,7 @@ body {
   border: 1px solid var(--line); border-radius: 14px; padding: 28px 32px; max-width: 360px;
   box-shadow: var(--shadow);
 }
-.empty-ico { font-size: 2.2rem; }
+.empty-ico { display: inline-flex; color: var(--accent-ink); }
 .empty-card h2 { margin: 8px 0 6px; font-size: 1.1rem; }
 .empty-card p { margin: 0 0 16px; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.5; }
 .empty-card button {

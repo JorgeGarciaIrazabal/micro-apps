@@ -6,6 +6,7 @@ import Editor2D from './components/Editor2D.jsx'
 import Editor3D from './components/Editor3D.jsx'
 import FloorBar from './components/FloorBar.jsx'
 import ShortcutHelp from './components/ShortcutHelp.jsx'
+import { IconRuler } from './components/Icons.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid } from './lib/project.js'
 import * as M from './lib/mutations.js'
 import { useProjectHistory } from './hooks/useProjectHistory.js'
@@ -211,7 +212,7 @@ export default function App() {
           {empty && (
             <div className="empty-state">
               <div className="empty-card">
-                <span className="empty-ico">📐</span>
+                <span className="empty-ico"><IconRuler size={40} /></span>
                 <h2>Start your floor plan</h2>
                 <p>Choose <b>Wall</b> to draw walls, or pick furniture from the left. Switch to <b>3D</b> anytime to preview.</p>
                 <button onClick={onLoadSample}>Load sample apartment</button>

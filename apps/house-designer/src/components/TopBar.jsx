@@ -1,3 +1,5 @@
+import { IconRuler } from './Icons.jsx'
+
 // Top bar: project name, 2D/3D toggle, and file actions (import/export).
 export default function TopBar({
   project, onRename, view, setView, onImport, onExportJson, onExportPng, onLoadSample, onResetView, onHelp,
@@ -5,7 +7,7 @@ export default function TopBar({
   return (
     <header className="topbar">
       <div className="brand">
-        <span className="brand-mark">📐</span>
+        <span className="brand-mark"><IconRuler size={20} /></span>
         <div className="brand-text">
           <strong>House Designer</strong>
           <span className="brand-sub">floor plan · 3D</span>

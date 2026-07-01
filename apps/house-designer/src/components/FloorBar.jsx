@@ -1,3 +1,5 @@
+import { IconPlus } from './Icons.jsx'
+
 // Floor switcher strip: one tab per floor + an add button. Selecting a tab
 // switches the active floor that the 2D editor edits.
 export default function FloorBar({ project, onSelect, onAdd }) {
@@ -17,7 +19,7 @@ export default function FloorBar({ project, onSelect, onAdd }) {
             {f.name}
           </button>
         ))}
-        <button className="floor-add" onClick={onAdd} title="Add a new floor">＋</button>
+        <button className="floor-add" onClick={onAdd} title="Add a new floor"><IconPlus size={14} /></button>
       </div>
     </div>
   )

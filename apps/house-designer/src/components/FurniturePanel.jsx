@@ -1,5 +1,19 @@
 import { useState } from 'react'
 import { CATALOG, STRUCTURE } from '../lib/furniture.js'
+import { FurnitureGraphic } from './FurnitureGraphic.jsx'
+import { IconSelect, IconWall, IconDoor, IconWindow } from './Icons.jsx'
+
+// Catalog icon = the item's actual plan symbol, framed in a fitted viewBox.
+// Consistent across platforms and previews exactly what lands on the plan.
+function CatalogIcon({ it }) {
+  const m = 0.1 * Math.max(it.width, it.depth)
+  const s = Math.max(it.width, it.depth) + 2 * m
+  return (
+    <svg className="cat-icon" width={26} height={26} viewBox={`${-s / 2} ${-s / 2} ${s} ${s}`} aria-hidden="true">
+      <FurnitureGraphic type={it.type} width={it.width} depth={it.depth} color={it.color} />
+    </svg>
+  )
+}
 
 // Left sidebar: tool selection (Select / Wall) + furniture catalog.
 // Clicking a furniture item switches the active tool to "furniture:<type>".
@@ -19,7 +33,7 @@ export default function FurniturePanel({ tool, onTool }) {
           onClick={() => onTool('select')}
           title="Select / move (Esc)"
         >
-          <span className="tool-ico">🖱️</span>
+          <span className="tool-ico"><IconSelect /></span>
           <span>Select</span>
         </button>
         <button
@@ -27,7 +41,7 @@ export default function FurniturePanel({ tool, onTool }) {
           onClick={() => onTool('wall')}
           title="Draw walls: click to chain, Enter/Esc to finish"
         >
-          <span className="tool-ico">📏</span>
+          <span className="tool-ico"><IconWall /></span>
           <span>Wall</span>
         </button>
       </div>
@@ -56,7 +70,7 @@ export default function FurniturePanel({ tool, onTool }) {
                   title={`${it.label} · ${it.width}m wide`}
                   onClick={() => onTool(`opening:${it.type}`)}
                 >
-                  <span className="cat-icon">{it.icon}</span>
+                  <span className="cat-icon">{it.type === 'door' ? <IconDoor /> : <IconWindow />}</span>
                   <span className="cat-label">{it.label}</span>
                 </button>
               ))}
@@ -78,7 +92,7 @@ export default function FurniturePanel({ tool, onTool }) {
                     title={`${it.label} · ${it.width}×${it.depth}×${it.height} m`}
                     onClick={() => onTool(`furniture:${it.type}`)}
                   >
-                    <span className="cat-icon">{it.icon}</span>
+                    <CatalogIcon it={it} />
                     <span className="cat-label">{it.label}</span>
                   </button>
                 ))}
