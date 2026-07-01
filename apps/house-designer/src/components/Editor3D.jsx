@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { openingsOnWall } from '../lib/project.js'
 import { dist, wallCutSegments } from '../lib/geometry.js'
 import { buildFurniture3D } from '../lib/furniture3d.js'
+import { makeWoodTexture, makeSkyTexture, makeGroundTexture } from '../lib/textures.js'
 
 // 3D preview: extrudes the 2D walls into boxes and places furniture as boxes.
 // World meters (x, y) map to 3D (x, z); height is along Y (up).
@@ -36,12 +37,15 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(w, h)
-    renderer.setClearColor('#dfe7ee')
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.1
     mount.appendChild(renderer.domElement)
 
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#dfe7ee')
-    scene.fog = new THREE.Fog('#dfe7ee', 40, 120)
+    scene.background = makeSkyTexture()
+    scene.fog = new THREE.Fog('#e8ddca', 40, 120)
 
     const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 500)
 
@@ -49,19 +53,28 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     controls.enableDamping = true
     controls.dampingFactor = 0.1
     controls.maxPolarAngle = Math.PI / 2 - 0.02 // don't go under the floor
+    controls.minDistance = 2
 
-    // Lighting: warm key + cool fill + ambient.
-    const hemi = new THREE.HemisphereLight('#ffffff', '#9aa6b2', 0.85)
+    // Lighting: warm shadow-casting key + hemisphere fill.
+    const hemi = new THREE.HemisphereLight('#ffffff', '#9aa6b2', 0.55)
     scene.add(hemi)
-    const dir = new THREE.DirectionalLight('#fff6e6', 0.7)
+    const dir = new THREE.DirectionalLight('#fff6e6', 1.0)
     dir.position.set(8, 14, 6)
+    dir.castShadow = true
+    dir.shadow.mapSize.set(2048, 2048)
+    dir.shadow.bias = -0.0003
     scene.add(dir)
+    scene.add(dir.target)
 
+    // Soft ground patch under the house (radial fade, no hard edges).
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshStandardMaterial({ color: '#e9e4db', roughness: 0.95, metalness: 0 }),
+      new THREE.MeshStandardMaterial({
+        map: makeGroundTexture(), transparent: true, roughness: 0.95, metalness: 0,
+      }),
     )
     floor.rotation.x = -Math.PI / 2
+    floor.receiveShadow = true
     scene.add(floor)
 
     // Grid is rebuilt in frameScene() so cells stay ~1m across scene sizes.
@@ -69,7 +82,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     const content = new THREE.Group()
     scene.add(content)
 
-    stateRef.current = { renderer, scene, camera, controls, content, floor, grid: null }
+    stateRef.current = { renderer, scene, camera, controls, content, floor, dir, grid: null }
     frameScene(stateRef.current, project)
 
     let raf = 0
@@ -159,8 +172,11 @@ function rebuild(s, project) {
   s.content.clear()
 
   const wallH = project.settings.wallHeight
-  const wallMat = new THREE.MeshStandardMaterial({ color: '#ece4d6', roughness: 0.85 })
-  const slabMats = ['#e9e4db', '#ded7c9'].map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 }))
+  const wallMat = new THREE.MeshStandardMaterial({ color: '#ece4d6', roughness: 0.9 })
+  // Light wood floor slabs (two tones so stacked floors read separately).
+  const slabMats = ['#e6d7bd', '#dccbae'].map((c) => new THREE.MeshStandardMaterial({
+    map: makeWoodTexture(c), roughness: 0.75,
+  }))
 
   // Only show the active floor and floors below it (so upper floors don't
   // block the view of the floor being inspected).
@@ -180,6 +196,8 @@ function rebuild(s, project) {
     const m = (a + b) / 2
     mesh.position.set(w.x1 + m * ux, (y0 + y1) / 2 + yBase, w.y1 + m * uy)
     mesh.rotation.y = -Math.atan2(uy, ux)
+    mesh.castShadow = true
+    mesh.receiveShadow = true
     s.content.add(mesh)
   }
 
@@ -190,8 +208,14 @@ function rebuild(s, project) {
     const bb = bboxOf(fl)
     if (Number.isFinite(bb.minX)) {
       const sw = (bb.maxX - bb.minX) + 1.2, sh = (bb.maxY - bb.minY) + 1.2
-      const slab = new THREE.Mesh(new THREE.BoxGeometry(sw, 0.12, sh), slabMats[fi % 2])
+      const slabGeo = new THREE.BoxGeometry(sw, 0.12, sh)
+      // Tile the plank texture ~one repeat per 1.5 m instead of stretching it.
+      const uv = slabGeo.attributes.uv
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (sw / 1.5), uv.getY(i) * (sh / 1.5))
+      const slab = new THREE.Mesh(slabGeo, slabMats[fi % 2])
       slab.position.set((bb.minX + bb.maxX) / 2, yBase - 0.06, (bb.minY + bb.maxY) / 2)
+      slab.castShadow = true
+      slab.receiveShadow = true
       s.content.add(slab)
     }
     for (const w of fl.walls) {
@@ -225,11 +249,14 @@ function addOpening3D(s, w, o, a, b, yBase) {
   g.position.set(w.x1 + m * ux, yBase, w.y1 + m * uy)
   g.rotation.y = -Math.atan2(uy, ux)
   const mesh = (geo, color, x, y, z, opts) => {
+    const translucent = (opts && opts.opacity < 1) || false
     const mat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(color), roughness: 0.8, metalness: 0.05,
-      transparent: (opts && opts.opacity < 1) || false, opacity: opts?.opacity ?? 1,
+      color: new THREE.Color(color), roughness: opts?.rough ?? 0.8, metalness: opts?.metal ?? 0.05,
+      transparent: translucent, opacity: opts?.opacity ?? 1,
     })
     const me = new THREE.Mesh(geo, mat)
+    me.castShadow = !translucent // glass shouldn't black out the room
+    me.receiveShadow = true
     me.position.set(x, y, z); g.add(me)
   }
   const cy = o.sill + o.height / 2
@@ -245,13 +272,15 @@ function addOpening3D(s, w, o, a, b, yBase) {
       new THREE.BoxGeometry(wd, o.height, 0.05),
       new THREE.MeshStandardMaterial({ color: new THREE.Color('#7a5a3a'), roughness: 0.8, metalness: 0.05 }),
     )
+    leaf.castShadow = true
+    leaf.receiveShadow = true
     leaf.position.set(dir * wd / 2, 0, 0)
     hingeG.add(leaf)
     g.add(hingeG)
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', -wd / 2, cy, 0) // jamb
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', wd / 2, cy, 0)  // jamb
   } else {
-    mesh(new THREE.BoxGeometry(wd, o.height, 0.04), '#9fc6e0', 0, cy, 0, { opacity: 0.4, rough: 0.1 }) // glass
+    mesh(new THREE.BoxGeometry(wd, o.height, 0.04), '#9fc6e0', 0, cy, 0, { opacity: 0.35, rough: 0.08, metal: 0.1 }) // glass
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', -wd / 2, cy, 0) // jamb
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', wd / 2, cy, 0)  // jamb
   }
@@ -284,9 +313,24 @@ function frameScene(s, project) {
 
   const size = Math.max(maxX - minX, maxY - minY, 4)
   const dist = size * 1.6 + 6
-  s.camera.position.set(cx + dist * 0.6, Math.max(dist * 0.7, topY + size * 0.4), cz + dist * 0.9)
+  // ~35° elevation reads more like an architectural viz than a top-down peek.
+  s.camera.position.set(cx + dist * 0.62, Math.max(dist * 0.5, topY + size * 0.3), cz + dist * 0.85)
   s.controls.target.set(cx, topY / 2, cz)
+  s.controls.maxDistance = dist * 3
   s.camera.near = 0.1
   s.camera.far = Math.max(200, dist * 5)
   s.camera.updateProjectionMatrix()
+
+  // Key light + its orthographic shadow camera sized to the scene so shadows
+  // stay crisp at any plan size.
+  if (s.dir) {
+    s.dir.position.set(cx + size * 0.8, topY + size * 1.2 + 6, cz + size * 0.5)
+    s.dir.target.position.set(cx, 0, cz)
+    const r = size * 0.9 + 3
+    const cam = s.dir.shadow.camera
+    cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r
+    cam.near = 0.5
+    cam.far = size * 4 + 30
+    cam.updateProjectionMatrix()
+  }
 }

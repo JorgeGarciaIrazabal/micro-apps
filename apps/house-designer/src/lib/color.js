@@ -1,6 +1,8 @@
 // Small color helpers for procedural furniture graphics.
 
 export function hexToRgb(hex) {
+  const m = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(String(hex || '').trim())
+  if (m) return { r: +m[1], g: +m[2], b: +m[3] }
   let h = String(hex || '#888888').replace('#', '').trim()
   if (h.length === 3) h = h.split('').map((c) => c + c).join('')
   const n = parseInt(h, 16)
