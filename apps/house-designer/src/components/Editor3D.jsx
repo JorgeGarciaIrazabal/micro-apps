@@ -1,7 +1,8 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { dist, openingsOnWall } from '../lib/project.js'
+import { openingsOnWall } from '../lib/project.js'
+import { dist, wallCutSegments } from '../lib/geometry.js'
 import { buildFurniture3D } from '../lib/furniture3d.js'
 
 // 3D preview: extrudes the 2D walls into boxes and places furniture as boxes.
@@ -196,19 +197,14 @@ function rebuild(s, project) {
     for (const w of fl.walls) {
       const L = dist(w.x1, w.y1, w.x2, w.y2)
       if (L < 1e-3) continue
-      let cursor = 0
-      for (const o of openingsOnWall(fl, w.id)) {
-        const a = Math.max(cursor, o.offset - o.width / 2)
-        const b = Math.min(L, o.offset + o.width / 2)
-        if (b - a < 0.05) { cursor = Math.max(cursor, b); continue }
-        if (a > cursor) addWallSeg(w, cursor, a, 0, wallH, yBase)
+      const { segs, ops } = wallCutSegments(L, openingsOnWall(fl, w.id))
+      for (const [a, b] of segs) addWallSeg(w, a, b, 0, wallH, yBase)
+      for (const { o, a, b } of ops) {
         if (o.sill > 0.01) addWallSeg(w, a, b, 0, o.sill, yBase)           // wall below window
         const top = o.sill + o.height
         if (top < wallH - 0.01) addWallSeg(w, a, b, top, wallH, yBase)     // lintel
         addOpening3D(s, w, o, a, b, yBase)
-        cursor = b
       }
-      if (cursor < L - 1e-6) addWallSeg(w, cursor, L, 0, wallH, yBase)
     }
     for (const f of fl.furniture) {
       const g = buildFurniture3D(f.type, f.width, f.depth, f.height, f.color)

@@ -1,47 +1,44 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { dist, snap, fmtWallLabel, uid, openingsOnWall, activeFloor, GRID_SIZE } from '../lib/project.js'
+import { useMemo, useRef, useState, useEffect } from 'react'
+import { fmtLength, uid, openingsOnWall, activeFloor } from '../lib/project.js'
+import { dist, snap, wallUnit } from '../lib/geometry.js'
+import * as M from '../lib/mutations.js'
+import * as hit from '../lib/hitTest.js'
 import { makeFurniture, openingDefaults } from '../lib/furniture.js'
-import { FurnitureGraphic } from './FurnitureGraphic.jsx'
+import { usePanZoom } from '../hooks/usePanZoom.js'
+import { useWallDraft } from '../hooks/useWallDraft.js'
 import WallShape from './WallShape.jsx'
+import GridLayer from './editor2d/GridLayer.jsx'
+import FloorsBelowLayer from './editor2d/FloorsBelowLayer.jsx'
+import FurnitureLayer from './editor2d/FurnitureLayer.jsx'
+import WallLabels, { DimensionPill } from './editor2d/WallLabels.jsx'
+import SelectionHandles from './editor2d/SelectionHandles.jsx'
 
 // Screen-space threshold (px) for snapping to existing wall endpoints.
 const ENDPOINT_SNAP_PX = 12
 // Screen-space hit tolerance (px) for clicking walls/furniture.
 const HIT_PX = 8
 
-// Build the SVG point transform helpers from pan + scale.
-function useMapping(pan, scale, svgRef) {
-  const worldToScreen = useCallback((x, y) => ({
-    sx: x * scale + pan.x,
-    sy: y * scale + pan.y,
-  }), [pan, scale])
-  const screenToWorld = useCallback((sx, sy) => ({
-    x: (sx - pan.x) / scale,
-    y: (sy - pan.y) / scale,
-  }), [pan, scale])
-  // Convert a client (page) coordinate into world meters using the svg bbox.
-  const clientToWorld = useCallback((clientX, clientY) => {
-    const r = svgRef.current.getBoundingClientRect()
-    return screenToWorld(clientX - r.left, clientY - r.top)
-  }, [screenToWorld])
-  return { worldToScreen, screenToWorld, clientToWorld }
-}
-
+// The 2D floor-plan editor. Owns tool/pointer dispatch and composes the SVG
+// from layer components; pan/zoom and the wall-drafting state live in hooks,
+// geometry/hit-testing/mutations in lib modules.
 export default function Editor2D({
-  project, setProject, tool, setTool, selectedId, setSelectedId, onWallDoubleClick,
+  project, commit, tool, setTool, selectedId, setSelectedId, onWallDoubleClick,
 }) {
   const svgRef = useRef(null)
-  const [pan, setPan] = useState({ x: 120, y: 80 })
-  const [scale, setScale] = useState(70) // px per meter
-  const [draft, setDraft] = useState([]) // wall chain: [{x,y}] in meters
-  const [cursor, setCursor] = useState(null) // world meters, for preview
-  const [size, setSize] = useState({ w: 800, h: 560 })
   const dragRef = useRef(null)
-  const spaceRef = useRef(false)
+  const [hoverId, setHoverId] = useState(null)
 
   const { settings } = project
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
-  const grid = GRID_SIZE
+  const grid = settings.gridSize ?? 0.1
+
+  const { pan, scale, size, spaceRef, worldToScreen, screenToWorld, clientToWorld, startPan, movePan } =
+    usePanZoom(svgRef)
+
+  const wallDraft = useWallDraft({
+    walls: floor.walls, grid, scale, thickness: settings.wallThickness,
+    commit, snapPx: ENDPOINT_SNAP_PX,
+  })
 
   // Floors strictly below the active one — drawn faintly as a construction guide.
   const floorsBelow = useMemo(() => {
@@ -50,337 +47,107 @@ export default function Editor2D({
     return all.filter((f) => (f.level || 0) < lvl - 1e-6).sort((a, b) => (b.level || 0) - (a.level || 0))
   }, [project.floors, floor.level])
 
-  const { worldToScreen, clientToWorld, screenToWorld } = useMapping(pan, scale, svgRef)
+  // ---- mutation shorthands ----------------------------------------------
+  const patchElement = (id, patch) => commit((p) => M.patchElement(p, id, patch))
 
-  // Track container size for responsive grid + view.
-  useEffect(() => {
-    const el = svgRef.current?.parentElement
-    if (!el) return
-    const ro = new ResizeObserver(() => {
-      const r = el.getBoundingClientRect()
-      setSize({ w: r.width, h: r.height })
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  // Keyboard: Delete removes selection, Escape cancels draft/selection +
-  // returns to Select tool, R rotates selected furniture 90deg,
-  // Arrow keys nudge the selected element (furniture/wall-end/opening).
-  const ARROW_STEP = grid // one grid cell per press; Shift = ×5
-
-  function nudgeSelected(stepX, stepY) {
+  function removeSelected() {
     if (!selectedId) return
-    patchProject((fl) => {
-      const f = fl.furniture.find((x) => x.id === selectedId)
-      if (f) { f.x = snap(f.x + stepX, grid); f.y = snap(f.y + stepY, grid); return }
-      const w = fl.walls.find((x) => x.id === selectedId)
-      if (w) {
-        w.x1 = snap(w.x1 + stepX, grid); w.y1 = snap(w.y1 + stepY, grid)
-        w.x2 = snap(w.x2 + stepX, grid); w.y2 = snap(w.y2 + stepY, grid)
-        return
-      }
-      const o = (fl.openings || []).find((x) => x.id === selectedId)
-      if (o) {
-        const wall = fl.walls.find((x) => x.id === o.wallId)
-        if (wall) {
-          const L = dist(wall.x1, wall.y1, wall.x2, wall.y2)
-          o.offset = Math.max(0, Math.min(L, snap(o.offset + stepX, grid)))
-        }
-      }
-    })
+    commit((p) => M.deleteElement(p, selectedId))
+    setSelectedId(null)
   }
 
-  const onKey = useCallback((e) => {
+  // ---- keyboard -----------------------------------------------------------
+  // Attached once to the stage element; reads latest state through a ref so
+  // handlers never go stale.
+  const keyRef = useRef(null)
+  keyRef.current = (e) => {
     if (e.key === 'Escape') {
-      setDraft([])
+      wallDraft.finish()
       setSelectedId(null)
       setTool('select')
     } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
       e.preventDefault()
       removeSelected()
     } else if (e.key.toLowerCase() === 'r' && selectedId) {
-      rotateSelected()
+      commit((p) => M.rotateFurniture(p, selectedId))
     } else if (e.key === 'Enter') {
-      // Finish wall chain.
-      setDraft([])
+      wallDraft.finish()
     } else if (e.key.startsWith('Arrow') && selectedId) {
       e.preventDefault()
-      const big = e.shiftKey ? 5 : 1
-      if (e.key === 'ArrowUp') nudgeSelected(0, -grid * big)
-      else if (e.key === 'ArrowDown') nudgeSelected(0, grid * big)
-      else if (e.key === 'ArrowLeft') nudgeSelected(-grid * big, 0)
-      else if (e.key === 'ArrowRight') nudgeSelected(grid * big, 0)
+      const step = grid * (e.shiftKey ? 5 : 1)
+      const [dx, dy] = {
+        ArrowUp: [0, -step], ArrowDown: [0, step], ArrowLeft: [-step, 0], ArrowRight: [step, 0],
+      }[e.key] || [0, 0]
+      commit((p) => M.nudgeElement(p, selectedId, dx, dy, grid))
     }
-  }, [selectedId, grid, setTool])
+  }
 
   useEffect(() => {
     const el = svgRef.current?.parentElement
     if (!el) return
     el.tabIndex = 0
+    const onKey = (e) => keyRef.current(e)
     el.addEventListener('keydown', onKey)
     return () => el.removeEventListener('keydown', onKey)
-  }, [onKey])
-
-  // Hold Space to pan with left-drag (in addition to middle/right button).
-  useEffect(() => {
-    const down = (e) => { if (e.code === 'Space') spaceRef.current = true }
-    const up = (e) => { if (e.code === 'Space') spaceRef.current = false }
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
   }, [])
 
-  // Wheel zoom: attached as a NON-passive listener so preventDefault works
-  // (React's synthetic onWheel is passive by default and can't preventDefault).
-  useEffect(() => {
-    const svg = svgRef.current
-    if (!svg) return
-    const onWheel = (e) => {
-      e.preventDefault()
-      const r = svg.getBoundingClientRect()
-      const sx = e.clientX - r.left
-      const sy = e.clientY - r.top
-      const before = screenToWorld(sx, sy)
-      const factor = Math.exp(-e.deltaY * 0.0015)
-      const ns = Math.min(400, Math.max(8, scale * factor))
-      setPan({ x: sx - before.x * ns, y: sy - before.y * ns })
-      setScale(ns)
-    }
-    svg.addEventListener('wheel', onWheel, { passive: false })
-    return () => svg.removeEventListener('wheel', onWheel)
-  }, [scale, screenToWorld])
-
-  // ---- mutations --------------------------------------------------------
-  // fn receives the ACTIVE FLOOR of the cloned project and mutates its arrays.
-  function patchProject(fn) {
-    setProject((p) => {
-      const next = structuredClone(p)
-      const fl = activeFloor(next)
-      if (fl) fn(fl)
-      return next
-    })
-  }
-
-  function removeSelected() {
-    if (!selectedId) return
-    patchProject((fl) => {
-      const wallGone = fl.walls.some((w) => w.id === selectedId)
-      fl.openings = (fl.openings || []).filter((o) => o.id !== selectedId && (!wallGone || o.wallId !== selectedId))
-      fl.walls = fl.walls.filter((w) => w.id !== selectedId)
-      fl.furniture = fl.furniture.filter((f) => f.id !== selectedId)
-    })
-    setSelectedId(null)
-  }
-
-  function rotateSelected() {
-    if (!selectedId) return
-    patchProject((fl) => {
-      const it = fl.furniture.find((x) => x.id === selectedId)
-      if (it) it.rotation = (it.rotation + Math.PI / 2) % (Math.PI * 2)
-    })
-  }
-
-  function updateFurniture(id, patch) {
-    patchProject((fl) => {
-      const it = fl.furniture.find((x) => x.id === id)
-      if (it) Object.assign(it, patch)
-    })
-  }
-
-  function updateWall(id, patch) {
-    patchProject((fl) => {
-      const w = fl.walls.find((x) => x.id === id)
-      if (w) Object.assign(w, patch)
-    })
-  }
-
-  // ---- alignment helpers ----------------------------------------------
-  // Snap a candidate endpoint so walls are easy to draw at 0/90/180/270°.
-  // If the angle from `from` to (x,y) is within ~12° of an axis direction,
-  // project the point onto that axis (keeping the larger delta so the wall
-  // still follows the cursor on the dominant axis).
-  const angleSnapTo = (x, y, from) => {
-    const dx = x - from.x, dy = y - from.y
-    const len = Math.hypot(dx, dy)
-    if (len < 1e-6) return { x, y }
-    const ang = Math.atan2(dy, dx) // radians
-    const deg = (ang * 180) / Math.PI
-    // Distance to nearest multiple of 90°, in degrees.
-    const nearest = Math.round(deg / 90) * 90
-    const delta = Math.abs(deg - nearest)
-    if (delta < 12) {
-      const rad = (nearest * Math.PI) / 180
-      // Keep the wall the same length as the cursor intended.
-      return { x: from.x + len * Math.cos(rad), y: from.y + len * Math.sin(rad) }
-    }
-    return { x, y }
-  }
-
-  // Snap a world point to grid + nearby wall endpoints, optionally angle-aligned
-  // to a reference point (for wall drawing).
-  const snapPoint = useCallback((x, y, ignoreId = null, alignTo = null) => {
-    const gx = snap(x, grid)
-    const gy = snap(y, grid)
-    let best = { x: gx, y: gy }
-    let bestD = (ENDPOINT_SNAP_PX / scale) // threshold in meters
-    for (const w of floor.walls) {
-      if (w.id === ignoreId) continue
-      for (const pt of [{ x: w.x1, y: w.y1 }, { x: w.x2, y: w.y2 }]) {
-        const d = dist(pt.x, pt.y, x, y)
-        if (d < bestD) { bestD = d; best = { x: pt.x, y: pt.y } }
-      }
-    }
-    // Only angle-snap when no endpoint snap won (so corners still connect).
-    if (alignTo && bestD >= (ENDPOINT_SNAP_PX / scale)) {
-      best = angleSnapTo(best.x, best.y, alignTo)
-    }
-    return best
-  }, [floor.walls, grid, scale])
-
-  // ---- hit testing ------------------------------------------------------
-  function hitFurniture(wx, wy) {
-    // Topmost (last drawn) first.
-    for (let i = floor.furniture.length - 1; i >= 0; i--) {
-      const f = floor.furniture[i]
-      if (pointInFurniture(wx, wy, f)) return f
-    }
-    return null
-  }
-
-  function pointInFurniture(wx, wy, f) {
-    // Transform point into furniture local frame.
-    const c = Math.cos(-f.rotation)
-    const s = Math.sin(-f.rotation)
-    const dx = wx - f.x
-    const dy = wy - f.y
-    const lx = dx * c - dy * s
-    const ly = dx * s + dy * c
-    return Math.abs(lx) <= f.width / 2 && Math.abs(ly) <= f.depth / 2
-  }
-
-  function hitWall(wx, wy) {
-    const tol = HIT_PX / scale
-    let best = null
-    let bestD = tol
-    for (const w of floor.walls) {
-      const d = pointSegDist(wx, wy, w.x1, w.y1, w.x2, w.y2)
-      if (d < bestD) { bestD = d; best = w }
-    }
-    return best
-  }
-
-  function hitWallEndpoint(wx, wy) {
-    const tol = HIT_PX / scale * 1.4
-    for (const w of floor.walls) {
-      if (dist(wx, wy, w.x1, w.y1) < tol) return { wall: w, end: 1 }
-      if (dist(wx, wy, w.x2, w.y2) < tol) return { wall: w, end: 2 }
-    }
-    return null
-  }
-
-  // Nearest wall to a point, with the projected offset along it (for placing
-  // openings). Returns { wall, offset, L } within ~0.6 m of the wall line.
-  function nearestWallForOpening(wx, wy) {
-    let best = null
-    for (const w of floor.walls) {
-      const L = dist(w.x1, w.y1, w.x2, w.y2)
-      if (L < 1e-4) continue
-      const ux = (w.x2 - w.x1) / L, uy = (w.y2 - w.y1) / L
-      const perp = Math.abs((wx - w.x1) * -uy + (wy - w.y1) * ux)
-      if (perp > 0.6) continue
-      const t = Math.max(0, Math.min(L, (wx - w.x1) * ux + (wy - w.y1) * uy))
-      if (!best || perp < best.perp) best = { wall: w, offset: t, L, perp }
-    }
-    return best
-  }
-
-  // Select an opening by clicking near its center on its wall.
-  function hitOpening(wx, wy) {
-    let best = null, bestD = Infinity
-    for (const w of floor.walls) {
-      const L = dist(w.x1, w.y1, w.x2, w.y2)
-      if (L < 1e-4) continue
-      const ux = (w.x2 - w.x1) / L, uy = (w.y2 - w.y1) / L
-      for (const o of openingsOnWall(floor, w.id)) {
-        const cx = w.x1 + o.offset * ux, cy = w.y1 + o.offset * uy
-        const d = dist(wx, wy, cx, cy)
-        const tol = Math.max(0.3, o.width / 2 + 0.05)
-        if (d < tol && d < bestD) { bestD = d; best = o }
-      }
-    }
-    return best
-  }
-
-  // ---- pointer handlers -------------------------------------------------
+  // ---- pointer handlers ---------------------------------------------------
   function onPointerDown(e) {
     svgRef.current?.setPointerCapture?.(e.pointerId)
     const world = clientToWorld(e.clientX, e.clientY)
     const isPan = spaceRef.current || e.button === 1 || e.button === 2
 
     if (isPan) {
-      dragRef.current = { kind: 'pan', sx: e.clientX, sy: e.clientY, pan: { ...pan } }
+      dragRef.current = startPan(e)
       return
     }
 
     if (tool === 'wall') {
-      const prev = draft[draft.length - 1]
-      const p = snapPoint(world.x, world.y, null, prev || null)
-      // Closing the chain: click near the first point loops back and resets.
-      // NOTE: commit the wall and update the draft as separate setState calls —
-      // nesting setProject inside setDraft's updater triggers "setState during
-      // render" and crashes the tree.
-      if (draft.length >= 2 && dist(draft[0].x, draft[0].y, p.x, p.y) < (ENDPOINT_SNAP_PX / scale)) {
-        commitChainWall(draft[draft.length - 1], draft[0])
-        setDraft([])
-        return
-      }
-      if (prev) commitChainWall(prev, p)
-      setDraft([...draft, p])
+      wallDraft.handleWallClick(world)
       return
     }
 
     if (tool.startsWith('furniture:')) {
       const type = tool.split(':')[1]
-      const p = snapPoint(world.x, world.y)
-      const item = makeFurniture(type, p.x, p.y)
-      item.id = uid('f')
-      patchProject((fl) => { fl.furniture.push(item) })
+      const p = wallDraft.snapPoint(world.x, world.y)
+      const item = { ...makeFurniture(type, p.x, p.y), id: uid('f') }
+      commit((proj) => M.addFurniture(proj, item))
       setSelectedId(item.id)
       return
     }
 
     if (tool.startsWith('opening:')) {
       const type = tool.split(':')[1]
-      const near = nearestWallForOpening(world.x, world.y)
+      const near = hit.nearestWallForOpening(floor, world.x, world.y)
       if (!near) return // not near a wall: ignore
       const def = openingDefaults(type)
       const off = Math.max(def.width / 2, Math.min(near.L - def.width / 2, near.offset))
       const op = { id: uid('o'), type, wallId: near.wall.id, offset: off, width: def.width, height: def.height, sill: def.sill, hinge: def.hinge, side: def.side }
-      patchProject((fl) => { fl.openings.push(op) })
+      commit((proj) => M.addOpening(proj, op))
       setSelectedId(op.id)
       return
     }
 
     // select tool
-    const ep = hitWallEndpoint(world.x, world.y)
+    const ep = hit.hitWallEndpoint(floor, world.x, world.y, (HIT_PX / scale) * 1.4)
     if (ep) {
       setSelectedId(ep.wall.id)
       dragRef.current = { kind: 'wall-end', wallId: ep.wall.id, end: ep.end }
       return
     }
-    const op = hitOpening(world.x, world.y)
+    const op = hit.hitOpening(floor, world.x, world.y)
     if (op) {
       setSelectedId(op.id)
+      dragRef.current = { kind: 'move-opening', id: op.id }
       return
     }
-    const f = hitFurniture(world.x, world.y)
+    const f = hit.hitFurniture(floor, world.x, world.y)
     if (f) {
       setSelectedId(f.id)
       dragRef.current = { kind: 'move-furn', id: f.id, start: { x: world.x, y: world.y }, orig: { x: f.x, y: f.y } }
       return
     }
-    const w = hitWall(world.x, world.y)
+    const w = hit.hitWall(floor, world.x, world.y, HIT_PX / scale)
     if (w) {
       setSelectedId(w.id)
       return
@@ -388,38 +155,51 @@ export default function Editor2D({
     setSelectedId(null)
   }
 
-  function commitChainWall(a, b) {
-    if (dist(a.x, a.y, b.x, b.y) < 1e-3) return
-    patchProject((fl) => {
-      fl.walls.push({ id: uid('w'), x1: a.x, y1: a.y, x2: b.x, y2: b.y, thickness: settings.wallThickness })
-    })
-  }
-
   function onPointerMove(e) {
     const world = clientToWorld(e.clientX, e.clientY)
-    setCursor(world)
+    wallDraft.setCursor(world)
     const d = dragRef.current
-    if (!d) return
+    if (!d) {
+      // Hover feedback (select tool only, nothing being dragged).
+      if (tool === 'select') {
+        const f = hit.hitFurniture(floor, world.x, world.y)
+        const w = f ? null : hit.hitWall(floor, world.x, world.y, HIT_PX / scale)
+        const id = f?.id || w?.id || null
+        if (id !== hoverId) setHoverId(id)
+      } else if (hoverId) {
+        setHoverId(null)
+      }
+      return
+    }
     if (d.kind === 'pan') {
-      setPan({ x: d.pan.x + (e.clientX - d.sx), y: d.pan.y + (e.clientY - d.sy) })
+      movePan(d, e)
       return
     }
     if (d.kind === 'move-furn') {
       const dx = world.x - d.start.x
       const dy = world.y - d.start.y
-      updateFurniture(d.id, { x: snap(d.orig.x + dx, grid), y: snap(d.orig.y + dy, grid) })
+      patchElement(d.id, { x: snap(d.orig.x + dx, grid), y: snap(d.orig.y + dy, grid) })
       return
     }
     if (d.kind === 'wall-end') {
-      const p = snapPoint(world.x, world.y, d.wallId)
-      updateWall(d.wallId, d.end === 1 ? { x1: p.x, y1: p.y } : { x2: p.x, y2: p.y })
+      const p = wallDraft.snapPoint(world.x, world.y, d.wallId)
+      patchElement(d.wallId, d.end === 1 ? { x1: p.x, y1: p.y } : { x2: p.x, y2: p.y })
+      return
+    }
+    if (d.kind === 'move-opening') {
+      const o = (floor.openings || []).find((x) => x.id === d.id)
+      if (!o) return
+      const near = hit.nearestWallForOpening(floor, world.x, world.y)
+      if (!near) return // keep the opening where it is until near a wall again
+      const off = Math.max(o.width / 2, Math.min(near.L - o.width / 2, snap(near.offset, grid)))
+      patchElement(d.id, { wallId: near.wall.id, offset: off })
       return
     }
     if (d.kind === 'rotate-furn') {
       const f = floor.furniture.find((x) => x.id === d.id)
       if (!f) return
       const ang = Math.atan2(world.y - f.y, world.x - f.x) + Math.PI / 2
-      updateFurniture(d.id, { rotation: snap(ang, Math.PI / 12) })
+      patchElement(d.id, { rotation: snap(ang, Math.PI / 12) })
       return
     }
     if (d.kind === 'resize-furn') {
@@ -428,7 +208,7 @@ export default function Editor2D({
       const c = Math.cos(-f.rotation), s = Math.sin(-f.rotation)
       const lx = (world.x - f.x) * c - (world.y - f.y) * s
       const ly = (world.x - f.x) * s + (world.y - f.y) * c
-      updateFurniture(d.id, {
+      patchElement(d.id, {
         width: Math.max(0.1, snap(lx * 2, grid)),
         depth: Math.max(0.1, snap(ly * 2, grid)),
       })
@@ -443,7 +223,7 @@ export default function Editor2D({
   // Double-click a wall to select it and focus the length field in the sidebar.
   function onDoubleClick(e) {
     const world = clientToWorld(e.clientX, e.clientY)
-    const w = hitWall(world.x, world.y)
+    const w = hit.hitWall(floor, world.x, world.y, HIT_PX / scale)
     if (w) {
       setSelectedId(w.id)
       onWallDoubleClick?.(w.id)
@@ -453,41 +233,59 @@ export default function Editor2D({
   // Suppress context menu so middle/right-button panning works cleanly.
   const onContextMenu = (e) => e.preventDefault()
 
-  // ---- derived render data ---------------------------------------------
+  // ---- derived render data ------------------------------------------------
   const selectedFurniture = floor.furniture.find((f) => f.id === selectedId) || null
 
-  // Grid lines for the visible world window.
-  const gridLines = useMemo(() => {
-    if (!size.w) return { minor: [], major: [] }
-    const tl = screenToWorld(0, 0)
-    const br = screenToWorld(size.w, size.h)
-    const x0 = Math.floor(tl.x / grid) * grid
-    const x1 = Math.ceil(br.x / grid) * grid
-    const y0 = Math.floor(tl.y / grid) * grid
-    const y1 = Math.ceil(br.y / grid) * grid
-    const minor = []
-    const major = []
-    const eps = 1e-6
-    for (let x = x0; x <= x1 + eps; x += grid) {
-      const isMajor = Math.abs(x - Math.round(x)) < eps
-      ;(isMajor ? major : minor).push({ x, y0, y1 })
+  // Wall junctions: weld the corner notches left by butt line caps. A square
+  // covers axis-aligned right angles; a circle covers everything else.
+  const junctions = useMemo(() => {
+    const map = new Map()
+    for (const w of floor.walls) {
+      const { L, ux, uy } = wallUnit(w)
+      if (L < 1e-4) continue
+      const axis = Math.abs(ux) < 1e-6 || Math.abs(uy) < 1e-6
+      for (const pt of [{ x: w.x1, y: w.y1 }, { x: w.x2, y: w.y2 }]) {
+        const key = `${Math.round(pt.x * 100)}:${Math.round(pt.y * 100)}`
+        const j = map.get(key) || { x: pt.x, y: pt.y, count: 0, thickness: 0, axis: true, selected: false }
+        j.count++
+        j.thickness = Math.max(j.thickness, w.thickness)
+        j.axis = j.axis && axis
+        j.selected = j.selected || w.id === selectedId
+        map.set(key, j)
+      }
     }
-    for (let y = y0; y <= y1 + eps; y += grid) {
-      const isMajor = Math.abs(y - Math.round(y)) < eps
-      ;(isMajor ? major : minor).push({ x0, x1, y })
-    }
-    return { minor, major }
-  }, [size, pan, scale, grid, screenToWorld])
+    return [...map.values()].filter((j) => j.count >= 2)
+  }, [floor.walls, selectedId])
 
-  // Draft preview point (snapped) for the in-progress wall.
-  const draftPreview = useMemo(() => {
-    if (!draft.length || !cursor) return null
-    const last = draft[draft.length - 1]
-    const p = snapPoint(cursor.x, cursor.y, null, last)
-    return { from: last, to: p }
-  }, [draft, cursor, snapPoint])
+  // Live dimension pill for the current drag (opening / resize).
+  const dragDims = (() => {
+    const d = dragRef.current
+    if (!d) return null
+    if (d.kind === 'move-opening') {
+      const o = (floor.openings || []).find((x) => x.id === d.id)
+      const w = o && floor.walls.find((x) => x.id === o.wallId)
+      if (!o || !w) return null
+      const { L, ux, uy } = wallUnit(w)
+      const a = Math.max(0, o.offset - o.width / 2)
+      const b = Math.min(L, o.offset + o.width / 2)
+      const at = (t) => worldToScreen(w.x1 + t * ux, w.y1 + t * uy)
+      const angle = (Math.atan2(uy, ux) * 180) / Math.PI
+      const pills = []
+      if (a > 0.05) pills.push({ ...at(a / 2), text: fmtLength(a), angle })
+      if (L - b > 0.05) pills.push({ ...at((b + L) / 2), text: fmtLength(L - b), angle })
+      return pills
+    }
+    if (d.kind === 'resize-furn') {
+      const f = floor.furniture.find((x) => x.id === d.id)
+      if (!f) return null
+      const p = worldToScreen(f.x, f.y)
+      return [{ sx: p.sx, sy: p.sy - 24, text: `${f.width.toFixed(2)} × ${f.depth.toFixed(2)} m`, angle: 0 }]
+    }
+    return null
+  })()
 
   const transform = `translate(${pan.x} ${pan.y}) scale(${scale})`
+  const { draft, preview } = wallDraft
 
   return (
     <div className="editor2d">
@@ -504,65 +302,22 @@ export default function Editor2D({
       >
         <rect x={0} y={0} width={size.w} height={size.h} fill="#f7f6f3" />
         <g transform={transform}>
-          {/* grid */}
-          <g className="grid-minor">
-            {gridLines.minor.map((l, i) =>
-              'y0' in l
-                ? <line key={`mv${i}`} x1={l.x} y1={l.y0} x2={l.x} y2={l.y1} stroke="#e3e0d9" strokeWidth={1 / scale} vectorEffect="non-scaling-stroke" />
-                : <line key={`mh${i}`} x1={l.x0} y1={l.y} x2={l.x1} y2={l.y} stroke="#e3e0d9" strokeWidth={1 / scale} vectorEffect="non-scaling-stroke" />
-            )}
-          </g>
-          <g className="grid-major">
-            {gridLines.major.map((l, i) =>
-              'y0' in l
-                ? <line key={`Mv${i}`} x1={l.x} y1={l.y0} x2={l.x} y2={l.y1} stroke="#cfcabf" strokeWidth={1 / scale} vectorEffect="non-scaling-stroke" />
-                : <line key={`Mh${i}`} x1={l.x0} y1={l.y} x2={l.x1} y2={l.y} stroke="#cfcabf" strokeWidth={1 / scale} vectorEffect="non-scaling-stroke" />
-            )}
-          </g>
+          <GridLayer size={size} scale={scale} grid={grid} screenToWorld={screenToWorld} />
+          <FloorsBelowLayer floors={floorsBelow} />
 
-          {/* floors below — faint construction guide */}
-          {floorsBelow.map((bf) => (
-            <g key={`bf-${bf.id}`} opacity={0.22} pointerEvents="none" style={{ pointerEvents: 'none' }}>
-              {bf.walls.map((w) => {
-                const L = dist(w.x1, w.y1, w.x2, w.y2)
-                if (L < 1e-4) return null
-                return (
-                  <line key={w.id} x1={w.x1} y1={w.y1} x2={w.x2} y2={w.y2}
-                    stroke="#9a9183" strokeWidth={w.thickness} strokeLinecap="butt" />
-                )
-              })}
-              {bf.furniture.map((f) => (
-                <g key={f.id} transform={`translate(${f.x} ${f.y}) rotate(${(f.rotation * 180) / Math.PI})`}>
-                  <FurnitureGraphic type={f.type} width={f.width} depth={f.depth} color={f.color} />
-                </g>
-              ))}
-            </g>
-          ))}
-
-          {/* walls */}
+          {/* walls + junction welds */}
           {floor.walls.map((w) => (
-            <WallShape key={w.id} w={w} openings={openingsOnWall(floor, w.id)} selectedId={selectedId} scale={scale} />
+            <WallShape key={w.id} w={w} openings={openingsOnWall(floor, w.id)}
+              selectedId={selectedId} hoverId={hoverId} scale={scale} />
+          ))}
+          {junctions.map((j, i) => (
+            j.axis
+              ? <rect key={`jx${i}`} x={j.x - j.thickness / 2} y={j.y - j.thickness / 2}
+                  width={j.thickness} height={j.thickness} fill={j.selected ? '#ff8c1a' : '#3a3530'} />
+              : <circle key={`jx${i}`} cx={j.x} cy={j.y} r={j.thickness / 2} fill={j.selected ? '#ff8c1a' : '#3a3530'} />
           ))}
 
-          {/* furniture — rugs first (bottom z-order), then everything else */}
-          {(() => {
-            const rugs = floor.furniture.filter((f) => f.type === 'rug')
-            const rest = floor.furniture.filter((f) => f.type !== 'rug')
-            const render = (f) => {
-              const sel = f.id === selectedId
-              return (
-                <g key={f.id} transform={`translate(${f.x} ${f.y}) rotate(${(f.rotation * 180) / Math.PI})`}>
-                  <FurnitureGraphic type={f.type} width={f.width} depth={f.depth} color={f.color} />
-                  {sel && (
-                    <rect x={-f.width / 2} y={-f.depth / 2} width={Math.max(f.width, 0)} height={Math.max(f.depth, 0)}
-                      rx={Math.max(0, Math.min(f.width, f.depth) * 0.08)} fill="none" stroke="#ff8c1a"
-                      strokeWidth={2.5 / scale} />
-                  )}
-                </g>
-              )
-            }
-            return [...rugs.map(render), ...rest.map(render)]
-          })()}
+          <FurnitureLayer furniture={floor.furniture} selectedId={selectedId} hoverId={hoverId} scale={scale} />
 
           {/* draft chain + preview */}
           {draft.map((p, i) => i > 0 && (
@@ -572,35 +327,35 @@ export default function Editor2D({
           {draft.map((p, i) => (
             <circle key={`dp${i}`} cx={p.x} cy={p.y} r={5 / scale} fill="#ff8c1a" />
           ))}
-          {draftPreview && (
-            <line x1={draftPreview.from.x} y1={draftPreview.from.y}
-              x2={draftPreview.to.x} y2={draftPreview.to.y}
+          {preview && (
+            <line x1={preview.from.x} y1={preview.from.y}
+              x2={preview.to.x} y2={preview.to.y}
               stroke="#ff8c1a" strokeWidth={0.04} strokeDasharray={`${0.1 / scale} ${0.05 / scale}`} opacity={0.7} />
           )}
         </g>
 
-        {/* wall length labels — drawn in screen space for crisp text */}
-        <g>
-          {floor.walls.map((w) => {
-            const mid = worldToScreen((w.x1 + w.x2) / 2, (w.y1 + w.y2) / 2)
-            const lbl = fmtWallLabel(w)
-            return (
-              <g key={`wl${w.id}`} transform={`translate(${mid.sx} ${mid.sy})`} style={{ pointerEvents: 'none' }}>
-                <rect x={-26} y={-9} width={52} height={18} rx={4} fill="#fffdf8" stroke="#d8d2c6" strokeWidth={1} opacity={0.92} />
-                <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fontSize={11} fill="#5a5247">{lbl}</text>
-              </g>
-            )
-          })}
-        </g>
+        <WallLabels walls={floor.walls} worldToScreen={worldToScreen} scale={scale} />
 
-        {/* selection handles for furniture, in screen space */}
+        {/* live dimension for the in-progress wall segment */}
+        {preview && (() => {
+          const L = dist(preview.from.x, preview.from.y, preview.to.x, preview.to.y)
+          if (L < 0.05) return null
+          const mid = worldToScreen((preview.from.x + preview.to.x) / 2, (preview.from.y + preview.to.y) / 2)
+          const angle = (Math.atan2(preview.to.y - preview.from.y, preview.to.x - preview.from.x) * 180) / Math.PI
+          return <DimensionPill sx={mid.sx} sy={mid.sy - 16} text={fmtLength(L)} angleDeg={angle} accent />
+        })()}
+
+        {/* live dimensions for opening / resize drags */}
+        {dragDims && dragDims.map((p, i) => (
+          <DimensionPill key={`dd${i}`} sx={p.sx} sy={p.sy} text={p.text} angleDeg={p.angle} accent />
+        ))}
+
         {selectedFurniture && (
           <SelectionHandles
             f={selectedFurniture}
-            pan={pan} scale={scale}
+            worldToScreen={worldToScreen}
             onRotateStart={() => { dragRef.current = { kind: 'rotate-furn', id: selectedFurniture.id } }}
             onResizeStart={() => { dragRef.current = { kind: 'resize-furn', id: selectedFurniture.id } }}
-            worldToScreen={worldToScreen}
           />
         )}
 
@@ -616,51 +371,10 @@ export default function Editor2D({
   )
 }
 
-// Selection handles (rotate + resize) rendered in screen space so they stay
-// a constant pixel size regardless of zoom.
-function SelectionHandles({ f, worldToScreen, onRotateStart, onResizeStart }) {
-  const cos = Math.cos(f.rotation), sin = Math.sin(f.rotation)
-  // local (lx, ly) -> screen, rotating around the furniture center.
-  const toScreen = (lx, ly) => worldToScreen(f.x + lx * cos - ly * sin, f.y + lx * sin + ly * cos)
-  const corners = [
-    toScreen(-f.width / 2, -f.depth / 2),
-    toScreen(f.width / 2, -f.depth / 2),
-    toScreen(-f.width / 2, f.depth / 2),
-    toScreen(f.width / 2, f.depth / 2),
-  ]
-  const pts = corners.map((p) => p.sx + ',' + p.sy).join(' ')
-  const rh = toScreen(0, -f.depth / 2 - 0.35)
-  const rhAnchor = toScreen(0, -f.depth / 2)
-  const br = corners[3]
-  return (
-    <g>
-      {/* bounding outline */}
-      <polygon points={pts} fill="none" stroke="#ff8c1a" strokeWidth={1.5} strokeDasharray="4 3" />
-      {/* rotate handle */}
-      <line x1={rhAnchor.sx} y1={rhAnchor.sy} x2={rh.sx} y2={rh.sy} stroke="#ff8c1a" strokeWidth={1.5} />
-      <circle cx={rh.sx} cy={rh.sy} r={6} fill="#fff" stroke="#ff8c1a" strokeWidth={2}
-        style={{ cursor: 'grab' }} onPointerDown={(e) => { e.stopPropagation(); onRotateStart() }} />
-      {/* resize handle: bottom-right corner */}
-      <circle cx={br.sx} cy={br.sy} r={6} fill="#ff8c1a" stroke="#fff" strokeWidth={2}
-        style={{ cursor: 'nwse-resize' }} onPointerDown={(e) => { e.stopPropagation(); onResizeStart() }} />
-    </g>
-  )
-}
-
 function cursorStyle(tool, drag, space) {
   if (drag?.kind === 'pan' || space) return 'grab'
   if (drag) return 'move'
   if (tool === 'wall') return 'crosshair'
   if (tool.startsWith('furniture:')) return 'copy'
   return 'default'
-}
-
-// Distance from point (px,py) to segment (x1,y1)-(x2,y2).
-function pointSegDist(px, py, x1, y1, x2, y2) {
-  const dx = x2 - x1, dy = y2 - y1
-  const len2 = dx * dx + dy * dy
-  if (len2 < 1e-9) return dist(px, py, x1, y1)
-  let t = ((px - x1) * dx + (py - y1) * dy) / len2
-  t = Math.max(0, Math.min(1, t))
-  return dist(px, py, x1 + t * dx, y1 + t * dy)
 }

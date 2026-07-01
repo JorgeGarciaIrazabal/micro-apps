@@ -3,10 +3,9 @@
 // meters -> screen pixels via a scale factor (zoom). This keeps the on-disk
 // format resolution-independent and easy to share.
 
-export const PROJECT_VERSION = 1
+import { dist } from './geometry.js'
 
-// Fixed grid snap step (meters). The grid is always 0.05 m; no user setting.
-export const GRID_SIZE = 0.05
+export const PROJECT_VERSION = 1
 
 // ---- id generation -------------------------------------------------------
 let _seq = 0
@@ -22,19 +21,9 @@ export function fmtLength(m) {
   return `${m.toFixed(2)} m`
 }
 
-export const mToUnit = (m) => m
-export const unitToM = (v) => v
-
 // ---- geometry helpers ---------------------------------------------------
-export const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1)
-
 export function wallLength(w) {
   return dist(w.x1, w.y1, w.x2, w.y2)
-}
-
-export function snap(v, step) {
-  if (!step) return v
-  return Math.round(v / step) * step
 }
 
 export function fmtWallLabel(w) {
@@ -53,7 +42,9 @@ export function createProject(name = 'Untitled Project') {
   return {
     version: PROJECT_VERSION,
     name,
-    settings: { wallHeight: 2.7, wallThickness: 0.15 },
+    // `units` is display-intent only (storage is always meters); ft display is
+    // intentionally unimplemented but the field round-trips per the spec.
+    settings: { units: 'm', wallHeight: 2.7, wallThickness: 0.15, gridSize: 0.1 },
     floors: [ground],
     activeFloorId: ground.id,
   }
@@ -66,8 +57,10 @@ export function normalizeProject(input) {
   if (typeof input?.name === 'string') p.name = input.name
 
   const s = { ...p.settings, ...(input?.settings || {}) }
+  s.units = s.units === 'ft' ? 'ft' : 'm'
   s.wallHeight = clampNum(s.wallHeight, 2.4, 6, 2.7)
   s.wallThickness = clampNum(s.wallThickness, 0.05, 0.6, 0.15)
+  s.gridSize = clampNum(s.gridSize, 0.01, 1.0, 0.1)
   p.settings = s
 
   if (Array.isArray(input?.floors) && input.floors.length) {

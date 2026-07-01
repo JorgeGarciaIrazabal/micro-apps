@@ -5,7 +5,10 @@ import PropertiesPanel from './components/PropertiesPanel.jsx'
 import Editor2D from './components/Editor2D.jsx'
 import Editor3D from './components/Editor3D.jsx'
 import FloorBar from './components/FloorBar.jsx'
+import ShortcutHelp from './components/ShortcutHelp.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid } from './lib/project.js'
+import * as M from './lib/mutations.js'
+import { useProjectHistory } from './hooks/useProjectHistory.js'
 import { sampleProject } from './lib/sample.js'
 
 const STORAGE_KEY = 'house-designer:project:v1'
@@ -20,65 +23,39 @@ function loadSaved() {
 }
 
 export default function App() {
-  const [project, setProject] = useState(loadSaved)
   const [view, setView] = useState('2d')
   const [tool, setTool] = useState('select')
   const [selectedId, setSelectedId] = useState(null)
   const [toast, setToast] = useState(null)
+  const [helpOpen, setHelpOpen] = useState(false)
   const [focusLenToken, setFocusLenToken] = useState(0)
   const stageRef = useRef(null)
   const editor3dRef = useRef(null)
 
-  // ---- undo history -----------------------------------------------------
-  // Every project mutation pushes the PREVIOUS snapshot onto the history
-  // stack. Ctrl+Z pops the most recent and restores it. Rapid consecutive
-  // mutations (e.g. drag-move) collapse into a single undo step via a time
-  // debounce so dragging a piece doesn't flood the stack.
-  const historyRef = useRef([])
-  const lastPushRef = useRef(0)
-  const MAX_HISTORY = 80
-  const PUSH_DEBOUNCE_MS = 350
-
-  const pushHistory = useCallback((prev) => {
-    const now = Date.now()
-    if (now - lastPushRef.current < PUSH_DEBOUNCE_MS) {
-      // Skip: a snapshot was pushed very recently (same drag/interaction).
-      return
-    }
-    lastPushRef.current = now
-    const h = historyRef.current
-    h.push(serialize(prev))
-    if (h.length > MAX_HISTORY) h.shift()
+  const toastTimer = useRef(null)
+  const flash = useCallback((msg, type = 'info') => {
+    clearTimeout(toastTimer.current)
+    setToast({ msg, type, key: Date.now() })
+    toastTimer.current = setTimeout(() => setToast(null), 2600)
   }, [])
 
-  // Wrapper used for ALL project mutations that should be undoable.
-  const setProjectHist = useCallback((updater) => {
-    setProject((prev) => {
-      pushHistory(prev)
-      return typeof updater === 'function' ? updater(prev) : updater
-    })
-  }, [pushHistory])
+  const { project, commit } = useProjectHistory(loadSaved, {
+    onUndo: (ok) => flash(ok ? 'Undo' : 'Nothing to undo'),
+    onRedo: (ok) => flash(ok ? 'Redo' : 'Nothing to redo'),
+  })
 
-  const undo = useCallback(() => {
-    const h = historyRef.current
-    if (!h.length) { return false }
-    const snap = h.pop()
-    try { setProject(deserialize(snap)) } catch { /* corrupted snapshot */ }
-    setSelectedId(null)
-    return true
-  }, [])
-
-  // Global Ctrl+Z / Cmd+Z to undo.
+  // Drop the selection when the selected element no longer exists (deleted,
+  // undone, floor switched…).
   useEffect(() => {
-    const onKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        e.preventDefault()
-        if (undo()) flash('Undo')
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [undo, flash])
+    if (!selectedId) return
+    const fl = activeFloor(project)
+    const exists = fl && (
+      fl.walls.some((w) => w.id === selectedId) ||
+      fl.furniture.some((f) => f.id === selectedId) ||
+      (fl.openings || []).some((o) => o.id === selectedId)
+    )
+    if (!exists) setSelectedId(null)
+  }, [project, selectedId])
 
   // Persist to localStorage (debounced via rAF).
   useEffect(() => {
@@ -88,11 +65,6 @@ export default function App() {
     return () => cancelAnimationFrame(id)
   }, [project])
 
-  const flash = useCallback((msg) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 2600)
-  }, [])
-
   // ---- file import / export --------------------------------------------
   const onImport = useCallback(async () => {
     const file = await pickFile('application/json,.json')
@@ -101,46 +73,46 @@ export default function App() {
       const proj = deserialize(file.text)
       // Keep the file's name as the project name when sensible.
       if (file.name && /\.json$/i.test(file.name)) {
-        proj.name = file.name.replace(/\.json$/i, '').replace(/\.pln5d$/i, '')
+        proj.name = file.name.replace(/\.(house|pln5d)\.json$/i, '').replace(/\.json$/i, '')
       }
-      setProjectHist(proj)
+      commit(proj)
       setSelectedId(null)
-      flash(`Opened “${proj.name}”`)
+      flash(`Opened “${proj.name}”`, 'success')
     } catch (err) {
-      flash(`Import failed: ${err.message}`)
+      flash(`Import failed: ${err.message}`, 'error')
     }
-  }, [flash, setProjectHist])
+  }, [flash, commit])
 
   const onExportJson = useCallback(() => {
     const name = safeName(project.name, 'house-designer-project')
-    downloadBlob(`${name}.pln5d.json`, serialize(project))
-    flash('Saved project JSON')
+    downloadBlob(`${name}.house.json`, serialize(project))
+    flash('Saved project JSON', 'success')
   }, [project, flash])
 
   const onExportPng = useCallback(async () => {
     if (view === '3d') {
       const data = editor3dRef.current?.exportPNG?.()
-      if (!data) return flash('3D render not ready')
+      if (!data) return flash('3D render not ready', 'error')
       downloadBlob(`${safeName(project.name, 'house-designer')}.3d.png`, data, 'image/png')
-      flash('Exported 3D PNG')
+      flash('Exported 3D PNG', 'success')
       return
     }
     const svg = stageRef.current?.querySelector('svg')
-    if (!svg) return flash('2D view not ready')
+    if (!svg) return flash('2D view not ready', 'error')
     const w = Number(svg.getAttribute('width')) || svg.clientWidth || 800
     const h = Number(svg.getAttribute('height')) || svg.clientHeight || 560
     const data = await exportSvgPng(svg, w, h)
-    if (!data) return flash('PNG export failed')
+    if (!data) return flash('PNG export failed', 'error')
     downloadBlob(`${safeName(project.name, 'house-designer')}.2d.png`, data, 'image/png')
-    flash('Exported 2D PNG')
+    flash('Exported 2D PNG', 'success')
   }, [view, project, flash])
 
   const onLoadSample = useCallback(() => {
-    setProjectHist(sampleProject())
+    commit(sampleProject())
     setSelectedId(null)
     setView('2d')
     flash('Loaded sample apartment')
-  }, [flash, setProjectHist])
+  }, [flash, commit])
 
   const onResetView = useCallback(() => {
     if (view === '3d') editor3dRef.current?.resetCamera?.()
@@ -149,53 +121,55 @@ export default function App() {
 
   const onDeleteSelected = useCallback(() => {
     if (!selectedId) return
-    setProjectHist((p) => {
-      const fl = activeFloor(p)
-      if (!fl) return p
-      const wallGone = fl.walls.some((w) => w.id === selectedId)
-      fl.walls = fl.walls.filter((w) => w.id !== selectedId)
-      fl.furniture = fl.furniture.filter((f) => f.id !== selectedId)
-      fl.openings = (fl.openings || []).filter((o) => o.id !== selectedId && (!wallGone || o.wallId !== selectedId))
-      return { ...p }
-    })
+    commit((p) => M.deleteElement(p, selectedId))
     setSelectedId(null)
-  }, [selectedId, setProjectHist])
+  }, [selectedId, commit])
+
+  const onDuplicateSelected = useCallback(() => {
+    if (!selectedId) return
+    const newId = uid('dup')
+    commit((p) => M.duplicateElement(p, selectedId, newId))
+    setSelectedId(newId)
+    flash('Duplicated')
+  }, [selectedId, commit, flash])
+
+  // Global shortcuts that aren't tied to the 2D canvas: duplicate + help.
+  useEffect(() => {
+    const onKey = (e) => {
+      const t = e.target
+      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && !typing) {
+        e.preventDefault()
+        onDuplicateSelected()
+      } else if (e.key === '?' && !typing) {
+        e.preventDefault()
+        setHelpOpen((v) => !v)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onDuplicateSelected])
 
   // ---- floors ----------------------------------------------------------
   const onAddFloor = useCallback(() => {
-    setProjectHist((p) => {
-      const level = ((p.floors || []).reduce((m, f) => Math.max(m, f.level || 0), 0)) + 3
-      const f = { id: uid('floor'), name: `Floor ${p.floors.length + 1}`, level, walls: [], furniture: [], openings: [] }
-      return { ...p, floors: [...p.floors, f], activeFloorId: f.id }
-    })
+    commit(M.addFloor)
     setSelectedId(null)
     setView('2d')
-  }, [setProjectHist])
+  }, [commit])
 
   const onDeleteFloor = useCallback(() => {
-    setProjectHist((p) => {
-      if (p.floors.length <= 1) return p
-      const idx = p.floors.findIndex((f) => f.id === p.activeFloorId)
-      const floors = p.floors.filter((f) => f.id !== p.activeFloorId)
-      const activeFloorId = floors[Math.max(0, idx - 1)].id
-      return { ...p, floors, activeFloorId }
-    })
+    commit(M.deleteFloor)
     setSelectedId(null)
-  }, [setProjectHist])
+  }, [commit])
 
   const onFloorProp = useCallback((patch) => {
-    setProjectHist((p) => {
-      const fl = activeFloor(p)
-      if (!fl) return p
-      Object.assign(fl, patch)
-      return { ...p }
-    })
-  }, [setProjectHist])
+    commit((p) => M.patchActiveFloor(p, patch))
+  }, [commit])
 
   const setActiveFloor = useCallback((id) => {
-    setProjectHist((p) => ({ ...p, activeFloorId: id }))
+    commit((p) => M.setActiveFloorId(p, id), { undoable: false })
     setSelectedId(null)
-  }, [setProjectHist])
+  }, [commit])
 
   // Empty-state shows only when the WHOLE project has no content, so switching
   // to an empty floor (or adding one) doesn't hide content that exists elsewhere.
@@ -207,7 +181,7 @@ export default function App() {
     <div className="app">
       <TopBar
         project={project}
-        setProject={setProject}
+        onRename={(name) => commit((p) => M.renameProject(p, name))}
         view={view}
         setView={setView}
         onImport={onImport}
@@ -215,6 +189,7 @@ export default function App() {
         onExportPng={onExportPng}
         onLoadSample={onLoadSample}
         onResetView={onResetView}
+        onHelp={() => setHelpOpen(true)}
       />
       <FloorBar project={project} onSelect={setActiveFloor} onAdd={onAddFloor} />
       <div className="workspace">
@@ -223,7 +198,7 @@ export default function App() {
           {view === '2d' ? (
             <Editor2D
               project={project}
-              setProject={setProjectHist}
+              commit={commit}
               tool={tool}
               setTool={setTool}
               selectedId={selectedId}
@@ -247,15 +222,17 @@ export default function App() {
         <PropertiesPanel
           project={project}
           selectedId={selectedId}
-          setProject={setProjectHist}
+          commit={commit}
           onDelete={onDeleteSelected}
+          onDuplicate={onDuplicateSelected}
           focusLenToken={focusLenToken}
           onAddFloor={onAddFloor}
           onDeleteFloor={onDeleteFloor}
           onFloorProp={onFloorProp}
         />
       </div>
-      {toast && <div className="toast">{toast}</div>}
+      {helpOpen && <ShortcutHelp onClose={() => setHelpOpen(false)} />}
+      {toast && <div key={toast.key} className={`toast ${toast.type}`}>{toast.msg}</div>}
     </div>
   )
 }

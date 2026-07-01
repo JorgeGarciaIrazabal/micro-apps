@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { wallLength, activeFloor } from '../lib/project.js'
+import * as M from '../lib/mutations.js'
 
 // Right sidebar. Edits the selected wall/furniture, or project settings when
-// nothing is selected. Numeric fields are unit-aware (m or ft).
-export default function PropertiesPanel({ project, selectedId, setProject, onDelete, focusLenToken,
+// nothing is selected.
+export default function PropertiesPanel({ project, selectedId, commit, onDelete, onDuplicate, focusLenToken,
   onAddFloor, onDeleteFloor, onFloorProp }) {
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
   const furn = floor.furniture.find((f) => f.id === selectedId) || null
@@ -11,34 +12,19 @@ export default function PropertiesPanel({ project, selectedId, setProject, onDel
   const opening = (!furn && !wall) ? (floor.openings || []).find((o) => o.id === selectedId) || null : null
 
   function patchSel(patch) {
-    setProject((p) => {
-      const next = structuredClone(p)
-      const fl = activeFloor(next)
-      if (!fl) return next
-      if (furn) {
-        const it = fl.furniture.find((x) => x.id === furn.id)
-        if (it) Object.assign(it, patch)
-      } else if (wall) {
-        const w = fl.walls.find((x) => x.id === wall.id)
-        if (w) Object.assign(w, patch)
-      } else if (opening) {
-        const o = (fl.openings || []).find((x) => x.id === opening.id)
-        if (o) Object.assign(o, patch)
-      }
-      return next
-    })
+    commit((p) => M.patchElement(p, selectedId, patch))
   }
 
   function patchSettings(patch) {
-    setProject((p) => ({ ...p, settings: { ...p.settings, ...patch } }))
+    commit((p) => M.patchSettings(p, patch))
   }
 
   return (
     <aside className="panel props-panel">
       {furn ? (
-        <FurnitureProps f={furn} onChange={patchSel} onDelete={onDelete} />
+        <FurnitureProps f={furn} onChange={patchSel} onDelete={onDelete} onDuplicate={onDuplicate} />
       ) : wall ? (
-        <WallProps w={wall} onChange={patchSel} onDelete={onDelete} focusLenToken={focusLenToken} />
+        <WallProps w={wall} onChange={patchSel} onDelete={onDelete} onDuplicate={onDuplicate} focusLenToken={focusLenToken} />
       ) : opening ? (
         <OpeningProps o={opening} floor={floor} onChange={patchSel} onDelete={onDelete} />
       ) : (
@@ -77,7 +63,7 @@ function round(v, d) {
   return Math.round(v * p) / p
 }
 
-function FurnitureProps({ f, onChange, onDelete }) {
+function FurnitureProps({ f, onChange, onDelete, onDuplicate }) {
   const deg = (f.rotation * 180) / Math.PI
   return (
     <div className="props-group">
@@ -105,13 +91,14 @@ function FurnitureProps({ f, onChange, onDelete }) {
       </div>
       <div className="props-actions">
         <button onClick={() => onChange({ rotation: (f.rotation + Math.PI / 2) % (Math.PI * 2) })}>Rotate 90°</button>
+        <button onClick={onDuplicate} title="Ctrl+D">Duplicate</button>
         <button className="danger" onClick={onDelete}>Delete</button>
       </div>
     </div>
   )
 }
 
-function WallProps({ w, onChange, onDelete, focusLenToken }) {
+function WallProps({ w, onChange, onDelete, onDuplicate, focusLenToken }) {
   const lenRef = useRef(null)
   const len = wallLength(w)
   useEffect(() => {
@@ -141,6 +128,7 @@ function WallProps({ w, onChange, onDelete, focusLenToken }) {
         <MetersField label="Y2" value={w.y2} onChange={(v) => onChange({ y2: v })} />
       </div>
       <div className="props-actions">
+        <button onClick={onDuplicate} title="Ctrl+D">Duplicate</button>
         <button className="danger" onClick={onDelete}>Delete wall</button>
       </div>
     </div>
@@ -195,6 +183,7 @@ function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, on
       <h3>Project</h3>
       <MetersField label="Wall height" value={s.wallHeight} onChange={(v) => onChangeSettings({ wallHeight: clamp(v, 2.4, 6) })} />
       <MetersField label="Wall thickness" value={s.wallThickness} onChange={(v) => onChangeSettings({ wallThickness: clamp(v, 0.05, 0.6) })} />
+      <MetersField label="Grid snap" step={0.05} value={s.gridSize ?? 0.1} onChange={(v) => onChangeSettings({ gridSize: clamp(v, 0.01, 1) })} />
 
       <h3 style={{ marginTop: 18 }}>Active floor</h3>
       <Field label="Floor name">

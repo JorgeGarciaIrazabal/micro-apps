@@ -171,6 +171,10 @@ body {
 .stats span { color: var(--ink-soft); }
 .stats b { color: var(--ink); font-weight: 700; }
 
+/* marching ants on the selected-furniture outline */
+.selection-ants { animation: ants 0.5s linear infinite; }
+@keyframes ants { to { stroke-dashoffset: -7; } }
+
 /* ---------- editors ---------- */
 .editor2d, .editor3d { width: 100%; height: 100%; }
 .editor2d { outline: none; overflow: hidden; }
@@ -205,6 +209,43 @@ body {
   animation: toast-in 0.18s ease-out;
 }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.toast::before { content: '·'; margin-right: 8px; font-weight: 700; }
+.toast.success { background: #2e6b3f; }
+.toast.success::before { content: '✓'; }
+.toast.error { background: var(--danger); }
+.toast.error::before { content: '✕'; }
+
+/* ---------- shortcut help ---------- */
+.shortcut-overlay {
+  position: fixed; inset: 0; z-index: 30;
+  background: rgba(43, 39, 34, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  animation: toast-in 0.15s ease-out;
+}
+.shortcut-card {
+  background: var(--surface); border-radius: 14px; box-shadow: var(--shadow);
+  padding: 24px 28px; max-width: 640px; width: calc(100% - 48px);
+  max-height: 80vh; overflow-y: auto;
+}
+.shortcut-card h2 { margin: 0 0 16px; font-size: 1.05rem; }
+.shortcut-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; }
+.shortcut-groups h3 {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-faint); margin: 0 0 8px;
+}
+.shortcut-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 7px; font-size: 0.82rem; color: var(--ink-soft); }
+.shortcut-keys { flex: 0 0 auto; min-width: 86px; }
+.kbd-plus { margin: 0 2px; color: var(--ink-faint); }
+kbd {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--line-strong); border-bottom-width: 2px;
+  background: var(--surface-2); font-size: 0.72rem; font-family: inherit; color: var(--ink);
+}
+.shortcut-close {
+  margin-top: 18px; border: 1px solid var(--line); background: var(--surface-2);
+  padding: 7px 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.84rem;
+}
+.shortcut-close:hover { border-color: var(--line-strong); }
 
 /* ---------- responsive ---------- */
 @media (max-width: 980px) {

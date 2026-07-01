@@ -1,36 +1,22 @@
-import { wallLength } from '../lib/project.js'
+import { wallUnit, wallCutSegments } from '../lib/geometry.js'
 
 // Draws a wall in world coordinates, cut by its door/window openings, with the
 // standard plan symbol for each opening. The wall is rendered as solid
 // segments around each opening (a visible gap), plus the door swing arc or the
 // window glass lines inside the gap.
 
-export default function WallShape({ w, openings, selectedId, scale }) {
-  const L = wallLength(w)
+export default function WallShape({ w, openings, selectedId, hoverId, scale }) {
+  const { L, ux, uy, nx, ny } = wallUnit(w)
   if (L < 1e-4) return null
-  const ux = (w.x2 - w.x1) / L, uy = (w.y2 - w.y1) / L
-  const nx = -uy, ny = ux // left normal
-  const A = { x: w.x1, y: w.y1 }
-  const at = (t) => ({ x: A.x + t * ux, y: A.y + t * uy })
+  const at = (t) => ({ x: w.x1 + t * ux, y: w.y1 + t * uy })
 
   const wallSel = w.id === selectedId
+  const wallHover = !wallSel && w.id === hoverId
   const thk = w.thickness
   const wallColor = wallSel ? '#ff8c1a' : '#3a3530'
   const centerColor = wallSel ? '#ffd9a8' : '#7a736b'
 
-  // Build solid segments around openings (clamped to the wall span).
-  const segs = []
-  const ops = []
-  let cursor = 0
-  for (const o of openings) {
-    const a = Math.max(cursor, o.offset - o.width / 2)
-    const b = Math.min(L, o.offset + o.width / 2)
-    if (b - a < 0.05) { cursor = Math.max(cursor, b); continue }
-    if (a > cursor + 1e-6) segs.push([cursor, a])
-    ops.push({ o, a, b })
-    cursor = b
-  }
-  if (cursor < L - 1e-6) segs.push([cursor, L])
+  const { segs, ops } = wallCutSegments(L, openings)
 
   return (
     <g className="wall">
@@ -38,6 +24,10 @@ export default function WallShape({ w, openings, selectedId, scale }) {
         const p1 = at(a), p2 = at(b)
         return (
           <g key={`s${i}`}>
+            {wallHover && (
+              <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
+                stroke="#ff8c1a" strokeWidth={thk + 6 / scale} strokeLinecap="butt" opacity={0.25} />
+            )}
             <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
               stroke={wallColor} strokeWidth={thk} strokeLinecap="butt" />
             <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y}
