@@ -29,11 +29,13 @@ if (files.length === 0) {
 // --- catalog of known furniture types (mirrors src/lib/furniture.js CATALOG) ---
 const KNOWN_FURNITURE_TYPES = new Set([
   'sofa', 'armchair', 'coffee-table', 'tv-stand', 'bookshelf', 'rug',
-  'bed-double', 'bed-single', 'nightstand', 'wardrobe', 'dresser',
-  'counter', 'sink', 'stove', 'fridge', 'island', 'dining-table', 'chair',
-  'toilet', 'bathtub', 'shower', 'vanity',
+  'floor-lamp', 'piano', 'side-table',
+  'bed-double', 'bed-single', 'nightstand', 'wardrobe', 'dresser', 'crib',
+  'counter', 'sink', 'stove', 'fridge', 'island', 'dining-table', 'chair', 'dishwasher',
+  'toilet', 'bathtub', 'shower', 'vanity', 'washing-machine',
   'desk', 'office-chair', 'filing-cabinet',
-  'plant', 'tree', 'box',
+  'stairs', 'balcony', 'railing',
+  'plant', 'tree', 'pool', 'bbq', 'bench', 'outdoor-table', 'box',
 ])
 
 const clampRange = (lo, hi) => ({ lo, hi })

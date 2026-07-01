@@ -152,6 +152,91 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w, Math.max(0.02, h), d, 0, Math.max(0.02, h) / 2, 0, color, { finish: 'fabric' })
       break
     }
+    case 'stairs': {
+      // straight run rising toward -z (the 2D arrow direction)
+      const steps = Math.max(3, Math.round(h / 0.18))
+      const run = d / steps
+      const rise = h / steps
+      for (let i = 0; i < steps; i++) {
+        box(w, rise * (i + 1), run, 0, (rise * (i + 1)) / 2, d / 2 - run * (i + 0.5), color, { finish: 'wood' })
+      }
+      break
+    }
+    case 'balcony': {
+      // platform + railing on 3 sides; -z edge open (attaches to the house)
+      const slabH = 0.12
+      const railH = Math.min(h, 1.2)
+      box(w, slabH, d, 0, slabH / 2, 0, shade(color, 0.92))
+      const railRun = (x1, z1, x2, z2) => {
+        const len = Math.hypot(x2 - x1, z2 - z1)
+        const n = Math.max(2, Math.round(len / 0.15))
+        for (let i = 0; i <= n; i++) {
+          const t = i / n
+          cyl(0.02, railH - slabH, x1 + (x2 - x1) * t, slabH + (railH - slabH) / 2, z1 + (z2 - z1) * t, shade(color, 0.75), { finish: 'metal' })
+        }
+        const rail = box(Math.max(len, 0.05), 0.05, 0.06, (x1 + x2) / 2, railH, (z1 + z2) / 2, shade(color, 0.6), { finish: 'metal' })
+        rail.rotation.y = -Math.atan2(z2 - z1, x2 - x1)
+      }
+      const e = 0.04
+      railRun(-w / 2 + e, -d / 2 + e, -w / 2 + e, d / 2 - e) // left
+      railRun(-w / 2 + e, d / 2 - e, w / 2 - e, d / 2 - e)   // front
+      railRun(w / 2 - e, d / 2 - e, w / 2 - e, -d / 2 + e)   // right
+      break
+    }
+    case 'railing': {
+      const n = Math.max(2, Math.round(w / 0.15))
+      for (let i = 0; i <= n; i++) {
+        cyl(0.02, h - 0.05, -w / 2 + (w * i) / n, (h - 0.05) / 2, 0, shade(color, 0.85), { finish: 'metal' })
+      }
+      box(w, 0.05, Math.max(d, 0.05), 0, h - 0.025, 0, shade(color, 0.6), { finish: 'metal' })
+      break
+    }
+    case 'appliance': {
+      box(w, h, d, 0, h / 2, 0, color)
+      box(w * 0.94, h * 0.1, d * 0.02, 0, h * 0.88, d / 2, shade(color, 0.8))            // control strip
+      const door = cyl(Math.min(w, d) * 0.28, 0.03, 0, h * 0.45, d / 2, '#7f97a6', { rough: 0.15 }) // drum door
+      door.rotation.x = Math.PI / 2
+      break
+    }
+    case 'lamp': {
+      const r = Math.min(w, d) / 2
+      cyl(r * 0.5, 0.03, 0, 0.015, 0, shade(color, 0.5), { finish: 'metal' })      // base
+      cyl(0.015, h * 0.72, 0, h * 0.38, 0, shade(color, 0.5), { finish: 'metal' }) // pole
+      cyl(r * 0.8, h * 0.22, 0, h * 0.85, 0, shade(color, 1.25), { opacity: 0.85, rough: 0.6 }) // shade
+      break
+    }
+    case 'piano': {
+      box(w, h, d * 0.6, 0, h / 2, -d * 0.2, color, { finish: 'wood' })                  // upright body
+      box(w, h * 0.06, d * 0.95, 0, h * 0.55, 0, shade(color, 0.8), { finish: 'wood' })  // key bed
+      box(w * 0.94, h * 0.03, d * 0.34, 0, h * 0.585, d * 0.28, '#f4f1ea')               // keys
+      for (const sx of [-1, 1])
+        box(w * 0.06, h * 0.55, d * 0.08, sx * (w / 2 - w * 0.04), h * 0.275, d * 0.4, shade(color, 0.8), { finish: 'wood' })
+      break
+    }
+    case 'pool': {
+      // rim as 4 edge curbs so the water surface is actually visible
+      const lip = Math.min(w, d) * 0.06
+      box(w, h, lip, 0, h / 2, -d / 2 + lip / 2, '#ddd8cb', { rough: 0.6 })
+      box(w, h, lip, 0, h / 2, d / 2 - lip / 2, '#ddd8cb', { rough: 0.6 })
+      box(lip, h, d - 2 * lip, -w / 2 + lip / 2, h / 2, 0, '#ddd8cb', { rough: 0.6 })
+      box(lip, h, d - 2 * lip, w / 2 - lip / 2, h / 2, 0, '#ddd8cb', { rough: 0.6 })
+      box(w - 2 * lip, h * 0.85, d - 2 * lip, 0, h * 0.425, 0, color, { opacity: 0.8, rough: 0.08 }) // water
+      break
+    }
+    case 'bbq': {
+      const r = Math.min(w, d) * 0.42
+      for (const sx of [-1, 1])
+        cyl(0.02, h * 0.55, sx * r * 0.6, h * 0.275, 0, shade(color, 0.8), { finish: 'metal' })
+      cyl(r, h * 0.28, 0, h * 0.65, 0, color, { finish: 'metal' })                       // kettle
+      sph(r * 0.98, 0, h * 0.82, 0, shade(color, 1.15), { finish: 'metal' })             // lid
+      break
+    }
+    case 'bench': {
+      box(w, h * 0.15, d, 0, h * 0.85, 0, color, { finish: 'wood' })
+      for (const sx of [-1, 1])
+        box(w * 0.08, h * 0.78, d * 0.9, sx * (w / 2 - w * 0.08), h * 0.39, 0, shade(color, 0.75), { finish: 'wood' })
+      break
+    }
     default: {
       box(w, h, d, 0, h / 2, 0, color)
     }

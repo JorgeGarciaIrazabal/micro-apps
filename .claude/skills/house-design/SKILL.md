@@ -140,12 +140,16 @@ Prefer using the catalog defaults — only override `x, y, rotation` (and option
 | `coffee-table` | Coffee Table | 1.1 | 0.6 | 0.45 | #8a5a3b | Living Room |
 | `tv-stand` | TV Stand | 1.6 | 0.45 | 0.55 | #3a3a3a | Living Room |
 | `bookshelf` | Bookshelf | 0.9 | 0.35 | 1.9 | #5a3a22 | Living Room |
-| `rug` | Rug | 2.4 | 1.6 | 0.02 | #b8845a | Living Room |
+| `rug` | Rug | 2.4 | 1.6 | 0.05 | #b8845a | Living Room |
+| `floor-lamp` | Floor Lamp | 0.4 | 0.4 | 1.6 | #c9a227 | Living Room |
+| `piano` | Piano | 1.5 | 0.6 | 1.2 | #2b2b2b | Living Room |
+| `side-table` | Side Table | 0.5 | 0.5 | 0.55 | #8a5a3b | Living Room |
 | `bed-double` | Double Bed | 1.6 | 2.1 | 0.55 | #9aa7c2 | Bedroom |
 | `bed-single` | Single Bed | 0.9 | 2.0 | 0.55 | #9aa7c2 | Bedroom |
 | `nightstand` | Nightstand | 0.5 | 0.4 | 0.55 | #8a5a3b | Bedroom |
 | `wardrobe` | Wardrobe | 1.5 | 0.6 | 2.1 | #6b4e3d | Bedroom |
 | `dresser` | Dresser | 1.2 | 0.5 | 0.9 | #7a5a44 | Bedroom |
+| `crib` | Crib | 0.7 | 1.3 | 0.9 | #c2b2d6 | Bedroom |
 | `counter` | Counter | 2.0 | 0.6 | 0.9 | #cfcfcf | Kitchen |
 | `sink` | Sink | 0.8 | 0.6 | 0.9 | #9aa6b2 | Kitchen |
 | `stove` | Stove | 0.75 | 0.6 | 0.9 | #2f2f2f | Kitchen |
@@ -153,16 +157,30 @@ Prefer using the catalog defaults — only override `x, y, rotation` (and option
 | `island` | Island | 1.8 | 0.9 | 0.9 | #b8b0a4 | Kitchen |
 | `dining-table` | Dining Table | 1.6 | 0.9 | 0.75 | #8a5a3b | Kitchen |
 | `chair` | Chair | 0.45 | 0.45 | 0.9 | #6b4e3d | Kitchen |
+| `dishwasher` | Dishwasher | 0.6 | 0.6 | 0.85 | #b9c1c7 | Kitchen |
 | `toilet` | Toilet | 0.4 | 0.65 | 0.8 | #eef2f5 | Bathroom |
 | `bathtub` | Bathtub | 1.7 | 0.75 | 0.55 | #e7edf2 | Bathroom |
 | `shower` | Shower | 0.9 | 0.9 | 2.0 | #cfe0e8 | Bathroom |
 | `vanity` | Vanity | 0.9 | 0.5 | 0.85 | #d9cfc4 | Bathroom |
+| `washing-machine` | Washing Machine | 0.6 | 0.6 | 0.85 | #e8ebee | Bathroom |
 | `desk` | Desk | 1.4 | 0.7 | 0.75 | #7a5a44 | Office |
 | `office-chair` | Office Chair | 0.6 | 0.6 | 1.0 | #2f2f2f | Office |
 | `filing-cabinet` | Filing Cabinet | 0.5 | 0.6 | 1.3 | #555 | Office |
-| `plant` | Plant | 0.5 | 0.5 | 1.0 | #4a7c4a | Outdoor & Misc |
-| `tree` | Tree | 1.2 | 1.2 | 3.0 | #3d6b3d | Outdoor & Misc |
-| `box` | Custom Box | 0.6 | 0.6 | 0.6 | #b08968 | Outdoor & Misc |
+| `stairs` | Stairs | 1.0 | 3.0 | 3.0 | #b09a7a | Stairs & Balcony |
+| `balcony` | Balcony | 3.0 | 1.5 | 1.05 | #c5c9cf | Stairs & Balcony |
+| `railing` | Railing | 2.0 | 0.1 | 1.05 | #8b8f96 | Stairs & Balcony |
+| `plant` | Plant | 0.5 | 0.5 | 1.0 | #4a7c4a | Outdoor & Garden |
+| `tree` | Tree | 1.2 | 1.2 | 3.0 | #3d6b3d | Outdoor & Garden |
+| `pool` | Pool | 4.0 | 2.5 | 0.5 | #5fa8d3 | Outdoor & Garden |
+| `bbq` | BBQ Grill | 0.6 | 0.6 | 1.0 | #3a3a3a | Outdoor & Garden |
+| `bench` | Bench | 1.5 | 0.4 | 0.45 | #8a6a4a | Outdoor & Garden |
+| `outdoor-table` | Outdoor Table | 1.2 | 0.8 | 0.72 | #9a8a72 | Outdoor & Garden |
+| `box` | Custom Box | 0.6 | 0.6 | 0.6 | #b08968 | Misc |
+
+Placement notes for the structural pieces:
+- `stairs`: rises along its local −y direction (the 2D arrow points "up"); set `height` to the next floor's `level` delta (default 3.0) and place the foot end (+y) where the run starts.
+- `balcony`: the −y edge is the open side that attaches to the house — place its center `depth/2` outside the exterior wall, rotated so the open edge faces the wall. Add a `door` opening on that wall for access. `height` is the railing height.
+- `railing`: a straight guard segment (posts + handrail) for terraces or stair edges.
 
 ## Opening (door / window)
 

@@ -22,8 +22,19 @@ export default function FurniturePanel({ tool, onTool }) {
   const activeType = tool.startsWith('furniture:') ? tool.split(':')[1] : null
   const activeOpening = tool.startsWith('opening:') ? tool.split(':')[1] : null
   const [collapsed, setCollapsed] = useState({})
+  const [query, setQuery] = useState('')
 
   const toggle = (cat) => setCollapsed((c) => ({ ...c, [cat]: !c[cat] }))
+
+  // Search filters by label/type across every category (structure included)
+  // and overrides collapsing so matches are always visible.
+  const q = query.trim().toLowerCase()
+  const matches = (it) => !q || it.label.toLowerCase().includes(q) || it.type.toLowerCase().includes(q)
+  const structureItems = STRUCTURE.filter(matches)
+  const catalog = CATALOG
+    .map((c) => ({ ...c, items: c.items.filter(matches) }))
+    .filter((c) => c.items.length > 0)
+  const isOpen = (cat) => (q ? true : !collapsed[cat])
 
   return (
     <aside className="panel furniture-panel">
@@ -46,6 +57,18 @@ export default function FurniturePanel({ tool, onTool }) {
         </button>
       </div>
 
+      <div className="search-box">
+        <input
+          type="search"
+          className="search-input"
+          placeholder="Search components…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setQuery(''); e.stopPropagation() } }}
+          aria-label="Search components"
+        />
+      </div>
+
       <div className="catalog-scroll">
         <p className="catalog-hint">
           {tool === 'wall'
@@ -56,14 +79,17 @@ export default function FurniturePanel({ tool, onTool }) {
             ? `Click the plan to place a ${activeType.replace('-', ' ')}.`
             : 'Pick an item, then click the plan to place it.'}
         </p>
-        <div className="cat">
+        {q && structureItems.length === 0 && catalog.length === 0 && (
+          <p className="catalog-hint">No components match “{query}”.</p>
+        )}
+        {structureItems.length > 0 && <div className="cat">
           <h4 className="cat-header" onClick={() => toggle('structure')}>
             <span>Structure</span>
-            <span className="cat-caret">{collapsed.structure ? '▸' : '▾'}</span>
+            <span className="cat-caret">{isOpen('structure') ? '▾' : '▸'}</span>
           </h4>
-          {!collapsed.structure && (
+          {isOpen('structure') && (
             <div className="cat-grid">
-              {STRUCTURE.map((it) => (
+              {structureItems.map((it) => (
                 <button
                   key={it.type}
                   className={`cat-item ${activeOpening === it.type ? 'active' : ''}`}
@@ -76,14 +102,14 @@ export default function FurniturePanel({ tool, onTool }) {
               ))}
             </div>
           )}
-        </div>
-        {CATALOG.map((cat) => (
+        </div>}
+        {catalog.map((cat) => (
           <div key={cat.category} className="cat">
             <h4 className="cat-header" onClick={() => toggle(cat.category)}>
               <span>{cat.category}</span>
-              <span className="cat-caret">{collapsed[cat.category] ? '▸' : '▾'}</span>
+              <span className="cat-caret">{isOpen(cat.category) ? '▾' : '▸'}</span>
             </h4>
-            {!collapsed[cat.category] && (
+            {isOpen(cat.category) && (
               <div className="cat-grid">
                 {cat.items.map((it) => (
                   <button

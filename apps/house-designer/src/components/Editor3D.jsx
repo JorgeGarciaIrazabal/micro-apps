@@ -204,8 +204,9 @@ function rebuild(s, project) {
   // Stack every visible floor at its elevation; the active floor is edited in 2D.
   visibleFloors.forEach((fl, fi) => {
     const yBase = fl.level || 0
-    // floor slab so upper floors aren't floating
-    const bb = bboxOf(fl)
+    // floor slab so upper floors aren't floating — sized to the WALLS only,
+    // so outdoor items (pool, trees, balconies) don't stretch it
+    const bb = fl.walls.length ? bboxOf({ walls: fl.walls }) : bboxOf(fl)
     if (Number.isFinite(bb.minX)) {
       const sw = (bb.maxX - bb.minX) + 1.2, sh = (bb.maxY - bb.minY) + 1.2
       const slabGeo = new THREE.BoxGeometry(sw, 0.12, sh)

@@ -279,6 +279,131 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       </>
     }
 
+    case 'stairs': {
+      // treads across the depth + an "up" arrow along the run (toward -y)
+      const treads = Math.max(4, Math.round(d / 0.27))
+      return <>
+        {body}
+        {Array.from({ length: treads - 1 }).map((_, i) => (
+          <line key={i} x1={-hx} y1={-hy + (d * (i + 1)) / treads} x2={hx} y2={-hy + (d * (i + 1)) / treads}
+            stroke={dark} strokeWidth={sw * 0.5} opacity={0.7} />
+        ))}
+        <line x1={0} y1={hy - 0.15} x2={0} y2={-hy + 0.25} stroke={dark} strokeWidth={sw * 1.2} />
+        <path d={`M ${-0.09} ${-hy + 0.34} L 0 ${-hy + 0.18} L ${0.09} ${-hy + 0.34}`}
+          fill="none" stroke={dark} strokeWidth={sw * 1.2} />
+      </>
+    }
+
+    case 'balcony': {
+      // open platform with railing ticks on 3 sides; -y edge attaches to the house
+      const rail = (x1, y1, x2, y2, key) => {
+        const len = Math.hypot(x2 - x1, y2 - y1)
+        const n = Math.max(2, Math.round(len / 0.3))
+        const ticks = Array.from({ length: n + 1 }).map((_, i) => {
+          const t = i / n
+          return <circle key={i} cx={x1 + (x2 - x1) * t} cy={y1 + (y2 - y1) * t} r={0.03} fill={dark} />
+        })
+        return <g key={key}>
+          <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={dark} strokeWidth={sw * 1.4} />
+          {ticks}
+        </g>
+      }
+      return <>
+        <rect x={-hx} y={-hy} width={w} height={d} fill={light} stroke={dark} strokeWidth={sw * 0.5} opacity={0.75} />
+        {/* tile joints */}
+        {Array.from({ length: Math.max(1, Math.round(w / 0.5)) - 1 }).map((_, i) => (
+          <line key={`t${i}`} x1={-hx + (w * (i + 1)) / Math.max(1, Math.round(w / 0.5))} y1={-hy}
+            x2={-hx + (w * (i + 1)) / Math.max(1, Math.round(w / 0.5))} y2={hy} stroke={dark} strokeWidth={sw * 0.3} opacity={0.35} />
+        ))}
+        {rail(-hx, -hy, -hx, hy, 'l')}
+        {rail(-hx, hy, hx, hy, 'f')}
+        {rail(hx, hy, hx, -hy, 'r')}
+      </>
+    }
+
+    case 'railing': {
+      const n = Math.max(2, Math.round(w / 0.25))
+      return <>
+        <line x1={-hx} y1={0} x2={hx} y2={0} stroke={dark} strokeWidth={sw * 2} />
+        {Array.from({ length: n + 1 }).map((_, i) => (
+          <circle key={i} cx={-hx + (w * i) / n} cy={0} r={Math.max(0.03, d * 0.4)} fill={dark} />
+        ))}
+      </>
+    }
+
+    case 'appliance': {
+      // front-loader: control strip at -y + round drum door
+      const r = Math.min(w, d) * 0.3
+      return <>
+        {body}
+        <line x1={-hx + 0.05} y1={-hy + 0.12} x2={hx - 0.05} y2={-hy + 0.12} stroke={dark} strokeWidth={sw * 0.6} opacity={0.7} />
+        <circle cx={hx - 0.12} cy={-hy + 0.06} r={0.028} fill={dark} />
+        <circle cx={0} cy={0.05 * d} r={r} fill={light} stroke={dark} strokeWidth={sw * 0.8} />
+        <circle cx={0} cy={0.05 * d} r={r * 0.55} fill="none" stroke={dark} strokeWidth={sw * 0.5} opacity={0.6} />
+      </>
+    }
+
+    case 'lamp': {
+      const r = Math.min(w, d) / 2
+      return <>
+        <circle cx={0} cy={0} r={r} fill={light} stroke={dark} strokeWidth={sw} opacity={0.9} />
+        {Array.from({ length: 8 }).map((_, i) => {
+          const a = (i / 8) * Math.PI * 2
+          return <line key={i} x1={Math.cos(a) * r * 0.55} y1={Math.sin(a) * r * 0.55}
+            x2={Math.cos(a) * r * 0.9} y2={Math.sin(a) * r * 0.9} stroke={dark} strokeWidth={sw * 0.6} opacity={0.7} />
+        })}
+        <circle cx={0} cy={0} r={r * 0.16} fill={dark} />
+      </>
+    }
+
+    case 'piano': {
+      // upright piano: body + keyboard strip along the +y (player) edge
+      const keys = 14
+      const kd = Math.min(0.16, d * 0.3)
+      return <>
+        {body}
+        <rect x={-hx + 0.04} y={hy - kd - 0.03} width={clamp0(w - 0.08)} height={kd} rx={sw * 0.5}
+          fill="#f4f1ea" stroke={dark} strokeWidth={sw * 0.4} />
+        {Array.from({ length: keys - 1 }).map((_, i) => (
+          <line key={i} x1={-hx + 0.04 + ((w - 0.08) * (i + 1)) / keys} y1={hy - kd - 0.03}
+            x2={-hx + 0.04 + ((w - 0.08) * (i + 1)) / keys} y2={hy - 0.03} stroke="#8b8271" strokeWidth={sw * 0.25} />
+        ))}
+      </>
+    }
+
+    case 'pool': {
+      return <>
+        <rect x={-hx} y={-hy} width={w} height={d} rx={Math.min(w, d) * 0.12} fill="#e3e0d6" stroke={dark} strokeWidth={sw * 0.6} />
+        <rect x={-hx + 0.18} y={-hy + 0.18} width={clamp0(w - 0.36)} height={clamp0(d - 0.36)} rx={Math.min(w, d) * 0.1}
+          fill={color} opacity={0.85} />
+        {[0.35, 0.55, 0.75].map((t, i) => (
+          <path key={i} d={`M ${-hx + 0.35} ${-hy + d * t} q ${w * 0.12} ${-0.08} ${w * 0.24} 0 t ${w * 0.24} 0`}
+            fill="none" stroke="#fff" strokeWidth={sw * 0.5} opacity={0.5} />
+        ))}
+      </>
+    }
+
+    case 'bbq': {
+      const r = Math.min(w, d) * 0.42
+      return <>
+        <circle cx={0} cy={0} r={r} fill={color} stroke={dark} strokeWidth={sw} />
+        {[-0.5, -0.17, 0.17, 0.5].map((t, i) => (
+          <line key={i} x1={-r * 0.8} y1={r * t} x2={r * 0.8} y2={r * t} stroke={light} strokeWidth={sw * 0.5} opacity={0.8} />
+        ))}
+        <rect x={r + 0.02} y={-d * 0.18} width={clamp0(hx - r - 0.04)} height={d * 0.36} rx={sw} fill={shade(color, 1.1)} stroke={dark} strokeWidth={sw * 0.4} />
+      </>
+    }
+
+    case 'bench': {
+      return <>
+        {body}
+        {[0.28, 0.5, 0.72].map((t, i) => (
+          <line key={i} x1={-hx + 0.05} y1={-hy + d * t} x2={hx - 0.05} y2={-hy + d * t}
+            stroke={dark} strokeWidth={sw * 0.5} opacity={0.6} />
+        ))}
+      </>
+    }
+
     default: {
       // generic box: a carton with an X
       return <>

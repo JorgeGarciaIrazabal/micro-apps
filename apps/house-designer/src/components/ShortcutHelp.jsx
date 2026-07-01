@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { IconRuler } from './Icons.jsx'
 
 const GROUPS = [
   {
@@ -6,32 +7,40 @@ const GROUPS = [
     rows: [
       [['Click'], 'Chain wall points (Wall tool)'],
       [['Enter'], 'Finish the wall chain'],
-      [['Esc'], 'Cancel chain / deselect / back to Select'],
-      [['Double-click'], 'Edit a wall’s length'],
+      [['Esc'], 'Cancel chain / deselect'],
+      [['2× Click'], 'Edit a wall’s length'],
     ],
   },
   {
     title: 'Editing',
     rows: [
-      [['R'], 'Rotate selected furniture 90°'],
-      [['←↑→↓'], 'Nudge selection (Shift = ×5)'],
+      [['R'], 'Rotate furniture 90°'],
+      [['↑', '↓', '←', '→'], 'Nudge selection'],
+      [['Shift', '↑↓←→'], 'Nudge ×5'],
       [['Del'], 'Delete selection'],
+    ],
+  },
+  {
+    title: 'Clipboard & History',
+    rows: [
       [['Ctrl', 'D'], 'Duplicate selection'],
       [['Ctrl', 'Z'], 'Undo'],
-      [['Ctrl', 'Shift', 'Z'], 'Redo (or Ctrl+Y)'],
+      [['Ctrl', 'Shift', 'Z'], 'Redo'],
+      [['Ctrl', 'Y'], 'Redo (alternate)'],
     ],
   },
   {
     title: 'View',
     rows: [
       [['Scroll'], 'Zoom at cursor'],
-      [['Space', 'Drag'], 'Pan (also middle/right button)'],
-      [['?'], 'Toggle this help'],
+      [['Space', 'Drag'], 'Pan the plan'],
+      [['Middle Drag'], 'Pan (also right button)'],
+      [['?'], 'Toggle this panel'],
     ],
   },
 ]
 
-// Modal listing every keyboard shortcut. Opened with "?" or the top-bar button.
+// Keyboard shortcut reference panel, opened with "?" or the top-bar button.
 export default function ShortcutHelp({ onClose }) {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose() }
@@ -41,26 +50,35 @@ export default function ShortcutHelp({ onClose }) {
 
   return (
     <div className="shortcut-overlay" onClick={onClose}>
-      <div className="shortcut-card" onClick={(e) => e.stopPropagation()}>
-        <h2>Keyboard shortcuts</h2>
+      <div className="shortcut-card" role="dialog" aria-label="Keyboard shortcuts" onClick={(e) => e.stopPropagation()}>
+        <header className="shortcut-head">
+          <span className="shortcut-mark"><IconRuler size={18} /></span>
+          <div>
+            <h2>Keyboard shortcuts</h2>
+            <p>Work faster in the 2D editor</p>
+          </div>
+          <button className="shortcut-x" onClick={onClose} aria-label="Close">✕</button>
+        </header>
         <div className="shortcut-groups">
           {GROUPS.map((g) => (
             <section key={g.title}>
               <h3>{g.title}</h3>
               {g.rows.map(([keys, desc]) => (
                 <div className="shortcut-row" key={desc}>
+                  <span>{desc}</span>
                   <span className="shortcut-keys">
                     {keys.map((k, i) => (
                       <span key={k}>{i > 0 && <span className="kbd-plus">+</span>}<kbd>{k}</kbd></span>
                     ))}
                   </span>
-                  <span>{desc}</span>
                 </div>
               ))}
             </section>
           ))}
         </div>
-        <button className="shortcut-close" onClick={onClose}>Close</button>
+        <footer className="shortcut-foot">
+          Press <kbd>?</kbd> anytime to open this panel
+        </footer>
       </div>
     </div>
   )
