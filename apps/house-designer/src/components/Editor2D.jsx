@@ -11,6 +11,7 @@ import GridLayer from './editor2d/GridLayer.jsx'
 import FloorsBelowLayer from './editor2d/FloorsBelowLayer.jsx'
 import FurnitureLayer from './editor2d/FurnitureLayer.jsx'
 import WallLabels, { DimensionPill } from './editor2d/WallLabels.jsx'
+import RoomFills, { RoomLabels, useRooms } from './editor2d/RoomLayer.jsx'
 import SelectionHandles from './editor2d/SelectionHandles.jsx'
 
 // Screen-space threshold (px) for snapping to existing wall endpoints.
@@ -39,6 +40,8 @@ export default function Editor2D({
     walls: floor.walls, grid, scale, thickness: settings.wallThickness,
     commit, snapPx: ENDPOINT_SNAP_PX,
   })
+
+  const rooms = useRooms(floor)
 
   // Floors strictly below the active one — drawn faintly as a construction guide.
   const floorsBelow = useMemo(() => {
@@ -303,6 +306,7 @@ export default function Editor2D({
         <rect x={0} y={0} width={size.w} height={size.h} fill="#f7f6f3" />
         <g transform={transform}>
           <GridLayer size={size} scale={scale} grid={grid} screenToWorld={screenToWorld} />
+          <RoomFills rooms={rooms} />
           <FloorsBelowLayer floors={floorsBelow} />
 
           {/* walls + junction welds */}
@@ -334,6 +338,7 @@ export default function Editor2D({
           )}
         </g>
 
+        <RoomLabels rooms={rooms} worldToScreen={worldToScreen} />
         <WallLabels walls={floor.walls} worldToScreen={worldToScreen} scale={scale} />
 
         {/* live dimension for the in-progress wall segment */}

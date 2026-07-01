@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { wallLength, activeFloor } from '../lib/project.js'
+import { floorArea } from '../lib/rooms.js'
 import * as M from '../lib/mutations.js'
 
 // Right sidebar. Edits the selected wall/furniture, or project settings when
@@ -176,7 +177,7 @@ function OpeningProps({ o, floor, onChange, onDelete }) {
 function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, onFloorProp }) {
   const s = project.settings
   const fl = activeFloor(project) || { walls: [], furniture: [], openings: [], name: '', level: 0 }
-  const area = estimateArea(fl)
+  const area = floorArea(fl)
   const canDelete = (project.floors || []).length > 1
   return (
     <div className="props-group">
@@ -200,22 +201,10 @@ function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, on
         <div><span>Walls</span><b>{fl.walls.length}</b></div>
         <div><span>Items</span><b>{fl.furniture.length}</b></div>
         <div><span>Floors</span><b>{(project.floors || []).length}</b></div>
-        <div><span>Approx. area</span><b>{area.toFixed(2)} m²</b></div>
+        <div><span>{area.exact ? 'Floor area' : 'Approx. area (bbox)'}</span><b>{area.area.toFixed(2)} m²</b></div>
       </div>
     </div>
   )
 }
 
 function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)) }
-
-// Rough enclosed area estimate via the bounding box of the walls. Good enough
-// for a quick stat; not a true polygon area.
-function estimateArea(floor) {
-  if (!(floor.walls || []).length) return 0
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
-  for (const w of floor.walls) {
-    minX = Math.min(minX, w.x1, w.x2); maxX = Math.max(maxX, w.x1, w.x2)
-    minY = Math.min(minY, w.y1, w.y2); maxY = Math.max(maxY, w.y1, w.y2)
-  }
-  return Math.max(0, (maxX - minX) * (maxY - minY))
-}

@@ -12,8 +12,7 @@ export function sampleProject() {
     w(0, 0, 6, 0),       // bottom
     w(6, 0, 6, 5),       // right
     w(6, 5, 0, 5),       // top
-    w(0, 5, 0, 2.1),     // left lower (door gap)
-    w(0, 1.5, 0, 0),     // left upper
+    w(0, 5, 0, 0),       // left (interior door is an Opening below)
     w(2.2, 0, 2.2, 2.6), // partition (kitchen/living)
     w(2.2, 2.6, 0, 2.6), // partition top
   ]
@@ -34,6 +33,7 @@ export function sampleProject() {
   ]
   const gOpenings = [
     { id: uid('o'), type: 'door', wallId: gWalls[0].id, offset: 0.9, width: 0.9, height: 2.1, sill: 0, hinge: 0, side: 1 },
+    { id: uid('o'), type: 'door', wallId: gWalls[3].id, offset: 3.2, width: 0.9, height: 2.1, sill: 0, hinge: 0, side: -1 },
     { id: uid('o'), type: 'window', wallId: gWalls[2].id, offset: 3.0, width: 1.4, height: 1.2, sill: 1.0, hinge: 0, side: 1 },
     { id: uid('o'), type: 'window', wallId: gWalls[1].id, offset: 2.5, width: 1.2, height: 1.2, sill: 1.0, hinge: 0, side: 1 },
   ]
