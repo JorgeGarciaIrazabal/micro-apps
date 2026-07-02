@@ -17,6 +17,7 @@ const GROUPS = [
       [['R'], 'Rotate furniture 90°'],
       [['↑', '↓', '←', '→'], 'Nudge selection'],
       [['Shift', '↑↓←→'], 'Nudge ×5'],
+      [['Shift', 'Resize'], 'Resize from center'],
       [['Del'], 'Delete selection'],
     ],
   },

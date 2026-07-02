@@ -5,6 +5,7 @@ import { openingsOnWall } from '../lib/project.js'
 import { dist, wallCutSegments } from '../lib/geometry.js'
 import { buildFurniture3D } from '../lib/furniture3d.js'
 import { makeWoodTexture, makeSkyTexture, makeGroundTexture } from '../lib/textures.js'
+import { shade } from '../lib/color.js'
 
 // 3D preview: extrudes the 2D walls into boxes and places furniture as boxes.
 // World meters (x, y) map to 3D (x, z); height is along Y (up).
@@ -259,25 +260,60 @@ function addOpening3D(s, w, o, a, b, yBase) {
     me.castShadow = !translucent // glass shouldn't black out the room
     me.receiveShadow = true
     me.position.set(x, y, z); g.add(me)
+    return me
   }
   const cy = o.sill + o.height / 2
   if (o.type === 'door') {
-    // Leaf hung open (~80°) on the chosen jamb, swinging to the chosen side.
+    const LEAF = '#7a5a3a'
     const hingeX = o.hinge === 0 ? -wd / 2 : wd / 2
     const dir = o.hinge === 0 ? 1 : -1            // leaf extends from hinge toward the opening
     const sideSign = o.side > 0 ? 1 : -1          // swing to +z or -z (wall sides)
-    const hingeG = new THREE.Group()
-    hingeG.position.set(hingeX, cy, 0)
-    hingeG.rotation.y = -sideSign * dir * 1.4    // ~80° open
-    const leaf = new THREE.Mesh(
-      new THREE.BoxGeometry(wd, o.height, 0.05),
-      new THREE.MeshStandardMaterial({ color: new THREE.Color('#7a5a3a'), roughness: 0.8, metalness: 0.05 }),
-    )
-    leaf.castShadow = true
-    leaf.receiveShadow = true
-    leaf.position.set(dir * wd / 2, 0, 0)
-    hingeG.add(leaf)
-    g.add(hingeG)
+
+    // A leaf hung open on a jamb, swung toward `sideSign`.
+    const swingLeaf = (hx, ldir, len, angle = 1.4) => {
+      const hingeG = new THREE.Group()
+      hingeG.position.set(hx, cy, 0)
+      hingeG.rotation.y = -sideSign * ldir * angle
+      const leaf = new THREE.Mesh(
+        new THREE.BoxGeometry(len, o.height, 0.05),
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(LEAF), roughness: 0.8, metalness: 0.05 }),
+      )
+      leaf.castShadow = true
+      leaf.receiveShadow = true
+      leaf.position.set(ldir * len / 2, 0, 0)
+      hingeG.add(leaf)
+      g.add(hingeG)
+    }
+
+    if (o.style === 'sliding') {
+      // One wood panel half-open over a fixed glass panel.
+      const pw = wd * 0.55
+      mesh(new THREE.BoxGeometry(pw, o.height, 0.035), '#9fc6e0', wd / 2 - pw / 2, cy, -0.032, { opacity: 0.45, rough: 0.08 })
+      mesh(new THREE.BoxGeometry(0.05, o.height, 0.04), '#8a6a48', wd / 2 - pw, cy, -0.032) // glass stile
+      mesh(new THREE.BoxGeometry(pw, o.height, 0.04), LEAF, -wd / 2 + pw * 0.4, cy, 0.036)  // slid-open leaf
+      mesh(new THREE.BoxGeometry(wd, 0.05, 0.12), '#9c8b78', 0, o.sill + o.height - 0.025, 0) // track
+    } else if (o.style === 'folding') {
+      // Bifold accordion: panels zigzag from the hinge jamb, partially folded.
+      const n = 4
+      const theta = 1.05
+      const p = wd / n
+      const verts = []
+      for (let k = 0; k <= n; k++) {
+        verts.push({ x: hingeX + dir * p * Math.cos(theta) * k, z: sideSign * (k % 2) * p * Math.sin(theta) })
+      }
+      for (let k = 0; k < n; k++) {
+        const a2 = verts[k], b2 = verts[k + 1]
+        const panel = mesh(new THREE.BoxGeometry(p, o.height, 0.03), k % 2 ? shade(LEAF, 0.85) : LEAF,
+          (a2.x + b2.x) / 2, cy, (a2.z + b2.z) / 2)
+        panel.rotation.y = -Math.atan2(b2.z - a2.z, b2.x - a2.x)
+      }
+      mesh(new THREE.BoxGeometry(wd, 0.05, 0.1), '#9c8b78', 0, o.sill + o.height - 0.025, 0) // track
+    } else if (o.style === 'double') {
+      swingLeaf(-wd / 2, 1, wd / 2, 1.25)
+      swingLeaf(wd / 2, -1, wd / 2, 1.25)
+    } else {
+      swingLeaf(hingeX, dir, wd)
+    }
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', -wd / 2, cy, 0) // jamb
     mesh(new THREE.BoxGeometry(0.04, o.height, w.thickness), '#9c8b78', wd / 2, cy, 0)  // jamb
   } else {

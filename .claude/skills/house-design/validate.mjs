@@ -165,6 +165,9 @@ function validateProject(obj, file) {
         globalOpeningIds.add(o.id)
       }
       if (o.type !== 'door' && o.type !== 'window') E(`${owhere}.type must be "door" or "window" (got ${JSON.stringify(o.type)})`)
+      if (o.style !== undefined && !['swing', 'double', 'sliding', 'folding'].includes(o.style)) {
+        warn(`${owhere}.style ${JSON.stringify(o.style)} is not one of swing/double/sliding/folding and will fall back to "swing" on load.`)
+      }
       if (!isStr(o.wallId)) E(`${owhere}.wallId must be a non-empty string.`)
       else if (!wallIds.has(o.wallId)) E(`${owhere}.wallId "${o.wallId}" does not match any wall on this floor.`)
       if (!isNum(o.offset)) E(`${owhere}.offset must be a number (got ${JSON.stringify(o.offset)})`)

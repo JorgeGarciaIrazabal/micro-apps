@@ -33,6 +33,30 @@ export const IconDoor = (p) => (
   </Icon>
 )
 
+export const IconDoorDouble = (p) => (
+  <Icon {...p}>
+    <path d="M3 20h18" />
+    <path d="M5 20V6M19 20V6" />
+    <path d="M5 6c5 0 7 6 7 14M19 6c-5 0-7 6-7 14" strokeDasharray="2.5 2.5" opacity="0.7" />
+  </Icon>
+)
+
+export const IconDoorSliding = (p) => (
+  <Icon {...p}>
+    <path d="M3 10h18" opacity="0.45" />
+    <path d="M3 8h10" strokeWidth="2.5" />
+    <path d="M11 13h10" strokeWidth="2.5" />
+    <path d="M14 17l3 0m0 0l-1.5-1.5M17 17l-1.5 1.5" opacity="0.8" />
+  </Icon>
+)
+
+export const IconDoorFolding = (p) => (
+  <Icon {...p}>
+    <path d="M3 16h18" opacity="0.45" />
+    <path d="M4 16l3.5-6 3.5 6 3.5-6 3.5 6" strokeWidth="2" />
+  </Icon>
+)
+
 export const IconWindow = (p) => (
   <Icon {...p}>
     <rect x="3" y="9" width="18" height="6" rx="1" />

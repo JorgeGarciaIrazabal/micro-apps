@@ -120,12 +120,12 @@ export default function Editor2D({
     }
 
     if (tool.startsWith('opening:')) {
-      const type = tool.split(':')[1]
+      const key = tool.split(':')[1]
       const near = hit.nearestWallForOpening(floor, world.x, world.y)
       if (!near) return // not near a wall: ignore
-      const def = openingDefaults(type)
+      const def = openingDefaults(key)
       const off = Math.max(def.width / 2, Math.min(near.L - def.width / 2, near.offset))
-      const op = { id: uid('o'), type, wallId: near.wall.id, offset: off, width: def.width, height: def.height, sill: def.sill, hinge: def.hinge, side: def.side }
+      const op = { id: uid('o'), type: def.type, style: def.style, wallId: near.wall.id, offset: off, width: def.width, height: def.height, sill: def.sill, hinge: def.hinge, side: def.side }
       commit((proj) => M.addOpening(proj, op))
       setSelectedId(op.id)
       return
@@ -209,11 +209,27 @@ export default function Editor2D({
       const f = floor.furniture.find((x) => x.id === d.id)
       if (!f) return
       const c = Math.cos(-f.rotation), s = Math.sin(-f.rotation)
-      const lx = (world.x - f.x) * c - (world.y - f.y) * s
-      const ly = (world.x - f.x) * s + (world.y - f.y) * c
+      if (e.shiftKey || !d.anchor) {
+        // Shift: symmetric resize around the center.
+        const lx = (world.x - f.x) * c - (world.y - f.y) * s
+        const ly = (world.x - f.x) * s + (world.y - f.y) * c
+        patchElement(d.id, {
+          width: Math.max(0.1, snap(lx * 2, grid)),
+          depth: Math.max(0.1, snap(ly * 2, grid)),
+        })
+        return
+      }
+      // Default: the top-left corner (captured at drag start) stays fixed and
+      // the center follows the new extent.
+      const lx = (world.x - d.anchor.x) * c - (world.y - d.anchor.y) * s
+      const ly = (world.x - d.anchor.x) * s + (world.y - d.anchor.y) * c
+      const width = Math.max(0.1, snap(lx, grid))
+      const depth = Math.max(0.1, snap(ly, grid))
+      const cos = Math.cos(f.rotation), sin = Math.sin(f.rotation)
       patchElement(d.id, {
-        width: Math.max(0.1, snap(lx * 2, grid)),
-        depth: Math.max(0.1, snap(ly * 2, grid)),
+        width, depth,
+        x: d.anchor.x + (width / 2) * cos - (depth / 2) * sin,
+        y: d.anchor.y + (width / 2) * sin + (depth / 2) * cos,
       })
     }
   }
@@ -239,20 +255,18 @@ export default function Editor2D({
   // ---- derived render data ------------------------------------------------
   const selectedFurniture = floor.furniture.find((f) => f.id === selectedId) || null
 
-  // Wall junctions: weld the corner notches left by butt line caps. A square
-  // covers axis-aligned right angles; a circle covers everything else.
+  // Wall junctions: weld the corner notches left by butt line caps with a
+  // rounded cap (circle radius = half the joined walls' max thickness).
   const junctions = useMemo(() => {
     const map = new Map()
     for (const w of floor.walls) {
-      const { L, ux, uy } = wallUnit(w)
+      const { L } = wallUnit(w)
       if (L < 1e-4) continue
-      const axis = Math.abs(ux) < 1e-6 || Math.abs(uy) < 1e-6
       for (const pt of [{ x: w.x1, y: w.y1 }, { x: w.x2, y: w.y2 }]) {
         const key = `${Math.round(pt.x * 100)}:${Math.round(pt.y * 100)}`
-        const j = map.get(key) || { x: pt.x, y: pt.y, count: 0, thickness: 0, axis: true, selected: false }
+        const j = map.get(key) || { x: pt.x, y: pt.y, count: 0, thickness: 0, selected: false }
         j.count++
         j.thickness = Math.max(j.thickness, w.thickness)
-        j.axis = j.axis && axis
         j.selected = j.selected || w.id === selectedId
         map.set(key, j)
       }
@@ -315,10 +329,7 @@ export default function Editor2D({
               selectedId={selectedId} hoverId={hoverId} scale={scale} />
           ))}
           {junctions.map((j, i) => (
-            j.axis
-              ? <rect key={`jx${i}`} x={j.x - j.thickness / 2} y={j.y - j.thickness / 2}
-                  width={j.thickness} height={j.thickness} fill={j.selected ? '#ff8c1a' : '#3a3530'} />
-              : <circle key={`jx${i}`} cx={j.x} cy={j.y} r={j.thickness / 2} fill={j.selected ? '#ff8c1a' : '#3a3530'} />
+            <circle key={`jx${i}`} cx={j.x} cy={j.y} r={j.thickness / 2} fill={j.selected ? '#ff8c1a' : '#3a3530'} />
           ))}
 
           <FurnitureLayer furniture={floor.furniture} selectedId={selectedId} hoverId={hoverId} scale={scale} />
@@ -360,7 +371,19 @@ export default function Editor2D({
             f={selectedFurniture}
             worldToScreen={worldToScreen}
             onRotateStart={() => { dragRef.current = { kind: 'rotate-furn', id: selectedFurniture.id } }}
-            onResizeStart={() => { dragRef.current = { kind: 'resize-furn', id: selectedFurniture.id } }}
+            onResizeStart={() => {
+              const f = selectedFurniture
+              const cos = Math.cos(f.rotation), sin = Math.sin(f.rotation)
+              // World position of the top-left (local -w/2,-d/2) corner — the
+              // fixed point for the default resize.
+              dragRef.current = {
+                kind: 'resize-furn', id: f.id,
+                anchor: {
+                  x: f.x + (-f.width / 2) * cos - (-f.depth / 2) * sin,
+                  y: f.y + (-f.width / 2) * sin + (-f.depth / 2) * cos,
+                },
+              }
+            }}
           />
         )}
 

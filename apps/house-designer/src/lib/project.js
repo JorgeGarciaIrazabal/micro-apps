@@ -167,8 +167,10 @@ export function activeFloor(p) {
   return floors.find((f) => f.id === p?.activeFloorId) || floors[0] || null
 }
 function cleanOpening(o) {
-  return { id: o.id, type: o.type, wallId: o.wallId, offset: o.offset, width: o.width, height: o.height, sill: o.sill, hinge: o.hinge, side: o.side }
+  return { id: o.id, type: o.type, style: o.style || 'swing', wallId: o.wallId, offset: o.offset, width: o.width, height: o.height, sill: o.sill, hinge: o.hinge, side: o.side }
 }
+
+export const DOOR_STYLES = ['swing', 'double', 'sliding', 'folding']
 
 function coerceOpening(o) {
   if (!o || typeof o !== 'object') return null
@@ -176,6 +178,8 @@ function coerceOpening(o) {
   return {
     id: typeof o.id === 'string' ? o.id : uid('o'),
     type,
+    // Door leaf style; windows always carry 'swing' (ignored when rendering).
+    style: DOOR_STYLES.includes(o.style) ? o.style : 'swing',
     wallId: typeof o.wallId === 'string' ? o.wallId : '',
     offset: Math.max(0, num(o.offset, 0)),
     width: clampNum(o.width, 0.3, 3, type === 'door' ? 0.9 : 1.2),

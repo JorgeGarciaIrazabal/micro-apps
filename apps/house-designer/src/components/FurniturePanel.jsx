@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { CATALOG, STRUCTURE } from '../lib/furniture/registry.js'
+import { CATALOG, STRUCTURE, STRUCTURE_BY_KEY } from '../lib/furniture/registry.js'
 import { FurnitureGraphic } from './FurnitureGraphic.jsx'
-import { IconSelect, IconWall, IconDoor, IconWindow } from './Icons.jsx'
+import { IconSelect, IconWall, IconDoor, IconDoorDouble, IconDoorSliding, IconDoorFolding, IconWindow } from './Icons.jsx'
+
+const STRUCTURE_ICONS = {
+  'door': IconDoor,
+  'door-double': IconDoorDouble,
+  'door-sliding': IconDoorSliding,
+  'door-folding': IconDoorFolding,
+  'window': IconWindow,
+}
 
 // Catalog icon = the item's actual plan symbol, framed in a fitted viewBox.
 // Consistent across platforms and previews exactly what lands on the plan.
@@ -74,7 +82,7 @@ export default function FurniturePanel({ tool, onTool }) {
           {tool === 'wall'
             ? 'Click to place wall points. Enter/Esc ends the chain.'
             : activeOpening
-            ? `Click a wall to place a ${activeOpening}.`
+            ? `Click a wall to place a ${(STRUCTURE_BY_KEY[activeOpening]?.label || activeOpening).toLowerCase()}.`
             : activeType
             ? `Click the plan to place a ${activeType.replace('-', ' ')}.`
             : 'Pick an item, then click the plan to place it.'}
@@ -89,17 +97,20 @@ export default function FurniturePanel({ tool, onTool }) {
           </h4>
           {isOpen('structure') && (
             <div className="cat-grid">
-              {structureItems.map((it) => (
-                <button
-                  key={it.type}
-                  className={`cat-item ${activeOpening === it.type ? 'active' : ''}`}
-                  title={`${it.label} · ${it.width}m wide`}
-                  onClick={() => onTool(`opening:${it.type}`)}
-                >
-                  <span className="cat-icon">{it.type === 'door' ? <IconDoor /> : <IconWindow />}</span>
-                  <span className="cat-label">{it.label}</span>
-                </button>
-              ))}
+              {structureItems.map((it) => {
+                const StructureIcon = STRUCTURE_ICONS[it.key] || IconDoor
+                return (
+                  <button
+                    key={it.key}
+                    className={`cat-item ${activeOpening === it.key ? 'active' : ''}`}
+                    title={`${it.label} · ${it.width}m wide`}
+                    onClick={() => onTool(`opening:${it.key}`)}
+                  >
+                    <span className="cat-icon"><StructureIcon /></span>
+                    <span className="cat-label">{it.label}</span>
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>}

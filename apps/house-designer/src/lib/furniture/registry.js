@@ -103,16 +103,21 @@ export function makeFurniture(type, x, y, overrides = {}) {
 }
 
 // Structural openings placed on walls (doors / windows). These cut the wall in
-// 3D and render a plan symbol in 2D. Defaults follow common sizes.
+// 3D and render a plan symbol in 2D. Defaults follow common sizes. `key` is
+// the catalog/tool identifier; `style` is the door leaf mechanism stored on
+// the opening (see DOOR_STYLES in project.js).
 export const STRUCTURE = [
-  { type: 'door', label: 'Door', width: 0.9, height: 2.1, sill: 0 },
-  { type: 'window', label: 'Window', width: 1.2, height: 1.2, sill: 1.0 },
+  { key: 'door', type: 'door', style: 'swing', label: 'Door', width: 0.9, height: 2.1, sill: 0 },
+  { key: 'door-double', type: 'door', style: 'double', label: 'Double Door', width: 1.5, height: 2.1, sill: 0 },
+  { key: 'door-sliding', type: 'door', style: 'sliding', label: 'Sliding Door', width: 1.6, height: 2.1, sill: 0 },
+  { key: 'door-folding', type: 'door', style: 'folding', label: 'Folding Door', width: 1.2, height: 2.1, sill: 0 },
+  { key: 'window', type: 'window', style: 'swing', label: 'Window', width: 1.2, height: 1.2, sill: 1.0 },
 ]
 
-export const STRUCTURE_BY_TYPE = Object.fromEntries(STRUCTURE.map((s) => [s.type, s]))
+export const STRUCTURE_BY_KEY = Object.fromEntries(STRUCTURE.map((s) => [s.key, s]))
 
-// Default opening dimensions for a given type (used when placing on a wall).
-export function openingDefaults(type) {
-  const def = STRUCTURE_BY_TYPE[type] || STRUCTURE_BY_TYPE.door
-  return { type: def.type, width: def.width, height: def.height, sill: def.sill, hinge: 0, side: 1 }
+// Default opening fields for a catalog key (used when placing on a wall).
+export function openingDefaults(key) {
+  const def = STRUCTURE_BY_KEY[key] || STRUCTURE_BY_KEY.door
+  return { type: def.type, style: def.style, width: def.width, height: def.height, sill: def.sill, hinge: 0, side: 1 }
 }

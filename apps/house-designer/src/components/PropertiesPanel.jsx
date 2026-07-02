@@ -149,12 +149,22 @@ function OpeningProps({ o, floor, onChange, onDelete }) {
           <button className={o.type === 'window' ? 'active' : ''} onClick={() => onChange({ type: 'window', sill: o.sill > 0 ? o.sill : 1.0 })}>Window</button>
         </div>
       </Field>
+      {o.type === 'door' && (
+        <Field label="Door style">
+          <div className="seg seg-wrap">
+            {[['swing', 'Swing'], ['double', 'Double'], ['sliding', 'Sliding'], ['folding', 'Folding']].map(([s, lbl]) => (
+              <button key={s} className={(o.style || 'swing') === s ? 'active' : ''}
+                onClick={() => onChange({ style: s })}>{lbl}</button>
+            ))}
+          </div>
+        </Field>
+      )}
       <MetersField label="Width" value={o.width} onChange={(v) => onChange({ width: clamp(v, 0.3, 3) })} />
       <div className="field-row">
         <MetersField label="Height" value={o.height} onChange={(v) => onChange({ height: clamp(v, 0.3, 4) })} />
         <MetersField label="Sill" value={o.sill} onChange={(v) => onChange({ sill: clamp(v, 0, 3) })} />
       </div>
-      {o.type === 'door' && (
+      {o.type === 'door' && o.style !== 'sliding' && (
         <Field label="Orientation">
           <div className="seg" style={{ width: '100%' }}>
             <button onClick={() => onChange({ hinge: o.hinge === 1 ? 0 : 1 })}>Flip hinge ↔</button>

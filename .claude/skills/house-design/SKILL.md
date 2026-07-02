@@ -188,6 +188,7 @@ Placement notes for the structural pieces:
 {
   "id": "o_1",                   // string; unique across ALL floors
   "type": "door",                // "door" | "window"
+  "style": "swing",              // doors only: "swing" (default) | "double" | "sliding" | "folding"
   "wallId": "w_bottom",          // string; MUST match a wall id ON THE SAME FLOOR
   "offset": 0.9,                 // meters along the wall from (x1,y1); clamped >= 0, < wall length
   "width": 0.9,                  // meters; door [0.3,3] default 0.9; window [0.3,3] default 1.2
@@ -200,7 +201,7 @@ Placement notes for the structural pieces:
 
 - `offset` is **from the wall's start point (x1,y1)** along its length. To center a 0.9 m door on a 6 m wall, use `offset: 3.0` (center) ± half its width as needed. Clamp: `width/2 <= offset <= L - width/2`.
 - **Coordinate an opening with its wall**: when generating, reference the wall's `id` and know which end is "start". The 2D symbol and 3D cut both depend on `offset` from start.
-- Doors: in 3D, a leaf swung ~80° open on the `hinge` jamb toward `side`. In 2D, a leaf line + swing arc.
+- Doors: rendering depends on `style` — `swing` (default): one leaf swung ~80° open on the `hinge` jamb toward `side` (2D: leaf line + arc); `double`: two half-width leaves swung from both jambs (typical width 1.5); `sliding`: two overlapping panels along the wall, one half-open (typical width 1.6; `hinge`/`side` mostly ignored); `folding`: a bifold accordion zigzag from the `hinge` jamb toward `side` (typical width 1.2).
 - Windows: in 3D, translucent glass + jambs; in 2D, two parallel glass lines across the gap.
 - A wall with an opening stays solid except in the gap (the wall is rendered as solid segments around it). The opening does **not** split the wall — it references it.
 

@@ -85,6 +85,8 @@ body {
 .floor-add:hover { border-color: var(--accent); color: var(--accent-ink); }
 
 .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.seg-wrap { width: 100%; flex-wrap: wrap; border-radius: 12px; }
+.seg-wrap button { flex: 1 1 40%; padding: 4px 6px; font-size: 0.76rem; }
 .seg button {
   border: 0; background: transparent; cursor: pointer;
   padding: 5px 12px; border-radius: 999px; font-size: 0.82rem; color: var(--ink-soft); font-weight: 600;
