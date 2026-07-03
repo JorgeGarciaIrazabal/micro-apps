@@ -1,7 +1,7 @@
 // Shared placement helpers for sample house generators.
 // Keeps wall-thickness math, door/window offsets, and furniture spacing consistent.
 
-import { makeFurniture, BY_TYPE } from './furniture/registry.js'
+import { makeFurniture, BY_TYPE } from '../lib/furniture/registry.js'
 
 export const WT = 0.15          // wall thickness in meters
 export const HT = WT / 2        // half-thickness

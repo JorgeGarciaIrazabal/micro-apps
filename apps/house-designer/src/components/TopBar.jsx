@@ -1,7 +1,7 @@
 import { IconRuler } from './Icons.jsx'
 import { useT } from '../contexts/LangContext.jsx'
 import { SUPPORTED_LANGS } from '../lib/i18n.js'
-import { SAMPLES } from '../lib/sample.js'
+import { SAMPLES } from '../samples/sample.js'
 
 // Top bar: project name, 2D/3D toggle, file actions, and language switch.
 export default function TopBar({

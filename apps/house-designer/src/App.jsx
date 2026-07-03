@@ -10,7 +10,7 @@ import { IconRuler } from './components/Icons.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid, ERR_INVALID_JSON, ERR_NOT_PROJECT } from './lib/project.js'
 import * as M from './lib/mutations.js'
 import { useProjectHistory } from './hooks/useProjectHistory.js'
-import { getSample } from './lib/sample.js'
+import { getSample } from './samples/sample.js'
 import { useT } from './contexts/LangContext.jsx'
 
 const STORAGE_KEY = 'house-designer:project:v1'

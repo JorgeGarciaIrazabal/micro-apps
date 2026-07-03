@@ -10,7 +10,7 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { lintProject } from '../../../apps/house-designer/src/lib/layout-linter.js'
+import { lintProject } from '../../../apps/house-designer/src/linters/layout-linter.js'
 
 const argv = process.argv.slice(2)
 const files = argv.filter((a) => !a.startsWith('--'))

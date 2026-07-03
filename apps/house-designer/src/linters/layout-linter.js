@@ -9,8 +9,8 @@
 //
 // This module is dependency-free and runs in the browser or Node.
 
-import { detectRooms } from './rooms.js'
-import { wallUnit } from './geometry.js'
+import { detectRooms } from '../lib/rooms.js'
+import { wallUnit } from '../lib/geometry.js'
 
 // ─── public API ─────────────────────────────────────────────────────────────
 
@@ -312,8 +312,8 @@ function polygonObb(poly) {
   const p1 = projectPolygon(poly, axes[1])
   const extents = [(p0.max - p0.min) / 2, (p1.max - p1.min) / 2]
   // Recenter so projections are symmetric around center
-  center.x += axes[0].x * (p0.min + p0.max) / 2 + axes[1].x * (p1.min + p1.max) / 2
-  center.y += axes[0].y * (p0.min + p0.max) / 2 + axes[1].y * (p1.min + p1.max) / 2
+  center.x = axes[0].x * (p0.min + p0.max) / 2 + axes[1].x * (p1.min + p1.max) / 2
+  center.y = axes[0].y * (p0.min + p0.max) / 2 + axes[1].y * (p1.min + p1.max) / 2
   return { center, axes, extents }
 }
 
