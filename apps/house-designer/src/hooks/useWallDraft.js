@@ -8,9 +8,11 @@ import * as M from '../lib/mutations.js'
 export function useWallDraft({ walls, grid, scale, thickness, commit, snapPx = 12 }) {
   const [draft, setDraft] = useState([]) // [{x,y}] in meters
   const [cursor, setCursor] = useState(null) // world meters, for preview
+  const [shiftHeld, setShiftHeld] = useState(false)
 
   // Snap a world point to grid + nearby wall endpoints, optionally
   // angle-aligned to a reference point (for wall drawing).
+  // When shiftHeld, snaps to every 15° instead of just 90°.
   const snapPoint = useCallback((x, y, ignoreId = null, alignTo = null) => {
     const threshold = snapPx / scale // meters
     let best = { x: snap(x, grid), y: snap(y, grid) }
@@ -24,10 +26,13 @@ export function useWallDraft({ walls, grid, scale, thickness, commit, snapPx = 1
     }
     // Only angle-snap when no endpoint snap won (so corners still connect).
     if (alignTo && bestD >= threshold) {
-      best = angleSnap(best.x, best.y, alignTo)
+      // Shift → snap every 15° (always snaps); no shift → only 90° within 12°.
+      const step = shiftHeld ? 15 : 90
+      const tol = shiftHeld ? 7.5 : 12
+      best = angleSnap(best.x, best.y, alignTo, tol, step)
     }
     return best
-  }, [walls, grid, scale, snapPx])
+  }, [walls, grid, scale, snapPx, shiftHeld])
 
   // Handle a Wall-tool click at a world point.
   // NOTE: the wall commit and the draft update stay separate setState calls —
@@ -55,5 +60,5 @@ export function useWallDraft({ walls, grid, scale, thickness, commit, snapPx = 1
     return { from: last, to: p }
   }, [draft, cursor, snapPoint])
 
-  return { draft, preview, cursor, setCursor, snapPoint, handleWallClick, finish }
+  return { draft, preview, cursor, setCursor, setShiftHeld, snapPoint, handleWallClick, finish }
 }

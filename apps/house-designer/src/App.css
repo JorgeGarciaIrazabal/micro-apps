@@ -95,6 +95,21 @@ body {
 .view-toggle { flex: 0 0 auto; }
 
 .topbar-actions { display: flex; gap: 6px; margin-left: auto; }
+.lang-toggle { flex: 0 0 auto; }
+.sample-select {
+  border: 1px solid var(--line); background: var(--surface);
+  padding: 6px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 0.82rem; color: var(--ink); font-weight: 500;
+  transition: border-color 0.12s, background 0.12s;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239a9183'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+.sample-select:hover { border-color: var(--line-strong); background-color: var(--surface-2); }
+.sample-select:focus { outline: none; border-color: var(--accent); }
+
 .topbar-actions button, .props-actions button {
   border: 1px solid var(--line); background: var(--surface);
   padding: 6px 12px; border-radius: var(--radius-sm); cursor: pointer;

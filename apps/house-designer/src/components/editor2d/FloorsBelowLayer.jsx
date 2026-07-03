@@ -4,7 +4,7 @@ import { FurnitureGraphic } from '../FurnitureGraphic.jsx'
 // Floors strictly below the active one, drawn faintly as a construction guide.
 export default function FloorsBelowLayer({ floors }) {
   return floors.map((bf) => (
-    <g key={`bf-${bf.id}`} opacity={0.22} style={{ pointerEvents: 'none' }}>
+    <g key={`bf-${bf.id}`} opacity={0.1} style={{ pointerEvents: 'none' }}>
       {bf.walls.map((w) => {
         const L = dist(w.x1, w.y1, w.x2, w.y2)
         if (L < 1e-4) return null

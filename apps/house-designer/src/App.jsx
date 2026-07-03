@@ -7,10 +7,11 @@ import Editor3D from './components/Editor3D.jsx'
 import FloorBar from './components/FloorBar.jsx'
 import ShortcutHelp from './components/ShortcutHelp.jsx'
 import { IconRuler } from './components/Icons.jsx'
-import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid } from './lib/project.js'
+import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid, ERR_INVALID_JSON, ERR_NOT_PROJECT } from './lib/project.js'
 import * as M from './lib/mutations.js'
 import { useProjectHistory } from './hooks/useProjectHistory.js'
-import { sampleProject } from './lib/sample.js'
+import { getSample } from './lib/sample.js'
+import { useT } from './contexts/LangContext.jsx'
 
 const STORAGE_KEY = 'house-designer:project:v1'
 
@@ -24,6 +25,7 @@ function loadSaved() {
 }
 
 export default function App() {
+  const { t } = useT()
   const [view, setView] = useState('2d')
   const [tool, setTool] = useState('select')
   const [selectedId, setSelectedId] = useState(null)
@@ -41,8 +43,8 @@ export default function App() {
   }, [])
 
   const { project, commit } = useProjectHistory(loadSaved, {
-    onUndo: (ok) => flash(ok ? 'Undo' : 'Nothing to undo'),
-    onRedo: (ok) => flash(ok ? 'Redo' : 'Nothing to redo'),
+    onUndo: (ok) => flash(ok ? t('toast.undo') : t('toast.nothing_to_undo')),
+    onRedo: (ok) => flash(ok ? t('toast.redo') : t('toast.nothing_to_redo')),
   })
 
   // Drop the selection when the selected element no longer exists (deleted,
@@ -72,53 +74,55 @@ export default function App() {
     if (!file) return
     try {
       const proj = deserialize(file.text)
-      // Keep the file's name as the project name when sensible.
       if (file.name && /\.json$/i.test(file.name)) {
         proj.name = file.name.replace(/\.(house|pln5d)\.json$/i, '').replace(/\.json$/i, '')
       }
       commit(proj)
       setSelectedId(null)
-      flash(`Opened “${proj.name}”`, 'success')
+      flash(t('toast.opened', { name: proj.name }), 'success')
     } catch (err) {
-      flash(`Import failed: ${err.message}`, 'error')
+      if (err.message === ERR_INVALID_JSON) flash(t('error.invalid_json'), 'error')
+      else if (err.message === ERR_NOT_PROJECT) flash(t('error.not_project'), 'error')
+      else flash(t('toast.import_failed', { error: err.message }), 'error')
     }
-  }, [flash, commit])
+  }, [flash, commit, t])
 
   const onExportJson = useCallback(() => {
     const name = safeName(project.name, 'house-designer-project')
     downloadBlob(`${name}.house.json`, serialize(project))
-    flash('Saved project JSON', 'success')
-  }, [project, flash])
+    flash(t('toast.saved_json'), 'success')
+  }, [project, flash, t])
 
   const onExportPng = useCallback(async () => {
     if (view === '3d') {
       const data = editor3dRef.current?.exportPNG?.()
-      if (!data) return flash('3D render not ready', 'error')
+      if (!data) return flash(t('toast.3d_not_ready'), 'error')
       downloadBlob(`${safeName(project.name, 'house-designer')}.3d.png`, data, 'image/png')
-      flash('Exported 3D PNG', 'success')
+      flash(t('toast.exported_3d_png'), 'success')
       return
     }
     const svg = stageRef.current?.querySelector('svg')
-    if (!svg) return flash('2D view not ready', 'error')
+    if (!svg) return flash(t('toast.2d_not_ready'), 'error')
     const w = Number(svg.getAttribute('width')) || svg.clientWidth || 800
     const h = Number(svg.getAttribute('height')) || svg.clientHeight || 560
     const data = await exportSvgPng(svg, w, h)
-    if (!data) return flash('PNG export failed', 'error')
+    if (!data) return flash(t('toast.png_failed'), 'error')
     downloadBlob(`${safeName(project.name, 'house-designer')}.2d.png`, data, 'image/png')
-    flash('Exported 2D PNG', 'success')
-  }, [view, project, flash])
+    flash(t('toast.exported_2d_png'), 'success')
+  }, [view, project, flash, t])
 
-  const onLoadSample = useCallback(() => {
-    commit(sampleProject())
+  const onLoadSample = useCallback((key = 'studio') => {
+    const proj = getSample(key)
+    commit(proj)
     setSelectedId(null)
     setView('2d')
-    flash('Loaded sample apartment')
-  }, [flash, commit])
+    flash(t('toast.loaded_sample', { name: proj.name }))
+  }, [flash, commit, t])
 
   const onResetView = useCallback(() => {
     if (view === '3d') editor3dRef.current?.resetCamera?.()
-    else flash('2D: scroll to zoom, drag with Space/middle button to pan')
-  }, [view, flash])
+    else flash(t('toast.hint_pan'))
+  }, [view, flash, t])
 
   const onDeleteSelected = useCallback(() => {
     if (!selectedId) return
@@ -131,14 +135,14 @@ export default function App() {
     const newId = uid('dup')
     commit((p) => M.duplicateElement(p, selectedId, newId))
     setSelectedId(newId)
-    flash('Duplicated')
-  }, [selectedId, commit, flash])
+    flash(t('toast.duplicated'))
+  }, [selectedId, commit, flash, t])
 
   // Global shortcuts that aren't tied to the 2D canvas: duplicate + help.
   useEffect(() => {
     const onKey = (e) => {
-      const t = e.target
-      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)
+      const tgt = e.target
+      const typing = tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && !typing) {
         e.preventDefault()
         onDuplicateSelected()
@@ -172,8 +176,6 @@ export default function App() {
     setSelectedId(null)
   }, [commit])
 
-  // Empty-state shows only when the WHOLE project has no content, so switching
-  // to an empty floor (or adding one) doesn't hide content that exists elsewhere.
   const empty = (project.floors || []).every(
     (f) => (f.walls || []).length === 0 && (f.furniture || []).length === 0 && (f.openings || []).length === 0
   )
@@ -204,7 +206,7 @@ export default function App() {
               setTool={setTool}
               selectedId={selectedId}
               setSelectedId={setSelectedId}
-              onWallDoubleClick={() => setFocusLenToken((t) => t + 1)}
+              onWallDoubleClick={() => setFocusLenToken((tok) => tok + 1)}
             />
           ) : (
             <Editor3D ref={editor3dRef} project={project} />
@@ -213,9 +215,17 @@ export default function App() {
             <div className="empty-state">
               <div className="empty-card">
                 <span className="empty-ico"><IconRuler size={40} /></span>
-                <h2>Start your floor plan</h2>
-                <p>Choose <b>Wall</b> to draw walls, or pick furniture from the left. Switch to <b>3D</b> anytime to preview.</p>
-                <button onClick={onLoadSample}>Load sample apartment</button>
+                <h2>{t('empty.heading')}</h2>
+                <p>
+                  {t('empty.body', { wall: '__WALL__', view3d: '__3D__' })
+                    .split(/(__WALL__|__3D__)/)
+                    .map((seg, i) =>
+                      seg === '__WALL__' ? <b key={i}>{t('panel.wall')}</b>
+                      : seg === '__3D__' ? <b key={i}>3D</b>
+                      : seg
+                    )}
+                </p>
+                <button onClick={() => onLoadSample('studio')}>{t('empty.load_sample')}</button>
               </div>
             </div>
           )}

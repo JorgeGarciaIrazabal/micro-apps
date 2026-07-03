@@ -1,73 +1,90 @@
 import { uid, makeFloor } from './project.js'
 import { makeFurniture } from './furniture/registry.js'
+import {
+  wall, opening, place, alongWall, centered, facing, row, spacedRow, room, WT, HT
+} from './sample-layout.js'
 
-// A small demo so the app feels alive on first open and exercises multi-floor +
-// doors/windows. Ground = studio apartment; Upper = a bedroom stacked at 3 m.
-export function sampleProject() {
-  const w = (x1, y1, x2, y2, t = 0.15) => ({ id: uid('w'), x1, y1, x2, y2, thickness: t })
-  const f = (type, x, y, rot) => ({ ...makeFurniture(type, x, y), id: uid('f'), rotation: rot })
+export const SAMPLES = [
+  { key: 'tiny-cabin', label: 'Tiny Cabin' },
+]
 
-  // ---- Ground floor: 6.0 x 5.0 studio ----
-  const gWalls = [
-    w(0, 0, 6, 0),       // bottom
-    w(6, 0, 6, 5),       // right
-    w(6, 5, 0, 5),       // top
-    w(0, 5, 0, 0),       // left (interior door is an Opening below)
-    w(2.2, 0, 2.2, 2.6), // partition (kitchen/living)
-    w(2.2, 2.6, 0, 2.6), // partition top
-  ]
-  const gFurniture = [
-    f('sofa', 4.2, 1.0, 0),
-    f('coffee-table', 4.2, 2.0, 0),
-    f('tv-stand', 5.7, 2.4, Math.PI / 2),
-    f('rug', 4.2, 1.6, 0),
-    f('dining-table', 1.0, 3.8, 0),
-    f('chair', 1.0, 3.0, 0),
-    f('chair', 1.0, 4.6, 0),
-    f('fridge', 0.4, 0.4, 0),
-    f('counter', 1.5, 0.3, 0),
-    f('stove', 0.8, 0.3, 0),
-    f('bed-double', 1.0, 1.3, 0),
-    f('nightstand', 2.1, 1.2, 0),
-    f('plant', 5.5, 0.5, 0),
-  ]
-  const gOpenings = [
-    { id: uid('o'), type: 'door', wallId: gWalls[0].id, offset: 0.9, width: 0.9, height: 2.1, sill: 0, hinge: 0, side: 1 },
-    { id: uid('o'), type: 'door', wallId: gWalls[3].id, offset: 3.2, width: 0.9, height: 2.1, sill: 0, hinge: 0, side: -1 },
-    { id: uid('o'), type: 'window', wallId: gWalls[2].id, offset: 3.0, width: 1.4, height: 1.2, sill: 1.0, hinge: 0, side: 1 },
-    { id: uid('o'), type: 'window', wallId: gWalls[1].id, offset: 2.5, width: 1.2, height: 1.2, sill: 1.0, hinge: 0, side: 1 },
-  ]
-  const ground = makeFloor('Ground', 0)
-  ground.walls = gWalls
-  ground.furniture = gFurniture
-  ground.openings = gOpenings
-
-  // ---- Upper floor: 4.0 x 4.0 bedroom at level 3.0 m ----
-  const uWalls = [
-    w(0, 0, 4, 0),  // bottom
-    w(4, 0, 4, 4),  // right
-    w(4, 4, 0, 4),  // top
-    w(0, 4, 0, 0),  // left
-  ]
-  const uFurniture = [
-    f('bed-double', 1.4, 1.2, 0),
-    f('nightstand', 2.7, 1.1, 0),
-    f('plant', 3.4, 3.4, 0),
-  ]
-  const uOpenings = [
-    { id: uid('o'), type: 'door', wallId: uWalls[0].id, offset: 0.9, width: 0.9, height: 2.1, sill: 0, hinge: 1, side: -1 },
-    { id: uid('o'), type: 'window', wallId: uWalls[1].id, offset: 2.0, width: 1.2, height: 1.2, sill: 1.0, hinge: 0, side: 1 },
-  ]
-  const upper = makeFloor('Upper', 3.0)
-  upper.walls = uWalls
-  upper.furniture = uFurniture
-  upper.openings = uOpenings
-
-  return {
-    version: 1,
-    name: 'Studio + Bedroom',
-    settings: { units: 'm', wallHeight: 2.7, wallThickness: 0.15, gridSize: 0.1 },
-    floors: [ground, upper],
-    activeFloorId: ground.id,
+export function getSample(key) {
+  const map = {
+    'tiny-cabin': tinyCabin,
   }
+  return (map[key] || tinyCabin)()
+}
+
+export { tinyCabin as sampleProject }
+
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+function w(x1, y1, x2, y2, t = 0.15) { return wall(x1, y1, x2, y2) }
+function f(type, x, y, rot = 0) { return { ...makeFurniture(type, x, y), id: uid('f'), rotation: rot } }
+function door(wallId, offset, { width = 0.9, hinge = 0, side = 1 } = {}) {
+  return { id: uid('o'), type: 'door', wallId, offset, width, height: 2.1, sill: 0, hinge, side }
+}
+function win(wallId, offset, width = 1.2) {
+  return { id: uid('o'), type: 'window', wallId, offset, width, height: 1.1, sill: 0.9, hinge: 0, side: 1 }
+}
+function flr(name, level, walls, furniture, openings) {
+  const fl = makeFloor(name, level)
+  fl.walls = walls; fl.furniture = furniture; fl.openings = openings
+  return fl
+}
+function project(name, floors) {
+  return { version: 1, name, settings: { units: 'm', wallHeight: 2.7, wallThickness: 0.15, gridSize: 0.1 }, floors, activeFloorId: floors[0].id }
+}
+
+// ─── 1. Tiny Cabin ──────────────────────────────────────────────────────────
+// 1 floor, 6.5×5.5m — living+kitchen, 1 bedroom, bathroom
+
+function tinyCabin() {
+  const cw = {
+    bot:   wall(0, 0, 6.5, 0),
+    right: wall(6.5, 0, 6.5, 5.5),
+    top:   wall(6.5, 5.5, 0, 5.5),
+    left:  wall(0, 5.5, 0, 0),
+    bathV: wall(4.5, 0, 4.5, 3.2),    // living | bathroom
+    midH:  wall(0, 3.2, 6.5, 3.2),    // living+bath | bedroom
+  }
+  const walls = Object.values(cw)
+
+  // Living + kitchen (0..4.5 x 0..3.2)
+  const living = [
+    // Sofa on the right side of the bottom wall, away from the kitchenette.
+    alongWall('sofa', cw.bot, 3.0, 'S'),
+    centered('coffee-table', room(2.45, 1.0, 1.1, 0.6)),
+    // Compact kitchenette along the left wall; shorter counter so it fits.
+    place('counter', 0.385, 1.6, -Math.PI / 2, { width: 1.0 }),
+    alongWall('sink', cw.left, 2.55, 'W'),
+  ]
+
+  // Bedroom (0..6.5 x 3.2..5.5)
+  const bedroom = [
+    alongWall('bed-double', cw.top, 3.25, 'N'),
+    alongWall('nightstand', cw.top, 1.5, 'N'),
+    alongWall('nightstand', cw.top, 5.5, 'N'),
+    alongWall('wardrobe', cw.left, 4.35, 'W'),
+  ]
+
+  // Bathroom (4.5..6.5 x 0..3.2)
+  const bathroom = [
+    alongWall('toilet', cw.bathV, 0.6, 'W'),
+    alongWall('vanity', cw.right, 0.7, 'E'),
+    alongWall('shower', cw.bathV, 2.2, 'W'),
+  ]
+
+  const furn = [...living, ...bedroom, ...bathroom]
+  const openings = [
+    door(cw.bot.id, 3.8),                       // main door (living front), clear of sofa
+    door(cw.bathV.id, 1.5, { width: 0.8, side: 1 }),     // bathroom, swing into living
+    door(cw.midH.id, 5.5),                      // bedroom door away from bed foot
+    win(cw.bot.id, 0.8, 1.0),                   // living front
+    win(cw.left.id, 4.0, 0.9),                  // left wall (offset from y=5.5: y=1.5)
+    win(cw.top.id, 3.0, 1.4),                   // bedroom back (offset from x=6.5: x=3.5)
+    win(cw.right.id, 1.5, 0.5),                 // bathroom right
+  ]
+  const floor = flr('Main', 0, walls, furn, openings)
+  return project('Tiny Cabin', [floor])
 }

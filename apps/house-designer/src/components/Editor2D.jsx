@@ -90,9 +90,16 @@ export default function Editor2D({
     if (!el) return
     el.tabIndex = 0
     const onKey = (e) => keyRef.current(e)
+    const onShift = (e) => wallDraft.setShiftHeld(e.shiftKey)
     el.addEventListener('keydown', onKey)
-    return () => el.removeEventListener('keydown', onKey)
-  }, [])
+    window.addEventListener('keydown', onShift)
+    window.addEventListener('keyup', onShift)
+    return () => {
+      el.removeEventListener('keydown', onKey)
+      window.removeEventListener('keydown', onShift)
+      window.removeEventListener('keyup', onShift)
+    }
+  }, [wallDraft.setShiftHeld])
 
   // ---- pointer handlers ---------------------------------------------------
   function onPointerDown(e) {
@@ -135,7 +142,11 @@ export default function Editor2D({
     const ep = hit.hitWallEndpoint(floor, world.x, world.y, (HIT_PX / scale) * 1.4)
     if (ep) {
       setSelectedId(ep.wall.id)
-      dragRef.current = { kind: 'wall-end', wallId: ep.wall.id, end: ep.end }
+      // Store the fixed (other) endpoint so angle-snapping works during drag.
+      const alignTo = ep.end === 1
+        ? { x: ep.wall.x2, y: ep.wall.y2 }
+        : { x: ep.wall.x1, y: ep.wall.y1 }
+      dragRef.current = { kind: 'wall-end', wallId: ep.wall.id, end: ep.end, alignTo }
       return
     }
     const op = hit.hitOpening(floor, world.x, world.y)
@@ -161,6 +172,7 @@ export default function Editor2D({
   function onPointerMove(e) {
     const world = clientToWorld(e.clientX, e.clientY)
     wallDraft.setCursor(world)
+    wallDraft.setShiftHeld(e.shiftKey)
     const d = dragRef.current
     if (!d) {
       // Hover feedback (select tool only, nothing being dragged).
@@ -185,7 +197,7 @@ export default function Editor2D({
       return
     }
     if (d.kind === 'wall-end') {
-      const p = wallDraft.snapPoint(world.x, world.y, d.wallId)
+      const p = wallDraft.snapPoint(world.x, world.y, d.wallId, d.alignTo)
       patchElement(d.wallId, d.end === 1 ? { x1: p.x, y1: p.y } : { x2: p.x, y2: p.y })
       return
     }
@@ -252,6 +264,38 @@ export default function Editor2D({
   // Suppress context menu so middle/right-button panning works cleanly.
   const onContextMenu = (e) => e.preventDefault()
 
+  // ---- drag-and-drop from FurniturePanel ----------------------------------
+  function onDragOver(e) {
+    if (e.dataTransfer.types.includes('application/house-designer')) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+    }
+  }
+
+  function onDrop(e) {
+    const raw = e.dataTransfer.getData('application/house-designer')
+    if (!raw) return
+    e.preventDefault()
+    const data = JSON.parse(raw)
+    const world = clientToWorld(e.clientX, e.clientY)
+    if (data.kind === 'furniture') {
+      const p = wallDraft.snapPoint(world.x, world.y)
+      const item = { ...makeFurniture(data.type, p.x, p.y), id: uid('f') }
+      commit((proj) => M.addFurniture(proj, item))
+      setSelectedId(item.id)
+      setTool('select')
+    } else if (data.kind === 'opening') {
+      const near = hit.nearestWallForOpening(floor, world.x, world.y)
+      if (!near) return
+      const def = openingDefaults(data.key)
+      const off = Math.max(def.width / 2, Math.min(near.L - def.width / 2, near.offset))
+      const op = { id: uid('o'), type: def.type, style: def.style, wallId: near.wall.id, offset: off, width: def.width, height: def.height, sill: def.sill, hinge: def.hinge, side: def.side }
+      commit((proj) => M.addOpening(proj, op))
+      setSelectedId(op.id)
+      setTool('select')
+    }
+  }
+
   // ---- derived render data ------------------------------------------------
   const selectedFurniture = floor.furniture.find((f) => f.id === selectedId) || null
 
@@ -315,6 +359,8 @@ export default function Editor2D({
         onPointerUp={onPointerUp}
         onContextMenu={onContextMenu}
         onDoubleClick={onDoubleClick}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         style={{ display: 'block', cursor: cursorStyle(tool, dragRef.current, spaceRef.current) }}
       >
         <rect x={0} y={0} width={size.w} height={size.h} fill="#f7f6f3" />

@@ -197,15 +197,18 @@ export function openingsOnWall(container, wallId) {
     .sort((a, b) => a.offset - b.offset)
 }
 
+export const ERR_INVALID_JSON = 'File is not valid JSON.'
+export const ERR_NOT_PROJECT = 'File does not contain a project object.'
+
 export function deserialize(text) {
   let parsed
   try {
     parsed = JSON.parse(text)
   } catch {
-    throw new Error('File is not valid JSON.')
+    throw new Error(ERR_INVALID_JSON)
   }
   if (!parsed || typeof parsed !== 'object') {
-    throw new Error('File does not contain a project object.')
+    throw new Error(ERR_NOT_PROJECT)
   }
   return normalizeProject(parsed)
 }

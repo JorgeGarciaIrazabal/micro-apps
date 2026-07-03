@@ -1,16 +1,20 @@
 import { IconRuler } from './Icons.jsx'
+import { useT } from '../contexts/LangContext.jsx'
+import { SUPPORTED_LANGS } from '../lib/i18n.js'
+import { SAMPLES } from '../lib/sample.js'
 
-// Top bar: project name, 2D/3D toggle, and file actions (import/export).
+// Top bar: project name, 2D/3D toggle, file actions, and language switch.
 export default function TopBar({
   project, onRename, view, setView, onImport, onExportJson, onExportPng, onLoadSample, onResetView, onHelp,
 }) {
+  const { t, lang, setLang } = useT()
   return (
     <header className="topbar">
       <div className="brand">
         <span className="brand-mark"><IconRuler size={20} /></span>
         <div className="brand-text">
-          <strong>House Designer</strong>
-          <span className="brand-sub">floor plan · 3D</span>
+          <strong>{t('brand.name')}</strong>
+          <span className="brand-sub">{t('brand.sub')}</span>
         </div>
       </div>
 
@@ -19,7 +23,7 @@ export default function TopBar({
         value={project.name}
         onChange={(e) => onRename(e.target.value)}
         spellCheck={false}
-        aria-label="Project name"
+        aria-label={t('topbar.project_name')}
       />
 
       <div className="seg view-toggle">
@@ -28,12 +32,30 @@ export default function TopBar({
       </div>
 
       <div className="topbar-actions">
-        <button onClick={onLoadSample} title="Load a demo apartment">Sample</button>
-        <button onClick={onResetView} title="Reset camera / re-center">Reset view</button>
-        <button onClick={onImport} title="Open a .house.json project file">Open…</button>
-        <button onClick={onExportJson} title="Save project as JSON">Save JSON</button>
-        <button onClick={onExportPng} title="Export current view as PNG">PNG</button>
-        <button onClick={onHelp} title="Keyboard shortcuts (?)">?</button>
+        <select
+          className="sample-select"
+          value=""
+          title={t('topbar.examples_title')}
+          onChange={(e) => { if (e.target.value) { onLoadSample(e.target.value); e.target.value = '' } }}
+        >
+          <option value="">{t('topbar.examples')}</option>
+          {SAMPLES.map((s) => (
+            <option key={s.key} value={s.key}>{s.label}</option>
+          ))}
+        </select>
+        <button onClick={onResetView} title={t('topbar.reset_view_title')}>{t('topbar.reset_view')}</button>
+        <button onClick={onImport} title={t('topbar.open_title')}>{t('topbar.open')}</button>
+        <button onClick={onExportJson} title={t('topbar.save_json_title')}>{t('topbar.save_json')}</button>
+        <button onClick={onExportPng} title={t('topbar.png_title')}>{t('topbar.png')}</button>
+        <button onClick={onHelp} title={t('topbar.help_title')}>?</button>
+      </div>
+
+      <div className="seg lang-toggle">
+        {SUPPORTED_LANGS.map((l) => (
+          <button key={l} className={lang === l ? 'active' : ''} onClick={() => setLang(l)}>
+            {l.toUpperCase()}
+          </button>
+        ))}
       </div>
     </header>
   )

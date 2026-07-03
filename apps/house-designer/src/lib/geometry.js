@@ -49,16 +49,17 @@ export function pointInRotatedRect(wx, wy, cx, cy, rot, w, d) {
   return Math.abs(lx) <= w / 2 && Math.abs(ly) <= d / 2
 }
 
-// Snap a candidate endpoint so walls are easy to draw at 0/90/180/270°.
-// If the angle from `from` to (x,y) is within `toleranceDeg` of an axis
-// direction, rotate the point onto that axis keeping the same length.
-export function angleSnap(x, y, from, toleranceDeg = 12) {
+// Snap a candidate endpoint to the nearest multiple of `step` degrees.
+// toleranceDeg: how close to a snap angle before it kicks in.
+// Pass step=15 (with tol=7.5) for shift-key "fine snap", step=90 for the
+// default orthogonal-only mode.
+export function angleSnap(x, y, from, toleranceDeg = 12, step = 90) {
   const dx = x - from.x, dy = y - from.y
   const len = Math.hypot(dx, dy)
   if (len < 1e-6) return { x, y }
   const deg = (Math.atan2(dy, dx) * 180) / Math.PI
-  const nearest = Math.round(deg / 90) * 90
-  if (Math.abs(deg - nearest) < toleranceDeg) {
+  const nearest = Math.round(deg / step) * step
+  if (Math.abs(deg - nearest) <= toleranceDeg) {
     const rad = (nearest * Math.PI) / 180
     return { x: from.x + len * Math.cos(rad), y: from.y + len * Math.sin(rad) }
   }
