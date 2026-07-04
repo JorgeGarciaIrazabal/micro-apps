@@ -140,6 +140,32 @@ const server = http.createServer((req, res) => {
   const a = pickApp(urlPath)
   if (a) return proxy(req, res, a)
 
+  // Serve static files from root directory if it starts with BASE
+  if (urlPath.startsWith(BASE)) {
+    const relativePath = urlPath.slice(BASE.length)
+    const filePath = path.join(ROOT, relativePath)
+    
+    // Safety check: ensure file is inside ROOT
+    if (filePath.startsWith(ROOT) && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath).toLowerCase()
+      const mimeTypes = {
+        '.css': 'text/css',
+        '.js': 'application/javascript',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+        '.json': 'application/json',
+        '.gif': 'image/gif',
+        '.ico': 'image/x-icon'
+      }
+      const contentType = mimeTypes[ext] || 'application/octet-stream'
+      res.writeHead(200, { 'content-type': contentType })
+      fs.createReadStream(filePath).pipe(res)
+      return
+    }
+  }
+
   res.writeHead(404); res.end('not found')
 })
 

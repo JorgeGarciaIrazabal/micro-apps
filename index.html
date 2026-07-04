@@ -1,105 +1,331 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Micro Apps</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-    }
-    .container {
-      max-width: 600px;
-      width: 100%;
-    }
-    h1 {
-      color: white;
-      font-size: 2.5rem;
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-    .subtitle {
-      color: rgba(255,255,255,0.8);
-      text-align: center;
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
-    }
-    .apps {
-      display: grid;
-      gap: 1rem;
-    }
-    .app-card {
-      background: white;
-      border-radius: 16px;
-      padding: 1.5rem;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .app-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    }
-    .app-icon {
-      font-size: 2.5rem;
-      flex-shrink: 0;
-    }
-    .app-info h2 {
-      font-size: 1.2rem;
-      margin-bottom: 0.25rem;
-      color: #333;
-    }
-    .app-info p {
-      font-size: 0.9rem;
-      color: #666;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Micro Apps Portal — A Developer Suite</title>
+  <meta name="description" content="A curated directory of custom high-fidelity microservices, interactive builders, real estate calculators, and blueprints planners.">
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Micro Apps</h1>
-    <p class="subtitle">A collection of small web apps</p>
-    <div class="apps">
-      <a class="app-card" href="clara-summer-camps-madrid/">
-        <span class="app-icon">🏕️</span>
-        <div class="app-info">
-          <h2>Campamentos de Verano - Clara (Madrid)</h2>
-          <p>Comparativa de campamentos cerca de Penagrande para julio y agosto 2026.</p>
+
+  <!-- Decorative Grid Overlay -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <!-- Primary Application Wrapper -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header>
+      <div class="logo-area">
+        <div class="logo-icon">M</div>
+        <div class="logo-text">MICRO<span>APPS</span></div>
+      </div>
+      <div class="header-controls">
+        <div class="live-stats">
+          <span class="status-indicator"></span>
+          <span>SYSTEM: OK</span>
+          <span style="opacity: 0.3; margin: 0 0.25rem;">|</span>
+          <span id="statsTime">00:00:00</span>
+          <span style="opacity: 0.3; margin: 0 0.25rem;">|</span>
+          <span id="statsPing">12ms</span>
         </div>
-      </a>
-      <a class="app-card" href="andalucia-scouting-2026/">
-        <span class="app-icon">🏠</span>
-        <div class="app-info">
-          <h2>Andalucía Scouting 2026</h2>
-          <p>4-day real-estate scouting trip: obra nueva, terrenos, resale + padel & schools. Aug 12–15 2026.</p>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle Theme">
+          <svg viewBox="0 0 24 24">
+            <!-- Filled in dynamically by JS -->
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Hero Branding Section -->
+    <section class="hero">
+      <span class="badge">Vite + React Ecosystem</span>
+      <h1>Bespoke <span>Micro-Apps</span> Hub</h1>
+      <p class="tagline">Explore custom interactive models, granular budgeting tools, travel planners, and 3D architectural blueprint designers built for modern web standards.</p>
+      
+      <!-- Live Stats Counters -->
+      <div class="stats-banner">
+        <div class="stat-box">
+          <div class="stat-value" data-target="4">0</div>
+          <div class="stat-label">Applications</div>
         </div>
-      </a>
-      <a class="app-card" href="casa-prefab-madrid/">
-        <span class="app-icon">🏗️</span>
-        <div class="app-info">
-          <h2>Casa Prefabricada Madrid</h2>
-          <p>Investigación interactiva: tecnologías (SIP, hormigón, madera...), empresas y calculadora de coste llave en mano.</p>
+        <div class="stat-box">
+          <div class="stat-value" data-target="100">0</div>
+          <div class="stat-label">Uptime %</div>
         </div>
-      </a>
-      <a class="app-card" href="house-designer/">
-        <span class="app-icon">📐</span>
-        <div class="app-info">
-          <h2>House Designer</h2>
-          <p>2D floor plan editor with furniture catalog, 3D preview, and JSON/PNG import-export for sharing.</p>
+        <div class="stat-box">
+          <div class="stat-value" data-target="0.2">0.0s</div>
+          <div class="stat-label">Initial Load</div>
         </div>
-      </a>
+      </div>
+    </section>
+
+    <!-- Interactive Filters & Search Controls -->
+    <div class="filter-search-container">
+      <div class="search-box">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="appSearch" placeholder="Search apps by title, tags, description..." autocomplete="off">
+      </div>
+      <div class="filter-pills">
+        <button class="filter-btn active" data-filter="all">All Modules</button>
+        <button class="filter-btn" data-filter="real-estate">Real Estate</button>
+        <button class="filter-btn" data-filter="calculators">Calculators</button>
+        <button class="filter-btn" data-filter="design">3D Design</button>
+        <button class="filter-btn" data-filter="travel">Travel & Camps</button>
+      </div>
+    </div>
+
+    <!-- Responsive Cards Showcase Grid -->
+    <main class="apps-grid" id="appsGrid">
+      
+      <!-- Card 1: Clara Summer Camps -->
+      <div class="app-card-wrapper" data-id="clara-summer-camps-madrid" data-categories="travel" data-tags="madrid,campamentos,verano,pricing,planning">
+        <div class="app-card-inner">
+          <div class="card-header">
+            <div class="card-icon-container">🏕️</div>
+            <div class="card-tags">
+              <span class="card-tag">React</span>
+              <span class="card-tag">Planning</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h2>Campamentos de Verano Clara</h2>
+            <p>Interactive dashboard comparing summer camp options in Penagrande/Madrid for July and August 2026. Designed to optimize budget, schedules, and activities.</p>
+            <div class="card-meta-list">
+              <div class="meta-item">
+                <span class="label">Location:</span>
+                <span>Islas Hebridas 70, Madrid</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Priority Date:</span>
+                <span style="color:var(--error); font-weight:600;">Registration closes April 29</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-launch" href="./clara-summer-camps-madrid/">
+              Launch App
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <button class="btn-details" aria-label="View Details">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Andalucia Scouting -->
+      <div class="app-card-wrapper" data-id="andalucia-scouting-2026" data-categories="real-estate,travel" data-tags="andalucia,scouting,properties,trip,spain">
+        <div class="app-card-inner">
+          <div class="card-header">
+            <div class="card-icon-container">🏠</div>
+            <div class="card-tags">
+              <span class="card-tag">Bilingual</span>
+              <span class="card-tag">Real Estate</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h2>Andalucía Scouting 2026</h2>
+            <p>4-day intensive real-estate trip planner for Málaga, Granada, and Sevilla. Compiles new builds (obra nueva), terrains, resale specs, school details, and travel logistics.</p>
+            <div class="card-meta-list">
+              <div class="meta-item">
+                <span class="label">Date:</span>
+                <span>August 12 – 15, 2026</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Scope:</span>
+                <span>Málaga, Granada, Sevilla extension zones</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-launch" href="./andalucia-scouting-2026/">
+              Launch App
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <button class="btn-details" aria-label="View Details">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Casa Prefabricada Madrid -->
+      <div class="app-card-wrapper" data-id="casa-prefab-madrid" data-categories="real-estate,calculators" data-tags="madrid,calculator,cost,prefab,modular,structural">
+        <div class="app-card-inner">
+          <div class="card-header">
+            <div class="card-icon-container">🏗️</div>
+            <div class="card-tags">
+              <span class="card-tag">Cost Engine</span>
+              <span class="card-tag">Modular</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h2>Casa Prefabricada Madrid</h2>
+            <p>Modular housing cost calculator and technology explorer. Deep structural comparisons (SIP panels, concrete framing, CLT) and modular builder audit guides.</p>
+            <div class="card-meta-list">
+              <div class="meta-item">
+                <span class="label">Focus:</span>
+                <span>Madrid turnkey cost calculation</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Systems Analysed:</span>
+                <span>SIP, Steel frame, Concrete modules, CLT</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-launch" href="./casa-prefab-madrid/">
+              Launch App
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <button class="btn-details" aria-label="View Details">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: House Designer -->
+      <div class="app-card-wrapper" data-id="house-designer" data-categories="design" data-tags="3d,canvas,blueprint,interior,threejs,editor">
+        <div class="app-card-inner">
+          <div class="card-header">
+            <div class="card-icon-container">📐</div>
+            <div class="card-tags">
+              <span class="card-tag">Three.js</span>
+              <span class="card-tag">WebGL 3D</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <h2>House Designer 2D/3D</h2>
+            <p>Advanced vector floor plan drafting workspace. Sketch modular structures, place furniture from catalogs, and explore layouts in a high-fidelity 3D WebGL renderer.</p>
+            <div class="card-meta-list">
+              <div class="meta-item">
+                <span class="label">Graphics:</span>
+                <span>Canvas 2D Drafting + Three.js 3D Viewport</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Storage:</span>
+                <span>JSON & PNG Import / Export</span>
+              </div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-launch" href="./house-designer/">
+              Launch App
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            </a>
+            <button class="btn-details" aria-label="View Details">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Out-of-the-box Interactive Terminal Sandbox -->
+    <section class="terminal-section">
+      <div class="terminal-header-outer">
+        <div class="terminal-title-area">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>Terminal Sandbox Console</span>
+        </div>
+        <span style="font-size: 0.8rem; color: var(--text-secondary); opacity: 0.7;">Click bar to toggle drawer</span>
+      </div>
+      
+      <div class="terminal-container minimized" id="terminalContainer">
+        <!-- Digital Rain Canvas (Matrix) -->
+        <canvas id="matrixCanvas" class="matrix-canvas"></canvas>
+
+        <div class="terminal-top-bar" id="terminalToggle">
+          <div class="terminal-dots">
+            <span class="dot red" id="closeTerm" title="Close Panel"></span>
+            <span class="dot yellow" id="minimizeTerm" title="Minimize Panel"></span>
+            <span class="dot green" id="maximizeTerm" title="Maximize Panel"></span>
+          </div>
+          <div class="terminal-tab-title">
+            <span>bash</span>
+            <span style="opacity:0.3">|</span>
+            <span>guest@microapps:~</span>
+          </div>
+          <div style="width: 40px;"></div> <!-- Spacer -->
+        </div>
+        
+        <div class="terminal-body" id="terminalBody">
+          <div class="terminal-welcome">
+            Welcome to MicroApps Terminal v2.1.0-beta (Antigravity OS kernel)<br>
+            System initialized. Type <span style="color:#6366f1; font-weight:600">help</span> to view available instructions.
+          </div>
+          <div class="terminal-input-line">
+            <span class="terminal-prompt">guest@microapps:~$</span>
+            <div class="terminal-input-container">
+              <input type="text" id="terminalInput" autocomplete="off" spellcheck="false" aria-label="Terminal Input">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Standard Bottom Page Footer -->
+    <footer class="main-footer">
+      <p>&copy; 2026 Micro Apps Suite. Developed with high-fidelity glassmorphism.</p>
+      <p>Source files generated by <a href="https://github.com/google-deepmind" target="_blank" rel="noopener noreferrer">Antigravity AI Codebase Engine</a>.</p>
+    </footer>
+
+  </div>
+
+  <!-- Interactive Details Modal Container -->
+  <div class="modal-overlay" id="detailsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <span class="modal-icon" id="modalIcon">🏕️</span>
+          <h3 id="modalTitle">Application Details</h3>
+        </div>
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Tab Navigation inside Modal -->
+        <div class="modal-tabs">
+          <button class="modal-tab-btn active" data-tab="overview">Overview</button>
+          <button class="modal-tab-btn" data-tab="specs">System Specs</button>
+          <button class="modal-tab-btn" data-tab="gallery" style="display: none;">Screenshots</button>
+        </div>
+        
+        <!-- Tab Panes -->
+        <div class="modal-tab-pane active" id="tabOverview">
+          <!-- Populated by JS -->
+        </div>
+        
+        <div class="modal-tab-pane" id="tabSpecs">
+          <!-- Populated by JS -->
+        </div>
+        
+        <div class="modal-tab-pane" id="tabGallery">
+          <!-- Populated by JS for House Designer carousel -->
+        </div>
+      </div>
     </div>
   </div>
+
+  <script src="./script.js"></script>
 </body>
 </html>
