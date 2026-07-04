@@ -452,3 +452,10 @@ kbd {
   background: var(--line-strong);
   border-radius: 2px;
 }
+
+/* Prevent SVG text selection and mouse interception in 2D editor */
+.stage svg text {
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}

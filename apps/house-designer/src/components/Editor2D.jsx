@@ -396,7 +396,7 @@ export default function Editor2D({
         </g>
 
         <RoomLabels rooms={rooms} worldToScreen={worldToScreen} />
-        <WallLabels walls={floor.walls} worldToScreen={worldToScreen} scale={scale} />
+        <WallLabels walls={floor.walls} worldToScreen={worldToScreen} scale={scale} rooms={rooms} />
 
         {/* live dimension for the in-progress wall segment */}
         {preview && (() => {
