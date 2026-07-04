@@ -1,8 +1,8 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { openingsOnWall } from '../lib/project.js'
-import { dist, wallCutSegments } from '../lib/geometry.js'
+import { openingsOnWall, activeFloor } from '../lib/project.js'
+import { dist, wallCutSegments, pointSegDist } from '../lib/geometry.js'
 import { buildFurniture3D } from '../lib/furniture3d.js'
 import { makeWoodTexture, makeSkyTexture, makeGroundTexture } from '../lib/textures.js'
 import { shade } from '../lib/color.js'
@@ -13,6 +13,45 @@ import { shade } from '../lib/color.js'
 const Editor3D = forwardRef(function Editor3D({ project }, ref) {
   const mountRef = useRef(null)
   const stateRef = useRef(null) // { renderer, scene, camera, controls, content, floor }
+  const [controlsMode, setControlsMode] = useState('orbit')
+  const modeRef = useRef(controlsMode)
+  const wallsRef = useRef([])
+  const floorLevelRef = useRef(0)
+
+  useEffect(() => {
+    modeRef.current = controlsMode
+  }, [controlsMode])
+
+  useEffect(() => {
+    const fl = activeFloor(project)
+    if (!fl) {
+      wallsRef.current = []
+      floorLevelRef.current = 0
+      return
+    }
+    floorLevelRef.current = fl.level || 0
+
+    const walkSegments = []
+    const walls = fl.walls || []
+    for (const w of walls) {
+      const L = dist(w.x1, w.y1, w.x2, w.y2)
+      if (L < 1e-3) continue
+      const ux = (w.x2 - w.x1) / L
+      const uy = (w.y2 - w.y1) / L
+      const walkOpenings = openingsOnWall(fl, w.id).filter(o => o.sill < 0.4)
+      const { segs } = wallCutSegments(L, walkOpenings)
+      for (const [a, b] of segs) {
+        walkSegments.push({
+          x1: w.x1 + a * ux,
+          y1: w.y1 + a * uy,
+          x2: w.x1 + b * ux,
+          y2: w.y1 + b * uy,
+          thickness: w.thickness
+        })
+      }
+    }
+    wallsRef.current = walkSegments
+  }, [project])
 
   useImperativeHandle(ref, () => ({
     exportPNG: () => {
@@ -24,8 +63,18 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     resetCamera: () => {
       const s = stateRef.current
       if (!s) return
-      frameScene(s, project)
-      s.controls.update()
+      if (modeRef.current === 'walk') {
+        const fl = activeFloor(project)
+        const bb = fl && fl.walls.length ? bboxOf({ walls: fl.walls }) : { minX: -5, maxX: 5, minY: -5, maxY: 5 }
+        const cx = (bb.minX + bb.maxX) / 2
+        const cz = (bb.minY + bb.maxY) / 2
+        const levelY = floorLevelRef.current
+        s.camera.position.set(cx, levelY + 1.6, cz)
+        s.camera.rotation.set(0, 0, 0)
+      } else {
+        frameScene(s, project)
+        s.controls.update()
+      }
     },
   }), [project])
 
@@ -86,10 +135,123 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     stateRef.current = { renderer, scene, camera, controls, content, floor, dir, grid: null }
     frameScene(stateRef.current, project)
 
+    // Keyboard listeners for walking
+    const keys = {}
+    const handleKeyDown = (e) => {
+      if (modeRef.current !== 'walk') return
+      const k = e.key.toLowerCase()
+      keys[k] = true
+    }
+    const handleKeyUp = (e) => {
+      if (modeRef.current !== 'walk') return
+      const k = e.key.toLowerCase()
+      keys[k] = false
+    }
+    const handleBlur = () => {
+      for (const k in keys) keys[k] = false
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    window.addEventListener('blur', handleBlur)
+
+    // Pointer-lock-free mouse look listeners on the mount element
+    let isDragging = false
+    let prevX = 0, prevY = 0
+
+    const handlePointerDown = (e) => {
+      if (modeRef.current !== 'walk') return
+      isDragging = true
+      prevX = e.clientX
+      prevY = e.clientY
+      mount.setPointerCapture(e.pointerId)
+    }
+
+    const handlePointerMove = (e) => {
+      if (!isDragging || modeRef.current !== 'walk') return
+      const deltaX = e.clientX - prevX
+      const deltaY = e.clientY - prevY
+      prevX = e.clientX
+      prevY = e.clientY
+
+      const sensitivity = 0.003
+      camera.rotation.order = 'YXZ'
+      camera.rotation.y -= deltaX * sensitivity
+      camera.rotation.x -= deltaY * sensitivity
+
+      const limit = (85 * Math.PI) / 180
+      camera.rotation.x = Math.max(-limit, Math.min(limit, camera.rotation.x))
+    }
+
+    const handlePointerUp = (e) => {
+      if (!isDragging) return
+      isDragging = false
+      mount.releasePointerCapture(e.pointerId)
+    }
+
+    mount.addEventListener('pointerdown', handlePointerDown)
+    mount.addEventListener('pointermove', handlePointerMove)
+    mount.addEventListener('pointerup', handlePointerUp)
+
+    // Collision detection check using precomputed wall segments
+    const checkCollides = (x, z) => {
+      const segments = wallsRef.current
+      for (const seg of segments) {
+        const d = pointSegDist(x, z, seg.x1, seg.y1, seg.x2, seg.y2)
+        const minDist = (seg.thickness / 2) + 0.22 // Camera body clearance
+        if (d < minDist) return true
+      }
+      return false
+    }
+
     let raf = 0
     const animate = () => {
       raf = requestAnimationFrame(animate)
-      controls.update()
+
+      if (modeRef.current === 'walk') {
+        let dx = 0, dz = 0
+        if (keys['w'] || keys['arrowup']) {
+          dx += -Math.sin(camera.rotation.y)
+          dz += -Math.cos(camera.rotation.y)
+        }
+        if (keys['s'] || keys['arrowdown']) {
+          dx += Math.sin(camera.rotation.y)
+          dz += Math.cos(camera.rotation.y)
+        }
+        if (keys['a'] || keys['arrowleft']) {
+          dx += -Math.cos(camera.rotation.y)
+          dz += Math.sin(camera.rotation.y)
+        }
+        if (keys['d'] || keys['arrowright']) {
+          dx += Math.cos(camera.rotation.y)
+          dz += -Math.sin(camera.rotation.y)
+        }
+
+        if (dx !== 0 || dz !== 0) {
+          const len = Math.hypot(dx, dz)
+          const speed = 0.045
+          const stepX = (dx / len) * speed
+          const stepZ = (dz / len) * speed
+
+          const targetX = camera.position.x + stepX
+          const targetZ = camera.position.z + stepZ
+
+          // AABB sliding collisions
+          if (!checkCollides(targetX, targetZ)) {
+            camera.position.x = targetX
+            camera.position.z = targetZ
+          } else if (!checkCollides(targetX, camera.position.z)) {
+            camera.position.x = targetX
+          } else if (!checkCollides(camera.position.x, targetZ)) {
+            camera.position.z = targetZ
+          }
+        }
+        camera.position.y = floorLevelRef.current + 1.6
+
+
+      } else {
+        controls.update()
+      }
+
       renderer.render(scene, camera)
     }
     animate()
@@ -108,6 +270,12 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
       cancelAnimationFrame(raf)
       ro.disconnect()
       controls.dispose()
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('blur', handleBlur)
+      mount.removeEventListener('pointerdown', handlePointerDown)
+      mount.removeEventListener('pointermove', handlePointerMove)
+      mount.removeEventListener('pointerup', handlePointerUp)
       const s = stateRef.current
       content.traverse((o) => o.geometry?.dispose?.())
       floor.geometry.dispose()
@@ -124,10 +292,102 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     const s = stateRef.current
     if (!s) return
     rebuild(s, project)
-    frameScene(s, project)
+    if (modeRef.current !== 'walk') {
+      frameScene(s, project)
+    }
   }, [project])
 
-  return <div className="editor3d" ref={mountRef} />
+  // ---- handle camera placement / control activation on mode switch ----
+  useEffect(() => {
+    const s = stateRef.current
+    if (!s) return
+    if (controlsMode === 'walk') {
+      s.controls.enabled = false
+      const fl = activeFloor(project)
+      const bb = fl && fl.walls.length ? bboxOf({ walls: fl.walls }) : { minX: -5, maxX: 5, minY: -5, maxY: 5 }
+      const cx = (bb.minX + bb.maxX) / 2
+      const cz = (bb.minY + bb.maxY) / 2
+      const levelY = floorLevelRef.current
+      s.camera.position.set(cx, levelY + 1.6, cz)
+      s.camera.rotation.set(0, 0, 0)
+      s.camera.rotation.order = 'YXZ'
+    } else {
+      s.controls.enabled = true
+      frameScene(s, project)
+      s.controls.update()
+    }
+  }, [controlsMode, project])
+
+  return (
+    <div className="editor3d" ref={mountRef} style={{ position: 'relative' }}>
+      <div className="editor3d-modes" style={{
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+        display: 'flex',
+        gap: '6px',
+        zIndex: 10,
+        background: 'rgba(255, 255, 255, 0.85)',
+        padding: '4px',
+        borderRadius: '6px',
+        border: '1px solid var(--line)',
+        backdropFilter: 'blur(4px)'
+      }}>
+        <button
+          className={`editor3d-mode-btn ${controlsMode === 'orbit' ? 'active' : ''}`}
+          onClick={() => setControlsMode('orbit')}
+          style={{
+            border: 0,
+            background: controlsMode === 'orbit' ? 'var(--accent)' : 'transparent',
+            color: controlsMode === 'orbit' ? 'var(--accent-ink)' : 'var(--ink-soft)',
+            padding: '6px 12px',
+            fontSize: '0.74rem',
+            fontWeight: 600,
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🌐 Orbit View
+        </button>
+        <button
+          className={`editor3d-mode-btn ${controlsMode === 'walk' ? 'active' : ''}`}
+          onClick={() => setControlsMode('walk')}
+          style={{
+            border: 0,
+            background: controlsMode === 'walk' ? 'var(--accent)' : 'transparent',
+            color: controlsMode === 'walk' ? 'var(--accent-ink)' : 'var(--ink-soft)',
+            padding: '6px 12px',
+            fontSize: '0.74rem',
+            fontWeight: 600,
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          🚶 Walk Mode
+        </button>
+      </div>
+
+      {controlsMode === 'walk' && (
+        <div className="walk-help" style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(0, 0, 0, 0.65)',
+          color: '#fff',
+          padding: '6px 12px',
+          borderRadius: '20px',
+          fontSize: '0.74rem',
+          pointerEvents: 'none',
+          zIndex: 10,
+          textAlign: 'center',
+          backdropFilter: 'blur(2px)'
+        }}>
+          Use <strong>W, A, S, D</strong> or <strong>Arrow Keys</strong> to walk · <strong>Drag mouse</strong> to look around
+        </div>
+      )}
+    </div>
+  )
 })
 
 export default Editor3D
