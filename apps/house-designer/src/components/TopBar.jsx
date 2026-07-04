@@ -6,6 +6,7 @@ import { SAMPLES } from '../samples/sample.js'
 // Top bar: project name, 2D/3D toggle, file actions, and language switch.
 export default function TopBar({
   project, onRename, view, setView, onImport, onExportJson, onExportPng, onLoadSample, onResetView, onHelp,
+  gdConnected, userAvatar, onGoogleDriveClick
 }) {
   const { t, lang, setLang } = useT()
   return (
@@ -45,6 +46,26 @@ export default function TopBar({
         </select>
         <button onClick={onResetView} title={t('topbar.reset_view_title')}>{t('topbar.reset_view')}</button>
         <button onClick={onImport} title={t('topbar.open_title')}>{t('topbar.open')}</button>
+        <button
+          onClick={onGoogleDriveClick}
+          title="Google Drive App Storage"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            borderColor: gdConnected ? '#1a73e8' : undefined,
+            background: gdConnected ? '#e8f0fe' : undefined,
+            color: gdConnected ? '#1a73e8' : undefined,
+            fontWeight: gdConnected ? '600' : undefined
+          }}
+        >
+          {userAvatar ? (
+            <img src={userAvatar} alt="Avatar" style={{ width: '15px', height: '15px', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <span>☁️</span>
+          )}
+          <span>{gdConnected ? 'Google Drive' : 'Cloud Sync'}</span>
+        </button>
         <button onClick={onExportJson} title={t('topbar.save_json_title')}>{t('topbar.save_json')}</button>
         <button onClick={onExportPng} title={t('topbar.png_title')}>{t('topbar.png')}</button>
         <button onClick={onHelp} title={t('topbar.help_title')}>?</button>

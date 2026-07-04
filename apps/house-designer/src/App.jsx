@@ -6,6 +6,7 @@ import Editor2D from './components/Editor2D.jsx'
 import Editor3D from './components/Editor3D.jsx'
 import FloorBar from './components/FloorBar.jsx'
 import ShortcutHelp from './components/ShortcutHelp.jsx'
+import GoogleDriveModal from './components/GoogleDriveModal.jsx'
 import { IconRuler } from './components/Icons.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid, ERR_INVALID_JSON, ERR_NOT_PROJECT } from './lib/project.js'
 import * as M from './lib/mutations.js'
@@ -31,6 +32,10 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [toast, setToast] = useState(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [googleDriveOpen, setGoogleDriveOpen] = useState(false)
+  const [gdAccessToken, setGdAccessToken] = useState(null)
+  const [gdUserEmail, setGdUserEmail] = useState(null)
+  const [gdUserAvatar, setGdUserAvatar] = useState(null)
   const [focusLenToken, setFocusLenToken] = useState(0)
   const stageRef = useRef(null)
   const editor3dRef = useRef(null)
@@ -193,6 +198,9 @@ export default function App() {
         onLoadSample={onLoadSample}
         onResetView={onResetView}
         onHelp={() => setHelpOpen(true)}
+        gdConnected={!!gdAccessToken}
+        userAvatar={gdUserAvatar}
+        onGoogleDriveClick={() => setGoogleDriveOpen(true)}
       />
       <FloorBar project={project} onSelect={setActiveFloor} onAdd={onAddFloor} />
       <div className="workspace">
@@ -243,6 +251,20 @@ export default function App() {
         />
       </div>
       {helpOpen && <ShortcutHelp onClose={() => setHelpOpen(false)} />}
+      {googleDriveOpen && (
+        <GoogleDriveModal
+          onClose={() => setGoogleDriveOpen(false)}
+          project={project}
+          commit={commit}
+          flash={flash}
+          accessToken={gdAccessToken}
+          setAccessToken={setGdAccessToken}
+          userEmail={gdUserEmail}
+          setUserEmail={setGdUserEmail}
+          userAvatar={gdUserAvatar}
+          setUserAvatar={setGdUserAvatar}
+        />
+      )}
       {toast && <div key={toast.key} className={`toast ${toast.type}`}>{toast.msg}</div>}
     </div>
   )
