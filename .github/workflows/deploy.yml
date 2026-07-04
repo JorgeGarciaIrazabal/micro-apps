@@ -27,20 +27,6 @@ jobs:
         with:
           node-version: 22
 
-      # Build clara-egg-hunt
-      - name: Install & build clara-egg-hunt
-        working-directory: apps/clara-egg-hunt
-        run: |
-          npm ci
-          npm run build
-
-      # Build clara-summer-camps
-      - name: Install & build clara-summer-camps
-        working-directory: apps/clara-summer-camps
-        run: |
-          npm ci
-          npm run build
-
       # Build clara-summer-camps-madrid
       - name: Install & build clara-summer-camps-madrid
         working-directory: apps/clara-summer-camps-madrid
@@ -72,15 +58,11 @@ jobs:
       # Assemble final site
       - name: Assemble site
         run: |
-          mkdir -p _site/clara-egg-hunt
-          mkdir -p _site/clara-summer-camps
           mkdir -p _site/clara-summer-camps-madrid
           mkdir -p _site/andalucia-scouting-2026
           mkdir -p _site/casa-prefab-madrid
           mkdir -p _site/house-designer
           cp index.html _site/
-          cp -r apps/clara-egg-hunt/dist/* _site/clara-egg-hunt/
-          cp -r apps/clara-summer-camps/dist/* _site/clara-summer-camps/
           cp -r apps/clara-summer-camps-madrid/dist/* _site/clara-summer-camps-madrid/
           cp -r apps/andalucia-scouting-2026/dist/* _site/andalucia-scouting-2026/
           cp -r apps/casa-prefab-madrid/dist/* _site/casa-prefab-madrid/

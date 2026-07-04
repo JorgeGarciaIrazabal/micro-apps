@@ -11,11 +11,10 @@ A collection of small React web apps deployed to GitHub Pages at `https://jorgeg
 Each app is developed independently. Navigate into the app directory to run it:
 
 ```bash
-cd apps/clara-egg-hunt   # or apps/clara-summer-camps
+cd apps/clara-summer-camps-madrid
 npm install
 npm run dev      # start dev server
 npm run build    # production build
-npm run lint     # lint (clara-egg-hunt only)
 npm run preview  # preview production build
 ```
 
