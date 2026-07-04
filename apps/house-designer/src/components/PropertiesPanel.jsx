@@ -15,6 +15,7 @@ export default function PropertiesPanel({
   onGdSave, onGdLoad, onGdDelete, gdClientId, setGdClientId,
   rightSidebarTab, setRightSidebarTab
 }) {
+  const { t } = useT()
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
   const furn = floor.furniture.find((f) => f.id === selectedId) || null
   const wall = !furn ? floor.walls.find((w) => w.id === selectedId) || null : null
