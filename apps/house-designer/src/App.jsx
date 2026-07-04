@@ -392,9 +392,6 @@ export default function App() {
         onLoadSample={onLoadSample}
         onResetView={onResetView}
         onHelp={() => setHelpOpen(true)}
-        gdConnected={!!gdAccessToken}
-        userAvatar={gdUserAvatar}
-        onGoogleDriveClick={() => setRightSidebarTab(rightSidebarTab === 'cloud' ? 'props' : 'cloud')}
       />
       <FloorBar project={project} onSelect={setActiveFloor} onAdd={onAddFloor} />
       <div className="workspace">
