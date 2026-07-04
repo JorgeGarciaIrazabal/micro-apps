@@ -6,7 +6,6 @@ import Editor2D from './components/Editor2D.jsx'
 import Editor3D from './components/Editor3D.jsx'
 import FloorBar from './components/FloorBar.jsx'
 import ShortcutHelp from './components/ShortcutHelp.jsx'
-import GoogleDriveModal from './components/GoogleDriveModal.jsx'
 import { IconRuler } from './components/Icons.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid, ERR_INVALID_JSON, ERR_NOT_PROJECT } from './lib/project.js'
 import * as M from './lib/mutations.js'
@@ -15,6 +14,7 @@ import { getSample } from './samples/sample.js'
 import { useT } from './contexts/LangContext.jsx'
 
 const STORAGE_KEY = 'house-designer:project:v1'
+const DEFAULT_CLIENT_ID = '31314617400-6scr8gn50rtpfes4123fcq0n0hb79paf.apps.googleusercontent.com'
 
 function loadSaved() {
   try {
@@ -32,10 +32,16 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [toast, setToast] = useState(null)
   const [helpOpen, setHelpOpen] = useState(false)
-  const [googleDriveOpen, setGoogleDriveOpen] = useState(false)
   const [gdAccessToken, setGdAccessToken] = useState(null)
   const [gdUserEmail, setGdUserEmail] = useState(null)
   const [gdUserAvatar, setGdUserAvatar] = useState(null)
+  const [gdFiles, setGdFiles] = useState([])
+  const [gdLoadingFiles, setGdLoadingFiles] = useState(false)
+  const [gdSavingCurrent, setGdSavingCurrent] = useState(false)
+  const [rightSidebarTab, setRightSidebarTab] = useState('props')
+  const [gdClientId, setGdClientId] = useState(() => {
+    return localStorage.getItem('house-designer:google-client-id') || DEFAULT_CLIENT_ID
+  })
   const [focusLenToken, setFocusLenToken] = useState(0)
   const stageRef = useRef(null)
   const editor3dRef = useRef(null)
@@ -72,6 +78,194 @@ export default function App() {
     })
     return () => cancelAnimationFrame(id)
   }, [project])
+
+  // ---- google drive sync -----------------------------------------------
+  const fetchFileList = useCallback(async (token) => {
+    const activeToken = token || gdAccessToken
+    if (!activeToken) return
+    setGdLoadingFiles(true)
+    try {
+      const url = new URL('https://www.googleapis.com/drive/v3/files')
+      url.searchParams.append('spaces', 'appDataFolder')
+      url.searchParams.append('q', "name contains '.house.json' and trashed = false")
+      url.searchParams.append('fields', 'files(id, name, modifiedTime, size)')
+      url.searchParams.append('orderBy', 'modifiedTime desc')
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${activeToken}` }
+      })
+      if (!response.ok) throw new Error('Failed to retrieve file list')
+      const data = await response.json()
+      setGdFiles(data.files || [])
+    } catch (err) {
+      console.error('Error fetching file list:', err)
+      flash('Error listing files from Google Drive', 'error')
+    } finally {
+      setGdLoadingFiles(false)
+    }
+  }, [gdAccessToken, flash])
+
+  const fetchUserInfo = useCallback(async (token) => {
+    try {
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const info = await response.json()
+        setGdUserEmail(info.email || '')
+        setGdUserAvatar(info.picture || '')
+      }
+    } catch (err) {
+      console.error('Error fetching user info:', err)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (gdAccessToken) {
+      fetchFileList(gdAccessToken)
+    }
+  }, [gdAccessToken, fetchFileList])
+
+  // Auto-switch to Properties tab when an item is selected
+  useEffect(() => {
+    if (selectedId) {
+      setRightSidebarTab('props')
+    }
+  }, [selectedId])
+
+  const onGdConnect = useCallback((clientIdInput) => {
+    const activeClientId = clientIdInput || gdClientId
+    if (!activeClientId) return
+    try {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: activeClientId,
+        scope: 'https://www.googleapis.com/auth/drive.appdata email profile',
+        callback: (tokenResponse) => {
+          if (tokenResponse.error) {
+            console.error('Auth Error:', tokenResponse)
+            flash('Failed to authenticate with Google', 'error')
+            return
+          }
+          setGdAccessToken(tokenResponse.access_token)
+          fetchFileList(tokenResponse.access_token)
+          fetchUserInfo(tokenResponse.access_token)
+          flash('Connected to Google Drive!', 'success')
+        },
+        error_callback: (err) => {
+          console.error('Google OAuth error:', err)
+          flash(`Auth Error: ${err.message || err.type || 'unknown'}`, 'error')
+        }
+      })
+      client.requestAccessToken({ prompt: 'consent' })
+    } catch (err) {
+      console.error(err)
+      flash('Google auth initialization failed. Check your Client ID.', 'error')
+    }
+  }, [gdClientId, fetchFileList, fetchUserInfo, flash])
+
+  const onGdDisconnect = useCallback(() => {
+    setGdAccessToken(null)
+    setGdUserEmail(null)
+    setGdUserAvatar(null)
+    setGdFiles([])
+    flash('Disconnected from Google Drive', 'info')
+  }, [flash])
+
+  const onGdSave = useCallback(async () => {
+    if (!gdAccessToken) return
+    setGdSavingCurrent(true)
+    try {
+      const fileName = `${project.name}.house.json`
+      const searchUrl = new URL('https://www.googleapis.com/drive/v3/files')
+      searchUrl.searchParams.append('spaces', 'appDataFolder')
+      searchUrl.searchParams.append('q', `name = '${fileName}' and trashed = false`)
+      searchUrl.searchParams.append('fields', 'files(id)')
+      
+      const searchRes = await fetch(searchUrl, {
+        headers: { 'Authorization': `Bearer ${gdAccessToken}` }
+      })
+      const searchData = await searchRes.json()
+      const existingFile = searchData.files && searchData.files.length > 0 ? searchData.files[0] : null
+      
+      const fileContent = serialize(project)
+      if (existingFile) {
+        const updateUrl = `https://www.googleapis.com/upload/drive/v3/files/${existingFile.id}?uploadType=media`
+        const updateRes = await fetch(updateUrl, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${gdAccessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: fileContent
+        })
+        if (!updateRes.ok) throw new Error('Update failed')
+        flash('Successfully updated plan on Google Drive!', 'success')
+      } else {
+        const metadata = { name: fileName, parents: ['appDataFolder'] }
+        const boundary = 'gdrive_upload_boundary'
+        const multipartBody = 
+          `\r\n--${boundary}\r\n` +
+          `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+          `${JSON.stringify(metadata)}\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Type: application/json\r\n\r\n` +
+          `${fileContent}\r\n` +
+          `--${boundary}--`
+
+        const createRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${gdAccessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: multipartBody
+        })
+        if (!createRes.ok) throw new Error('Creation failed')
+        flash('Successfully saved new plan to Google Drive!', 'success')
+      }
+      fetchFileList()
+    } catch (err) {
+      console.error(err)
+      flash('Failed to save to Google Drive', 'error')
+    } finally {
+      setGdSavingCurrent(false)
+    }
+  }, [gdAccessToken, project, fetchFileList, flash])
+
+  const onGdLoad = useCallback(async (fileId, fileName) => {
+    try {
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: { 'Authorization': `Bearer ${gdAccessToken}` }
+      })
+      if (!response.ok) throw new Error('Download failed')
+      const fileText = await response.text()
+      const proj = deserialize(fileText)
+      if (fileName && /\.json$/i.test(fileName)) {
+        proj.name = fileName.replace(/\.(house|pln5d)\.json$/i, '').replace(/\.json$/i, '')
+      }
+      commit(proj)
+      setSelectedId(null)
+      flash(`Loaded "${proj.name}" from Google Drive!`, 'success')
+    } catch (err) {
+      console.error(err)
+      flash('Failed to load file from Google Drive', 'error')
+    }
+  }, [gdAccessToken, commit, flash])
+
+  const onGdDelete = useCallback(async (fileId, fileName) => {
+    if (!confirm(`Are you sure you want to delete "${fileName}" from Google Drive?`)) return
+    try {
+      const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${gdAccessToken}` }
+      })
+      if (!response.ok) throw new Error('Delete failed')
+      flash('File deleted from Google Drive', 'success')
+      setGdFiles((current) => current.filter((f) => f.id !== fileId))
+    } catch (err) {
+      console.error(err)
+      flash('Failed to delete file', 'error')
+    }
+  }, [gdAccessToken, flash])
 
   // ---- file import / export --------------------------------------------
   const onImport = useCallback(async () => {
@@ -200,7 +394,7 @@ export default function App() {
         onHelp={() => setHelpOpen(true)}
         gdConnected={!!gdAccessToken}
         userAvatar={gdUserAvatar}
-        onGoogleDriveClick={() => setGoogleDriveOpen(true)}
+        onGoogleDriveClick={() => setRightSidebarTab(rightSidebarTab === 'cloud' ? 'props' : 'cloud')}
       />
       <FloorBar project={project} onSelect={setActiveFloor} onAdd={onAddFloor} />
       <div className="workspace">
@@ -248,23 +442,27 @@ export default function App() {
           onAddFloor={onAddFloor}
           onDeleteFloor={onDeleteFloor}
           onFloorProp={onFloorProp}
+          flash={flash}
+          // Google Drive Integration Props
+          gdAccessToken={gdAccessToken}
+          gdUserEmail={gdUserEmail}
+          gdUserAvatar={gdUserAvatar}
+          gdFiles={gdFiles}
+          setGdFiles={setGdFiles}
+          gdLoadingFiles={gdLoadingFiles}
+          gdSavingCurrent={gdSavingCurrent}
+          onGdConnect={onGdConnect}
+          onGdDisconnect={onGdDisconnect}
+          onGdSave={onGdSave}
+          onGdLoad={onGdLoad}
+          onGdDelete={onGdDelete}
+          gdClientId={gdClientId}
+          setGdClientId={setGdClientId}
+          rightSidebarTab={rightSidebarTab}
+          setRightSidebarTab={setRightSidebarTab}
         />
       </div>
       {helpOpen && <ShortcutHelp onClose={() => setHelpOpen(false)} />}
-      {googleDriveOpen && (
-        <GoogleDriveModal
-          onClose={() => setGoogleDriveOpen(false)}
-          project={project}
-          commit={commit}
-          flash={flash}
-          accessToken={gdAccessToken}
-          setAccessToken={setGdAccessToken}
-          userEmail={gdUserEmail}
-          setUserEmail={setGdUserEmail}
-          userAvatar={gdUserAvatar}
-          setUserAvatar={setGdUserAvatar}
-        />
-      )}
       {toast && <div key={toast.key} className={`toast ${toast.type}`}>{toast.msg}</div>}
     </div>
   )

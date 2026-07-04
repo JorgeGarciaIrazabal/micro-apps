@@ -337,3 +337,118 @@ kbd {
   .furniture-panel { width: 150px; flex-basis: 150px; }
   .props-panel { width: 200px; flex-basis: 200px; }
 }
+
+/* ---------- properties panel tabs & gdrive sidebar ---------- */
+.props-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.props-tabs button {
+  flex: 1;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 10px 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.1s ease;
+}
+.props-tabs button:hover {
+  color: var(--ink);
+  background: rgba(0, 0, 0, 0.01);
+}
+.props-tabs button.active {
+  color: var(--accent-ink);
+  border-bottom-color: var(--accent);
+  background: var(--surface);
+}
+
+.gdrive-sidebar-btn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--ink);
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+.gdrive-sidebar-btn:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+.gdrive-sidebar-btn.primary {
+  background: #1a73e8;
+  color: #ffffff;
+  border-color: #1a73e8;
+}
+.gdrive-sidebar-btn.primary:hover:not(:disabled) {
+  background: #1557b0;
+  border-color: #1557b0;
+}
+.gdrive-sidebar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gdrive-sidebar-btn-sm {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+.gdrive-sidebar-btn-sm:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.gdrive-sidebar-btn-sm.danger {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+.gdrive-sidebar-btn-sm.danger:hover {
+  background: var(--danger-soft);
+}
+
+.gdrive-sidebar-btn-xs {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 3px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  transition: all 0.1s ease;
+}
+.gdrive-sidebar-btn-xs:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.gdrive-sidebar-btn-xs.danger {
+  color: var(--danger);
+  border-color: var(--danger-soft);
+}
+.gdrive-sidebar-btn-xs.danger:hover {
+  background: var(--danger-soft);
+}
+
+.gdrive-sidebar-file-list::-webkit-scrollbar {
+  width: 4px;
+}
+.gdrive-sidebar-file-list::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 2px;
+}

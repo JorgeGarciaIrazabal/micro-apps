@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { IconRuler } from './Icons.jsx'
 import { useT } from '../contexts/LangContext.jsx'
 import { deserialize, serialize } from '../lib/project.js'
@@ -40,7 +40,7 @@ export default function GoogleDriveModal({
     try {
       const url = new URL('https://www.googleapis.com/drive/v3/files')
       url.searchParams.append('spaces', 'appDataFolder')
-      url.searchParams.append('q', "name ends with '.house.json' and trashed = false")
+      url.searchParams.append('q', "name contains '.house.json' and trashed = false")
       url.searchParams.append('fields', 'files(id, name, modifiedTime, size)')
       url.searchParams.append('orderBy', 'modifiedTime desc')
 
@@ -226,15 +226,18 @@ export default function GoogleDriveModal({
     flash('Client ID saved!', 'success')
   }
 
-  // Trigger Google Login
-  const handleConnect = () => {
-    if (!clientId) return
+  const tokenClientRef = useRef(null)
 
+  // Initialize Google Token Client once on load or when Client ID changes
+  useEffect(() => {
+    if (!clientId) return
     try {
-      const client = google.accounts.oauth2.initTokenClient({
+      console.log('Initializing Google OAuth token client for:', clientId)
+      tokenClientRef.current = google.accounts.oauth2.initTokenClient({
         client_id: clientId,
         scope: 'https://www.googleapis.com/auth/drive.appdata email profile',
         callback: (tokenResponse) => {
+          console.log('Google OAuth callback triggered:', tokenResponse)
           if (tokenResponse.error) {
             console.error('Auth Error:', tokenResponse)
             flash('Failed to authenticate with Google', 'error')
@@ -245,12 +248,25 @@ export default function GoogleDriveModal({
           fetchUserInfo(tokenResponse.access_token)
           flash('Connected to Google Drive!', 'success')
         },
+        error_callback: (err) => {
+          console.error('Google OAuth error callback triggered:', err)
+          flash(`Authentication error: ${err.message || err.type || 'unknown'}`, 'error')
+        }
       })
-      client.requestAccessToken({ prompt: 'consent' })
+      console.log('Google OAuth token client initialized successfully.')
     } catch (err) {
-      console.error(err)
-      flash('OAuth Initialization failed. Double check your Client ID.', 'error')
+      console.error('Error initializing Google OAuth token client:', err)
     }
+  }, [clientId, setAccessToken, fetchFileList, fetchUserInfo, flash])
+
+  // Trigger Google Login
+  const handleConnect = () => {
+    if (!tokenClientRef.current) {
+      flash('Google Authentication is not initialized. Please verify your Client ID.', 'error')
+      return
+    }
+    console.log('Requesting Google Access Token...')
+    tokenClientRef.current.requestAccessToken({ prompt: 'consent' })
   }
 
   const handleDisconnect = () => {

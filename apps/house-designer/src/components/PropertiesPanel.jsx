@@ -1,13 +1,20 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { wallLength, activeFloor } from '../lib/project.js'
 import { floorArea } from '../lib/rooms.js'
 import * as M from '../lib/mutations.js'
 import { useT } from '../contexts/LangContext.jsx'
 
 // Right sidebar. Edits the selected wall/furniture, or project settings when
-// nothing is selected.
-export default function PropertiesPanel({ project, selectedId, commit, onDelete, onDuplicate, focusLenToken,
-  onAddFloor, onDeleteFloor, onFloorProp }) {
+// nothing is selected. Also supports Google Drive Cloud Sync.
+export default function PropertiesPanel({
+  project, selectedId, commit, onDelete, onDuplicate, focusLenToken,
+  onAddFloor, onDeleteFloor, onFloorProp, flash,
+  // Google Drive integration props
+  gdAccessToken, gdUserEmail, gdUserAvatar, gdFiles, setGdFiles,
+  gdLoadingFiles, gdSavingCurrent, onGdConnect, onGdDisconnect,
+  onGdSave, onGdLoad, onGdDelete, gdClientId, setGdClientId,
+  rightSidebarTab, setRightSidebarTab
+}) {
   const floor = activeFloor(project) || { walls: [], furniture: [], openings: [] }
   const furn = floor.furniture.find((f) => f.id === selectedId) || null
   const wall = !furn ? floor.walls.find((w) => w.id === selectedId) || null : null
@@ -23,7 +30,41 @@ export default function PropertiesPanel({ project, selectedId, commit, onDelete,
 
   return (
     <aside className="panel props-panel">
-      {furn ? (
+      <div className="props-tabs">
+        <button
+          className={rightSidebarTab === 'props' ? 'active' : ''}
+          onClick={() => setRightSidebarTab('props')}
+        >
+          ⚙️ Properties
+        </button>
+        <button
+          className={rightSidebarTab === 'cloud' ? 'active' : ''}
+          onClick={() => setRightSidebarTab('cloud')}
+        >
+          ☁️ Cloud Sync
+        </button>
+      </div>
+
+      {rightSidebarTab === 'cloud' ? (
+        <GoogleDrivePanel
+          project={project}
+          flash={flash}
+          gdAccessToken={gdAccessToken}
+          gdUserEmail={gdUserEmail}
+          gdUserAvatar={gdUserAvatar}
+          gdFiles={gdFiles}
+          setGdFiles={setGdFiles}
+          gdLoadingFiles={gdLoadingFiles}
+          gdSavingCurrent={gdSavingCurrent}
+          onGdConnect={onGdConnect}
+          onGdDisconnect={onGdDisconnect}
+          onGdSave={onGdSave}
+          onGdLoad={onGdLoad}
+          onGdDelete={onGdDelete}
+          gdClientId={gdClientId}
+          setGdClientId={setGdClientId}
+        />
+      ) : furn ? (
         <FurnitureProps f={furn} onChange={patchSel} onDelete={onDelete} onDuplicate={onDuplicate} />
       ) : wall ? (
         <WallProps w={wall} onChange={patchSel} onDelete={onDelete} onDuplicate={onDuplicate} focusLenToken={focusLenToken} />
@@ -228,3 +269,164 @@ function ProjectProps({ project, onChangeSettings, onAddFloor, onDeleteFloor, on
 }
 
 function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)) }
+
+function GoogleDrivePanel({
+  project, flash,
+  gdAccessToken, gdUserEmail, gdUserAvatar, gdFiles, setGdFiles,
+  gdLoadingFiles, gdSavingCurrent, onGdConnect, onGdDisconnect,
+  onGdSave, onGdLoad, onGdDelete, gdClientId, setGdClientId
+}) {
+  const [clientIdInput, setClientIdInput] = useState(gdClientId)
+  const [isEditingId, setIsEditingId] = useState(!gdClientId)
+
+  const handleSaveId = (e) => {
+    e.preventDefault()
+    const cleanId = clientIdInput.trim()
+    if (!cleanId) {
+      flash('Please enter a valid Client ID', 'error')
+      return
+    }
+    localStorage.setItem('house-designer:google-client-id', cleanId)
+    setGdClientId(cleanId)
+    setIsEditingId(false)
+    flash('Client ID saved!', 'success')
+  }
+
+  const handleReset = () => {
+    if (confirm('Clear Client ID and reset settings?')) {
+      localStorage.removeItem('house-designer:google-client-id')
+      setGdClientId('')
+      setClientIdInput('')
+      setIsEditingId(true)
+      onGdDisconnect()
+    }
+  }
+
+  return (
+    <div className="props-group gdrive-sidebar">
+      <h3>Cloud Sync</h3>
+      
+      {isEditingId ? (
+        <form onSubmit={handleSaveId} style={{ marginTop: '8px' }}>
+          <p style={{ fontSize: '0.74rem', color: 'var(--ink-soft)', lineHeight: '1.4', marginBottom: '10px' }}>
+            Enter your Google OAuth Client ID to connect your Drive account.
+          </p>
+          <input
+            type="text"
+            placeholder="e.g. 12345-abc.apps.googleusercontent.com"
+            value={clientIdInput}
+            onChange={(e) => setClientIdInput(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              border: '1px solid var(--line-strong)',
+              fontSize: '0.78rem',
+              marginBottom: '10px',
+              background: 'var(--surface-2)'
+            }}
+            required
+          />
+          <button type="submit" className="gdrive-sidebar-btn primary" style={{ width: '100%' }}>
+            Save Client ID
+          </button>
+        </form>
+      ) : (
+        <div>
+          {/* Connection Profile Widget */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--line)', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+              {gdUserAvatar ? (
+                <img src={gdUserAvatar} alt="Profile" style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid var(--line-strong)' }} />
+              ) : (
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a73e8', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                  {gdAccessToken ? '✓' : '?'}
+                </div>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {gdAccessToken ? 'Connected' : 'Disconnected'}
+                </div>
+                <div style={{ fontSize: '0.68rem', color: 'var(--ink-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {gdAccessToken ? gdUserEmail : 'Secure cloud backup'}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              {gdAccessToken ? (
+                <button className="gdrive-sidebar-btn-sm danger" onClick={onGdDisconnect}>
+                  Sign Out
+                </button>
+              ) : (
+                <button className="gdrive-sidebar-btn primary" onClick={() => onGdConnect(clientIdInput)}>
+                  Connect
+                </button>
+              )}
+            </div>
+          </div>
+
+          {gdAccessToken && (
+            <>
+              {/* Current Project Sync Actions */}
+              <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: '6px', padding: '10px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '0.66rem', textTransform: 'uppercase', color: 'var(--ink-faint)', fontWeight: 700 }}>Current File</span>
+                <div style={{ fontSize: '0.8rem', fontWeight: 600, margin: '2px 0 8px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {project.name}.house.json
+                </div>
+                <button
+                  className="gdrive-sidebar-btn primary"
+                  onClick={onGdSave}
+                  disabled={gdSavingCurrent}
+                  style={{ width: '100%', fontSize: '0.78rem', padding: '6px 12px' }}
+                >
+                  {gdSavingCurrent ? 'Uploading...' : 'Save Current to Drive'}
+                </button>
+              </div>
+
+              {/* Google Drive files list */}
+              <div>
+                <h4 style={{ margin: '0 0 8px 0', fontSize: '0.74rem', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
+                  Cloud Storage Files
+                </h4>
+
+                {gdLoadingFiles ? (
+                  <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '0.74rem', color: 'var(--ink-faint)' }}>
+                    Loading...
+                  </div>
+                ) : gdFiles.length === 0 ? (
+                  <div style={{ padding: '16px 0', textAlign: 'center', fontSize: '0.74rem', color: 'var(--ink-faint)', border: '1px dashed var(--line)', borderRadius: '6px' }}>
+                    No plans found in your Drive app folder.
+                  </div>
+                ) : (
+                  <div className="gdrive-sidebar-file-list" style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid var(--line)', borderRadius: '6px' }}>
+                    {gdFiles.map((file) => (
+                      <div key={file.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', borderBottom: '1px solid var(--line)', minWidth: 0 }}>
+                        <div style={{ minWidth: 0, paddingRight: '6px' }}>
+                          <div style={{ fontSize: '0.76rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.name}>
+                            {file.name.replace(/\.house\.json$/i, '')}
+                          </div>
+                          <div style={{ fontSize: '0.62rem', color: 'var(--ink-faint)', marginTop: '1px' }}>
+                            {new Date(file.modifiedTime).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                          <button className="gdrive-sidebar-btn-xs" onClick={() => onGdLoad(file.id, file.name)}>
+                            Load
+                          </button>
+                          <button className="gdrive-sidebar-btn-xs danger" onClick={() => onGdDelete(file.id, file.name)}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
