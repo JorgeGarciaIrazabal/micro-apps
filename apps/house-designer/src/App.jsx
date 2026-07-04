@@ -32,9 +32,22 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null)
   const [toast, setToast] = useState(null)
   const [helpOpen, setHelpOpen] = useState(false)
-  const [gdAccessToken, setGdAccessToken] = useState(null)
-  const [gdUserEmail, setGdUserEmail] = useState(null)
-  const [gdUserAvatar, setGdUserAvatar] = useState(null)
+  const [gdAccessToken, setGdAccessToken] = useState(() => {
+    const token = localStorage.getItem('house-designer:google-token')
+    const expiry = localStorage.getItem('house-designer:google-token-expiry')
+    if (token && expiry) {
+      if (Date.now() < Number(expiry) - 60000) { // Keep a 1-minute buffer
+        return token
+      }
+    }
+    return null
+  })
+  const [gdUserEmail, setGdUserEmail] = useState(() => {
+    return localStorage.getItem('house-designer:google-user-email') || null
+  })
+  const [gdUserAvatar, setGdUserAvatar] = useState(() => {
+    return localStorage.getItem('house-designer:google-user-avatar') || null
+  })
   const [gdFiles, setGdFiles] = useState([])
   const [gdLoadingFiles, setGdLoadingFiles] = useState(false)
   const [gdSavingCurrent, setGdSavingCurrent] = useState(false)
@@ -113,6 +126,8 @@ export default function App() {
         const info = await response.json()
         setGdUserEmail(info.email || '')
         setGdUserAvatar(info.picture || '')
+        localStorage.setItem('house-designer:google-user-email', info.email || '')
+        localStorage.setItem('house-designer:google-user-avatar', info.picture || '')
       }
     } catch (err) {
       console.error('Error fetching user info:', err)
@@ -145,6 +160,10 @@ export default function App() {
             flash('Failed to authenticate with Google', 'error')
             return
           }
+          const expiryTime = Date.now() + (Number(tokenResponse.expires_in) || 3600) * 1000
+          localStorage.setItem('house-designer:google-token', tokenResponse.access_token)
+          localStorage.setItem('house-designer:google-token-expiry', String(expiryTime))
+
           setGdAccessToken(tokenResponse.access_token)
           fetchFileList(tokenResponse.access_token)
           fetchUserInfo(tokenResponse.access_token)
@@ -155,7 +174,7 @@ export default function App() {
           flash(`Auth Error: ${err.message || err.type || 'unknown'}`, 'error')
         }
       })
-      client.requestAccessToken({ prompt: 'consent' })
+      client.requestAccessToken({ prompt: '' })
     } catch (err) {
       console.error(err)
       flash('Google auth initialization failed. Check your Client ID.', 'error')
@@ -167,6 +186,10 @@ export default function App() {
     setGdUserEmail(null)
     setGdUserAvatar(null)
     setGdFiles([])
+    localStorage.removeItem('house-designer:google-token')
+    localStorage.removeItem('house-designer:google-token-expiry')
+    localStorage.removeItem('house-designer:google-user-email')
+    localStorage.removeItem('house-designer:google-user-avatar')
     flash('Disconnected from Google Drive', 'info')
   }, [flash])
 
