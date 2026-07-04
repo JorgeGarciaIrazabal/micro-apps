@@ -58,11 +58,11 @@ export default function GoogleDriveModal({
       setFiles(data.files || [])
     } catch (err) {
       console.error('Error fetching file list:', err)
-      flash('Error listing files from Google Drive', 'error')
+      flash(t('gdrive.flash.list_failed'), 'error')
     } finally {
       setLoadingFiles(false)
     }
-  }, [accessToken, flash])
+  }, [accessToken, flash, t])
 
   // Fetch User Info
   const fetchUserInfo = useCallback(async (token) => {
@@ -130,7 +130,7 @@ export default function GoogleDriveModal({
           body: fileContent
         })
         if (!updateRes.ok) throw new Error('Update failed')
-        flash('Successfully updated existing plan on Google Drive!', 'success')
+        flash(t('gdrive.flash.updated_plan'), 'success')
       } else {
         // Step 2b: Create new file (multipart POST)
         const metadata = {
@@ -156,14 +156,14 @@ export default function GoogleDriveModal({
           body: multipartBody
         })
         if (!createRes.ok) throw new Error('Creation failed')
-        flash('Successfully saved new plan to Google Drive!', 'success')
+        flash(t('gdrive.flash.saved_plan'), 'success')
       }
       
       // Refresh the file list
       await fetchFileList()
     } catch (err) {
       console.error(err)
-      flash('Failed to save to Google Drive', 'error')
+      flash(t('gdrive.flash.save_failed'), 'error')
     } finally {
       setSavingCurrent(false)
     }
@@ -186,17 +186,17 @@ export default function GoogleDriveModal({
       }
 
       commit(proj)
-      flash(`Loaded "${proj.name}" from Google Drive!`, 'success')
+      flash(t('gdrive.flash.loaded_plan', { name: proj.name }), 'success')
       onClose()
     } catch (err) {
       console.error(err)
-      flash('Failed to load file from Google Drive', 'error')
+      flash(t('gdrive.flash.load_failed'), 'error')
     }
   }
 
   // Delete file from Drive
   const handleDeleteFromDrive = async (fileId, fileName) => {
-    if (!confirm(`Are you sure you want to delete "${fileName}" from Google Drive app storage?`)) return
+    if (!confirm(t('gdrive.confirm.delete_file_app_storage', { name: fileName }))) return
     
     try {
       const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
@@ -205,11 +205,11 @@ export default function GoogleDriveModal({
       })
       if (!response.ok) throw new Error('Delete failed')
       
-      flash('File deleted from Google Drive', 'success')
+      flash(t('gdrive.flash.deleted_file'), 'success')
       setFiles((current) => current.filter((f) => f.id !== fileId))
     } catch (err) {
       console.error(err)
-      flash('Failed to delete file', 'error')
+      flash(t('gdrive.flash.delete_failed'), 'error')
     }
   }
 
@@ -218,12 +218,12 @@ export default function GoogleDriveModal({
     e.preventDefault()
     const cleanId = clientId.trim()
     if (!cleanId) {
-      flash('Please enter a valid Client ID', 'error')
+      flash(t('gdrive.flash.invalid_client_id'), 'error')
       return
     }
     localStorage.setItem('house-designer:google-client-id', cleanId)
     setEditingClientId(false)
-    flash('Client ID saved!', 'success')
+    flash(t('gdrive.flash.client_id_saved'), 'success')
   }
 
   const tokenClientRef = useRef(null)
@@ -240,29 +240,29 @@ export default function GoogleDriveModal({
           console.log('Google OAuth callback triggered:', tokenResponse)
           if (tokenResponse.error) {
             console.error('Auth Error:', tokenResponse)
-            flash('Failed to authenticate with Google', 'error')
+            flash(t('gdrive.flash.auth_failed'), 'error')
             return
           }
           setAccessToken(tokenResponse.access_token)
           fetchFileList(tokenResponse.access_token)
           fetchUserInfo(tokenResponse.access_token)
-          flash('Connected to Google Drive!', 'success')
+          flash(t('gdrive.flash.connected'), 'success')
         },
         error_callback: (err) => {
           console.error('Google OAuth error callback triggered:', err)
-          flash(`Authentication error: ${err.message || err.type || 'unknown'}`, 'error')
+          flash(t('gdrive.flash.auth_error', { error: err.message || err.type || 'unknown' }), 'error')
         }
       })
       console.log('Google OAuth token client initialized successfully.')
     } catch (err) {
       console.error('Error initializing Google OAuth token client:', err)
     }
-  }, [clientId, setAccessToken, fetchFileList, fetchUserInfo, flash])
+  }, [clientId, setAccessToken, fetchFileList, fetchUserInfo, flash, t])
 
   // Trigger Google Login
   const handleConnect = () => {
     if (!tokenClientRef.current) {
-      flash('Google Authentication is not initialized. Please verify your Client ID.', 'error')
+      flash(t('gdrive.flash.init_failed'), 'error')
       return
     }
     console.log('Requesting Google Access Token...')
@@ -274,11 +274,11 @@ export default function GoogleDriveModal({
     setUserEmail(null)
     setUserAvatar(null)
     setFiles([])
-    flash('Disconnected from Google Drive', 'info')
+    flash(t('gdrive.flash.disconnected'), 'info')
   }
 
   const handleClearClientId = () => {
-    if (confirm('Clear Client ID and reset Google configuration?')) {
+    if (confirm(t('gdrive.confirm.reset'))) {
       localStorage.removeItem('house-designer:google-client-id')
       setClientId('')
       setEditingClientId(true)
@@ -288,7 +288,7 @@ export default function GoogleDriveModal({
 
   return (
     <div className="shortcut-overlay" onClick={onClose}>
-      <div className="shortcut-card gdrive-modal" role="dialog" aria-label="Google Drive Sync" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+      <div className="shortcut-card gdrive-modal" role="dialog" aria-label={t('gdrive.modal_header')} onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
         <header className="shortcut-head">
           <span className="shortcut-mark" style={{ background: '#e8f0fe', color: '#1a73e8' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -296,40 +296,39 @@ export default function GoogleDriveModal({
             </svg>
           </span>
           <div>
-            <h2>Google Drive App Storage</h2>
-            <p>Save and load floor plans privately using your personal Google account</p>
+            <h2>{t('gdrive.modal_header')}</h2>
+            <p>{t('gdrive.modal_desc')}</p>
           </div>
-          <button className="shortcut-x" onClick={onClose} aria-label="Close">✕</button>
+          <button className="shortcut-x" onClick={onClose} aria-label={t('shortcut.close')}>✕</button>
         </header>
 
         <div style={{ padding: '20px' }}>
           {editingClientId ? (
             /* SECTION 1: Client ID Setup */
             <form onSubmit={handleSaveClientId} className="gdrive-setup-form">
-              <h3 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--ink)' }}>Configure Google API Access</h3>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: 'var(--ink)' }}>{t('gdrive.setup_api_access')}</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--ink-soft)', lineHeight: '1.4', marginBottom: '14px' }}>
-                To save plans to your Drive, you need a Google OAuth Client ID. 
-                This keeps your credentials entirely yours.
+                {t('gdrive.setup_api_desc')}
               </p>
               
               <div style={{ background: 'var(--surface-2)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--line)', fontSize: '0.76rem', color: 'var(--ink-soft)', marginBottom: '14px', lineHeight: '1.4' }}>
-                <strong>Quick Steps:</strong>
+                <strong>{t('gdrive.quick_steps')}</strong>
                 <ol style={{ margin: '4px 0 0 16px', padding: 0 }}>
-                  <li>Go to Google Cloud Console and create a project.</li>
-                  <li>Enable the <strong>Google Drive API</strong>.</li>
-                  <li>Configure OAuth Consent Screen and create credentials for a <strong>Web Application</strong>.</li>
-                  <li>Add <code>{window.location.origin}</code> to <strong>Authorized JavaScript Origins</strong>.</li>
-                  <li>Copy the Client ID and paste below.</li>
+                  <li>{t('gdrive.step_1')}</li>
+                  <li>{t('gdrive.step_2')}</li>
+                  <li>{t('gdrive.step_3')}</li>
+                  <li>{t('gdrive.step_4', { origin: window.location.origin })}</li>
+                  <li>{t('gdrive.step_5')}</li>
                 </ol>
               </div>
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-                  Google OAuth Client ID
+                  {t('gdrive.oauth_client_id')}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. 12345-abcde.apps.googleusercontent.com"
+                  placeholder={t('gdrive.client_id_placeholder')}
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}
                   style={{
@@ -347,11 +346,11 @@ export default function GoogleDriveModal({
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                 {localStorage.getItem('house-designer:google-client-id') && (
                   <button type="button" className="gdrive-btn secondary" onClick={() => setEditingClientId(false)}>
-                    Cancel
+                    {t('gdrive.cancel')}
                   </button>
                 )}
                 <button type="submit" className="gdrive-btn primary">
-                  Save Client ID
+                  {t('gdrive.save_client_id')}
                 </button>
               </div>
             </form>
@@ -370,10 +369,10 @@ export default function GoogleDriveModal({
                   )}
                   <div>
                     <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>
-                      {accessToken ? 'Connected' : 'Disconnected'}
+                      {accessToken ? t('gdrive.connected') : t('gdrive.disconnected')}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--ink-faint)' }}>
-                      {accessToken ? userEmail : 'Secure decentralized storage'}
+                      {accessToken ? userEmail : t('gdrive.secure_decentralized_storage')}
                     </div>
                   </div>
                 </div>
@@ -381,11 +380,11 @@ export default function GoogleDriveModal({
                 <div>
                   {accessToken ? (
                     <button className="gdrive-btn secondary danger" onClick={handleDisconnect}>
-                      Disconnect
+                      {t('gdrive.disconnect')}
                     </button>
                   ) : (
                     <button className="gdrive-btn primary" onClick={handleConnect}>
-                      Connect Google Account
+                      {t('gdrive.connect_google_account')}
                     </button>
                   )}
                 </div>
@@ -397,13 +396,13 @@ export default function GoogleDriveModal({
                   <div style={{ background: '#f8f9fa', border: '1px solid var(--line)', borderRadius: '8px', padding: '14px', marginBottom: '20px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ minWidth: 0, paddingRight: '12px' }}>
-                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-faint)', fontWeight: 700 }}>Current Project</span>
+                        <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--ink-faint)', fontWeight: 700 }}>{t('gdrive.current_project')}</span>
                         <h4 style={{ margin: '2px 0 0 0', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {project.name}
                         </h4>
                       </div>
                       <button className="gdrive-btn primary" onClick={handleSaveToDrive} disabled={savingCurrent} style={{ flexShrink: 0 }}>
-                        {savingCurrent ? 'Saving...' : 'Save to Drive'}
+                        {savingCurrent ? t('gdrive.saving') : t('gdrive.save_to_drive')}
                       </button>
                     </div>
                   </div>
@@ -411,16 +410,16 @@ export default function GoogleDriveModal({
                   {/* Drive Files List */}
                   <div>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      Saved Plans in Google Drive
+                      {t('gdrive.saved_plans')}
                     </h3>
                     
                     {loadingFiles ? (
                       <div style={{ padding: '20px 0', textAlign: 'center', fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
-                        Loading files from Drive...
+                        {t('gdrive.loading_files')}
                       </div>
                     ) : files.length === 0 ? (
                       <div style={{ padding: '24px 0', textAlign: 'center', fontSize: '0.82rem', color: 'var(--ink-faint)', border: '1px dashed var(--line)', borderRadius: '8px' }}>
-                        No saved floor plans found in your Drive app folder.
+                        {t('gdrive.no_plans_found')}
                       </div>
                     ) : (
                       <div className="gdrive-file-list" style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--line)', borderRadius: '8px' }}>
@@ -431,15 +430,15 @@ export default function GoogleDriveModal({
                                 {file.name.replace(/\.house\.json$/i, '')}
                               </div>
                               <div style={{ fontSize: '0.68rem', color: 'var(--ink-faint)', marginTop: '2px' }}>
-                                Modified {new Date(file.modifiedTime).toLocaleString()}
+                                {t('gdrive.modified', { time: new Date(file.modifiedTime).toLocaleString() })}
                               </div>
                             </div>
                             <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                               <button className="gdrive-btn-sm" onClick={() => handleLoadFromDrive(file.id, file.name)}>
-                                Load
+                                {t('gdrive.load')}
                               </button>
                               <button className="gdrive-btn-sm danger" onClick={() => handleDeleteFromDrive(file.id, file.name)}>
-                                Delete
+                                {t('gdrive.delete')}
                               </button>
                             </div>
                           </div>
@@ -453,14 +452,14 @@ export default function GoogleDriveModal({
               {/* Settings / Client ID Actions */}
               <div style={{ marginTop: '24px', paddingTop: '12px', borderTop: '1px dashed var(--line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--ink-faint)' }}>
-                  OAuth Client ID Configured
+                  {t('gdrive.client_id_configured')}
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="gdrive-btn secondary sm" onClick={() => setEditingClientId(true)}>
-                    Change ID
+                    {t('gdrive.change_id')}
                   </button>
                   <button className="gdrive-btn secondary sm danger" onClick={handleClearClientId}>
-                    Reset Settings
+                    {t('gdrive.reset_settings')}
                   </button>
                 </div>
               </div>

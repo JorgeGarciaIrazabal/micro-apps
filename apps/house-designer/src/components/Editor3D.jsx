@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { useT } from '../contexts/LangContext.jsx'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 import { openingsOnWall, activeFloor } from '../lib/project.js'
@@ -12,6 +13,7 @@ import { shade } from '../lib/color.js'
 // World meters (x, y) map to 3D (x, z); height is along Y (up).
 
 const Editor3D = forwardRef(function Editor3D({ project }, ref) {
+  const { t } = useT()
   const mountRef = useRef(null)
   const stateRef = useRef(null) // { renderer, scene, camera, controls, content, floor }
   const [controlsMode, setControlsMode] = useState('orbit')
@@ -360,7 +362,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
             cursor: 'pointer'
           }}
         >
-          🌐 Orbit View
+          🌐 {t('editor3d.orbit_mode')}
         </button>
         <button
           className={`editor3d-mode-btn ${controlsMode === 'walk' ? 'active' : ''}`}
@@ -376,7 +378,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
             cursor: 'pointer'
           }}
         >
-          🚶 Walk Mode
+          🚶 {t('editor3d.walk_mode')}
         </button>
       </div>
 
@@ -395,9 +397,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
           zIndex: 10,
           textAlign: 'center',
           backdropFilter: 'blur(2px)'
-        }}>
-          Use <strong>W, A, S, D</strong> or <strong>Arrow Keys</strong> to walk · <strong>Drag mouse</strong> to look around
-        </div>
+        }} dangerouslySetInnerHTML={{ __html: t('editor3d.walk_help') }} />
       )}
     </div>
   )

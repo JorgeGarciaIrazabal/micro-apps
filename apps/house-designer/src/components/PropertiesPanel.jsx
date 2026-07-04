@@ -35,13 +35,13 @@ export default function PropertiesPanel({
           className={rightSidebarTab === 'props' ? 'active' : ''}
           onClick={() => setRightSidebarTab('props')}
         >
-          ⚙️ Properties
+          ⚙️ {t('props.properties')}
         </button>
         <button
           className={rightSidebarTab === 'cloud' ? 'active' : ''}
           onClick={() => setRightSidebarTab('cloud')}
         >
-          ☁️ Cloud Sync
+          ☁️ {t('props.cloud_sync')}
         </button>
       </div>
 
@@ -276,6 +276,7 @@ function GoogleDrivePanel({
   gdLoadingFiles, gdSavingCurrent, onGdConnect, onGdDisconnect,
   onGdSave, onGdLoad, onGdDelete, gdClientId, setGdClientId
 }) {
+  const { t } = useT()
   const [clientIdInput, setClientIdInput] = useState(gdClientId)
   const [isEditingId, setIsEditingId] = useState(!gdClientId)
 
@@ -283,17 +284,17 @@ function GoogleDrivePanel({
     e.preventDefault()
     const cleanId = clientIdInput.trim()
     if (!cleanId) {
-      flash('Please enter a valid Client ID', 'error')
+      flash(t('gdrive.flash.invalid_client_id'), 'error')
       return
     }
     localStorage.setItem('house-designer:google-client-id', cleanId)
     setGdClientId(cleanId)
     setIsEditingId(false)
-    flash('Client ID saved!', 'success')
+    flash(t('gdrive.flash.client_id_saved'), 'success')
   }
 
   const handleReset = () => {
-    if (confirm('Clear Client ID and reset settings?')) {
+    if (confirm(t('gdrive.confirm.reset'))) {
       localStorage.removeItem('house-designer:google-client-id')
       setGdClientId('')
       setClientIdInput('')
@@ -304,16 +305,16 @@ function GoogleDrivePanel({
 
   return (
     <div className="props-group gdrive-sidebar">
-      <h3>Cloud Sync</h3>
+      <h3>{t('gdrive.sidebar_header')}</h3>
       
       {isEditingId ? (
         <form onSubmit={handleSaveId} style={{ marginTop: '8px' }}>
           <p style={{ fontSize: '0.74rem', color: 'var(--ink-soft)', lineHeight: '1.4', marginBottom: '10px' }}>
-            Enter your Google OAuth Client ID to connect your Drive account.
+            {t('gdrive.enter_client_id')}
           </p>
           <input
             type="text"
-            placeholder="e.g. 12345-abc.apps.googleusercontent.com"
+            placeholder={t('gdrive.client_id_placeholder')}
             value={clientIdInput}
             onChange={(e) => setClientIdInput(e.target.value)}
             style={{
@@ -328,7 +329,7 @@ function GoogleDrivePanel({
             required
           />
           <button type="submit" className="gdrive-sidebar-btn primary" style={{ width: '100%' }}>
-            Save Client ID
+            {t('gdrive.save_client_id')}
           </button>
         </form>
       ) : (
@@ -345,10 +346,10 @@ function GoogleDrivePanel({
               )}
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {gdAccessToken ? 'Connected' : 'Disconnected'}
+                  {gdAccessToken ? t('gdrive.connected') : t('gdrive.disconnected')}
                 </div>
                 <div style={{ fontSize: '0.68rem', color: 'var(--ink-faint)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {gdAccessToken ? gdUserEmail : 'Secure cloud backup'}
+                  {gdAccessToken ? gdUserEmail : t('gdrive.secure_backup')}
                 </div>
               </div>
             </div>
@@ -356,11 +357,11 @@ function GoogleDrivePanel({
             <div>
               {gdAccessToken ? (
                 <button className="gdrive-sidebar-btn-sm danger" onClick={onGdDisconnect}>
-                  Sign Out
+                  {t('gdrive.sign_out')}
                 </button>
               ) : (
                 <button className="gdrive-sidebar-btn primary" onClick={() => onGdConnect(clientIdInput)}>
-                  Connect
+                  {t('gdrive.connect')}
                 </button>
               )}
             </div>
@@ -370,7 +371,7 @@ function GoogleDrivePanel({
             <>
               {/* Current Project Sync Actions */}
               <div style={{ background: 'var(--surface-2)', border: '1px solid var(--line)', borderRadius: '6px', padding: '10px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '0.66rem', textTransform: 'uppercase', color: 'var(--ink-faint)', fontWeight: 700 }}>Current File</span>
+                <span style={{ fontSize: '0.66rem', textTransform: 'uppercase', color: 'var(--ink-faint)', fontWeight: 700 }}>{t('gdrive.current_file')}</span>
                 <div style={{ fontSize: '0.8rem', fontWeight: 600, margin: '2px 0 8px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {project.name}.house.json
                 </div>
@@ -380,23 +381,23 @@ function GoogleDrivePanel({
                   disabled={gdSavingCurrent}
                   style={{ width: '100%', fontSize: '0.78rem', padding: '6px 12px' }}
                 >
-                  {gdSavingCurrent ? 'Uploading...' : 'Save Current to Drive'}
+                  {gdSavingCurrent ? t('gdrive.uploading') : t('gdrive.save_current')}
                 </button>
               </div>
 
               {/* Google Drive files list */}
               <div>
                 <h4 style={{ margin: '0 0 8px 0', fontSize: '0.74rem', textTransform: 'uppercase', color: 'var(--ink-soft)' }}>
-                  Cloud Storage Files
+                  {t('gdrive.cloud_files')}
                 </h4>
 
                 {gdLoadingFiles ? (
                   <div style={{ padding: '12px 0', textAlign: 'center', fontSize: '0.74rem', color: 'var(--ink-faint)' }}>
-                    Loading...
+                    {t('gdrive.loading')}
                   </div>
                 ) : gdFiles.length === 0 ? (
                   <div style={{ padding: '16px 0', textAlign: 'center', fontSize: '0.74rem', color: 'var(--ink-faint)', border: '1px dashed var(--line)', borderRadius: '6px' }}>
-                    No plans found in your Drive app folder.
+                    {t('gdrive.no_files')}
                   </div>
                 ) : (
                   <div className="gdrive-sidebar-file-list" style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid var(--line)', borderRadius: '6px' }}>
@@ -412,10 +413,10 @@ function GoogleDrivePanel({
                         </div>
                         <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                           <button className="gdrive-sidebar-btn-xs" onClick={() => onGdLoad(file.id, file.name)}>
-                            Load
+                            {t('gdrive.load')}
                           </button>
                           <button className="gdrive-sidebar-btn-xs danger" onClick={() => onGdDelete(file.id, file.name)}>
-                            Delete
+                            {t('gdrive.delete')}
                           </button>
                         </div>
                       </div>

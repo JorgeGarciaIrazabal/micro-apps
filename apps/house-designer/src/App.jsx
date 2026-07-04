@@ -111,7 +111,7 @@ export default function App() {
       setGdFiles(data.files || [])
     } catch (err) {
       console.error('Error fetching file list:', err)
-      flash('Error listing files from Google Drive', 'error')
+      flash(t('gdrive.flash.list_failed'), 'error')
     } finally {
       setGdLoadingFiles(false)
     }
@@ -157,7 +157,7 @@ export default function App() {
         callback: (tokenResponse) => {
           if (tokenResponse.error) {
             console.error('Auth Error:', tokenResponse)
-            flash('Failed to authenticate with Google', 'error')
+            flash(t('gdrive.flash.auth_failed'), 'error')
             return
           }
           const expiryTime = Date.now() + (Number(tokenResponse.expires_in) || 3600) * 1000
@@ -167,17 +167,17 @@ export default function App() {
           setGdAccessToken(tokenResponse.access_token)
           fetchFileList(tokenResponse.access_token)
           fetchUserInfo(tokenResponse.access_token)
-          flash('Connected to Google Drive!', 'success')
+          flash(t('gdrive.flash.connected'), 'success')
         },
         error_callback: (err) => {
           console.error('Google OAuth error:', err)
-          flash(`Auth Error: ${err.message || err.type || 'unknown'}`, 'error')
+          flash(t('gdrive.flash.auth_error', { error: err.message || err.type || 'unknown' }), 'error')
         }
       })
       client.requestAccessToken({ prompt: '' })
     } catch (err) {
       console.error(err)
-      flash('Google auth initialization failed. Check your Client ID.', 'error')
+      flash(t('gdrive.flash.init_failed'), 'error')
     }
   }, [gdClientId, fetchFileList, fetchUserInfo, flash])
 
@@ -190,8 +190,8 @@ export default function App() {
     localStorage.removeItem('house-designer:google-token-expiry')
     localStorage.removeItem('house-designer:google-user-email')
     localStorage.removeItem('house-designer:google-user-avatar')
-    flash('Disconnected from Google Drive', 'info')
-  }, [flash])
+    flash(t('gdrive.flash.disconnected'), 'info')
+  }, [flash, t])
 
   const onGdSave = useCallback(async () => {
     if (!gdAccessToken) return
@@ -221,7 +221,7 @@ export default function App() {
           body: fileContent
         })
         if (!updateRes.ok) throw new Error('Update failed')
-        flash('Successfully updated plan on Google Drive!', 'success')
+        flash(t('gdrive.flash.updated_plan'), 'success')
       } else {
         const metadata = { name: fileName, parents: ['appDataFolder'] }
         const boundary = 'gdrive_upload_boundary'
@@ -243,12 +243,12 @@ export default function App() {
           body: multipartBody
         })
         if (!createRes.ok) throw new Error('Creation failed')
-        flash('Successfully saved new plan to Google Drive!', 'success')
+        flash(t('gdrive.flash.saved_plan'), 'success')
       }
       fetchFileList()
     } catch (err) {
       console.error(err)
-      flash('Failed to save to Google Drive', 'error')
+      flash(t('gdrive.flash.save_failed'), 'error')
     } finally {
       setGdSavingCurrent(false)
     }
@@ -267,26 +267,26 @@ export default function App() {
       }
       commit(proj)
       setSelectedId(null)
-      flash(`Loaded "${proj.name}" from Google Drive!`, 'success')
+      flash(t('gdrive.flash.loaded_plan', { name: proj.name }), 'success')
     } catch (err) {
       console.error(err)
-      flash('Failed to load file from Google Drive', 'error')
+      flash(t('gdrive.flash.load_failed'), 'error')
     }
   }, [gdAccessToken, commit, flash])
 
   const onGdDelete = useCallback(async (fileId, fileName) => {
-    if (!confirm(`Are you sure you want to delete "${fileName}" from Google Drive?`)) return
+    if (!confirm(t('gdrive.confirm.delete_file', { name: fileName }))) return
     try {
       const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${gdAccessToken}` }
       })
       if (!response.ok) throw new Error('Delete failed')
-      flash('File deleted from Google Drive', 'success')
+      flash(t('gdrive.flash.deleted_file'), 'success')
       setGdFiles((current) => current.filter((f) => f.id !== fileId))
     } catch (err) {
       console.error(err)
-      flash('Failed to delete file', 'error')
+      flash(t('gdrive.flash.delete_failed'), 'error')
     }
   }, [gdAccessToken, flash])
 
