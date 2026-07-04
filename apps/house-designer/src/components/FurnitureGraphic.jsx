@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { shade } from '../lib/color.js'
 import { defFor } from '../lib/furniture/registry.js'
 
@@ -12,7 +13,16 @@ import { defFor } from '../lib/furniture/registry.js'
 
 const clamp0 = (v) => (v > 0 ? v : 0)
 
+// Which plan symbols get a material pattern fill over their body rect.
+const SYMBOL_FINISH = {
+  seat: 'fabric', bed: 'fabric', rug: 'fabric',
+  table: 'wood', chair: 'wood', bench: 'wood', piano: 'wood', cabinet: 'wood',
+  nightstand: 'wood', bookshelf: 'wood', 'tv-stand': 'wood', stairs: 'wood',
+}
+
 export function FurnitureGraphic({ type, width: w, depth: d, color }) {
+  // useId may contain characters that are unsafe inside url(#...) refs.
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   // Guard against tiny/negative dimensions (the app clamps furniture to >= 0.1
   // but imported data or in-flight drags can transiently be smaller).
   w = Math.max(w, 0.1)
@@ -23,12 +33,50 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
   const sw = Math.min(w, d) * 0.05
   const foot = { fill: color, stroke: dark, strokeWidth: sw, rx: Math.min(w, d) * 0.08 }
 
-  const body = (
-    <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={foot.fill}
-      stroke={foot.stroke} strokeWidth={foot.strokeWidth} />
+  const symbol = defFor(type).symbol
+  const finish = SYMBOL_FINISH[symbol]
+  const texId = `${uid}-tex`
+  const sheenId = `${uid}-sheen`
+
+  // Material pattern (wood grain / fabric weave) + a soft diagonal sheen so
+  // flat plan colors read as lit surfaces. Referenced by `body` and by the
+  // rug symbol, which draws its own base rect.
+  const texDefs = (
+    <defs>
+      {finish === 'wood' && (
+        <pattern id={texId} patternUnits="userSpaceOnUse" x={-hx} y={-hy} width={0.8} height={0.12}>
+          <line x1={0} y1={0.06} x2={0.8} y2={0.06} stroke={dark} strokeWidth={0.012} opacity={0.3} />
+          <line x1={0.08} y1={0.028} x2={0.62} y2={0.022} stroke={dark} strokeWidth={0.008} opacity={0.2} />
+          <line x1={0.2} y1={0.096} x2={0.75} y2={0.09} stroke={dark} strokeWidth={0.008} opacity={0.16} />
+        </pattern>
+      )}
+      {finish === 'fabric' && (
+        <pattern id={texId} patternUnits="userSpaceOnUse" x={-hx} y={-hy} width={0.09} height={0.09}>
+          <line x1={0} y1={0.045} x2={0.09} y2={0.045} stroke={dark} strokeWidth={0.01} opacity={0.14} />
+          <line x1={0.045} y1={0} x2={0.045} y2={0.09} stroke={dark} strokeWidth={0.01} opacity={0.14} />
+        </pattern>
+      )}
+      <linearGradient id={sheenId} x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#ffffff" stopOpacity="0.26" />
+        <stop offset="0.45" stopColor="#ffffff" stopOpacity="0" />
+        <stop offset="1" stopColor="#000000" stopOpacity="0.12" />
+      </linearGradient>
+    </defs>
   )
 
-  switch (defFor(type).symbol) {
+  const body = (
+    <>
+      {texDefs}
+      <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={foot.fill}
+        stroke={foot.stroke} strokeWidth={foot.strokeWidth} />
+      {finish && (
+        <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={`url(#${texId})`} />
+      )}
+      <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={`url(#${sheenId})`} />
+    </>
+  )
+
+  switch (symbol) {
     case 'seat': {
       const seats = type === 'sofa' ? (w > 1.4 ? 3 : 2) : 1
       const back = 0.22 * d
@@ -271,7 +319,9 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
 
     case 'rug': {
       return <>
+        {texDefs}
         <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={color} opacity={0.55} />
+        <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={`url(#${texId})`} opacity={0.7} />
         <rect x={-hx + 0.1} y={-hy + 0.1} width={clamp0(w - 0.2)} height={clamp0(d - 0.2)} rx={clamp0(foot.rx - 0.04)}
           fill="none" stroke={shade(color, 0.6)} strokeWidth={sw * 0.8} opacity={0.7} />
         <rect x={-hx + 0.2} y={-hy + 0.2} width={clamp0(w - 0.4)} height={clamp0(d - 0.4)} rx={clamp0(foot.rx - 0.08)}

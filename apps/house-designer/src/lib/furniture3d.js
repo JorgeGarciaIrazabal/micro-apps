@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { shade } from './color.js'
 import { makeWoodTexture, makeFabricTexture } from './textures.js'
 import { defFor } from './furniture/registry.js'
@@ -12,21 +13,35 @@ import { defFor } from './furniture/registry.js'
 
 // Material finishes: `finish` picks a texture/roughness preset so pieces read
 // as their material, not just their color.
-//   wood    — plank texture, matte
-//   fabric  — speckle texture, very matte (upholstery)
-//   ceramic — smooth, slightly glossy (bathroom fixtures)
+//   wood    — plank texture, satin varnish (light clearcoat)
+//   fabric  — speckle texture, very matte with sheen (upholstery)
+//   ceramic — clearcoated gloss (bathroom fixtures)
 //   metal   — reflective accents (handles, columns)
 export function buildFurniture3D(type, w, d, h, color) {
-  const mat = (c, { rough = 0.82, metal = 0.05, opacity = 1, finish = null } = {}) => {
+  const mat = (c, { rough = 0.82, metal = 0.05, opacity = 1, finish = null, emissive = null, emissiveIntensity = 0.6 } = {}) => {
     const params = {
       color: new THREE.Color(c), roughness: rough, metalness: metal,
       transparent: opacity < 1, opacity,
     }
-    if (finish === 'wood') { params.map = makeWoodTexture(c); params.color = new THREE.Color('#ffffff'); params.roughness = 0.72 }
-    else if (finish === 'fabric') { params.map = makeFabricTexture(c); params.color = new THREE.Color('#ffffff'); params.roughness = 0.96 }
-    else if (finish === 'ceramic') { params.roughness = 0.25; params.metalness = 0 }
-    else if (finish === 'metal') { params.roughness = 0.35; params.metalness = 0.6 }
-    return new THREE.MeshStandardMaterial(params)
+    if (finish === 'wood') {
+      params.map = makeWoodTexture(c); params.color = new THREE.Color('#ffffff')
+      params.roughness = 0.58; params.clearcoat = 0.28; params.clearcoatRoughness = 0.45
+    } else if (finish === 'fabric') {
+      params.map = makeFabricTexture(c); params.color = new THREE.Color('#ffffff')
+      params.roughness = 0.96; params.sheen = 0.55; params.sheenRoughness = 0.75
+      params.sheenColor = new THREE.Color(shade(c, 1.35))
+    } else if (finish === 'ceramic') {
+      params.roughness = 0.14; params.metalness = 0; params.clearcoat = 1; params.clearcoatRoughness = 0.08
+    } else if (finish === 'metal') {
+      params.roughness = 0.28; params.metalness = 0.8
+    }
+    if (emissive) { params.emissive = new THREE.Color(emissive); params.emissiveIntensity = emissiveIntensity }
+    return new THREE.MeshPhysicalMaterial(params)
+  }
+  const flatMat = (c, opts) => {
+    const m = mat(c, opts)
+    m.flatShading = true
+    return m
   }
   const g = new THREE.Group()
   const dark = shade(color, 0.7)
@@ -36,17 +51,42 @@ export function buildFurniture3D(type, w, d, h, color) {
 
   const add = (m, x, y, z) => {
     m.position.set(x, y, z)
-    m.castShadow = true
+    m.castShadow = !m.material.transparent // glass/water shouldn't cast box shadows
     m.receiveShadow = true
     g.add(m)
     return m
   }
+  // Bevel any box thick enough to show it — sharp digital corners read as
+  // fake, while a small rounded edge catches realistic light glints.
+  const boxGeo = (bw, bh, bd) => {
+    const t = Math.min(bw, bh, bd)
+    if (t < 0.06) return new THREE.BoxGeometry(bw, bh, bd)
+    return new RoundedBoxGeometry(bw, bh, bd, 2, Math.min(0.03, t * 0.22))
+  }
   const box = (bw, bh, bd, x, y, z, c, opts) =>
-    add(new THREE.Mesh(new THREE.BoxGeometry(bw, bh, bd), mat(c, opts)), x, y, z)
+    add(new THREE.Mesh(boxGeo(bw, bh, bd), mat(c, opts)), x, y, z)
   const cyl = (r, ch, x, y, z, c, opts) =>
     add(new THREE.Mesh(new THREE.CylinderGeometry(r, r, ch, 20), mat(c, opts)), x, y, z)
   const sph = (r, x, y, z, c, opts) =>
     add(new THREE.Mesh(new THREE.SphereGeometry(r, 18, 14), mat(c, opts)), x, y, z)
+  // Tapered cylinder (different top/bottom radii) — pots, trunks, pedestals.
+  const tcyl = (rt, rb, ch, x, y, z, c, opts) =>
+    add(new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, ch, 24), mat(c, opts)), x, y, z)
+  // Ellipsoid given full extents — bowls, lids, leaves.
+  const ell = (ew, eh, ed, x, y, z, c, opts) => {
+    const m = add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 16), mat(c, opts)), x, y, z)
+    m.scale.set(ew, eh, ed)
+    return m
+  }
+  // Flat-shaded icosahedron — low-poly foliage that reads stylized, not blobby.
+  const blob = (r, x, y, z, c) =>
+    add(new THREE.Mesh(new THREE.IcosahedronGeometry(r, 1), flatMat(c, { rough: 0.9 })), x, y, z)
+  // Squashed sphere so cushions read as stuffed, not as bricks.
+  const pillow = (pw, ph, pd, x, y, z, c) => {
+    const m = add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 14), mat(c, { finish: 'fabric' })), x, y, z)
+    m.scale.set(pw, ph, pd)
+    return m
+  }
 
   switch (defFor(type).model) {
     case 'seat': {
@@ -55,6 +95,13 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w * 0.1, h * 0.55, d * 0.85, -(w / 2 - w * 0.05), h * 0.275, d * 0.05, shade(color, 0.85), { finish: 'fabric' })
       box(w * 0.1, h * 0.55, d * 0.85, (w / 2 - w * 0.05), h * 0.275, d * 0.05, shade(color, 0.85), { finish: 'fabric' })
       box(w * 0.84, h * 0.12, d * 0.66, 0, h * 0.46, d * 0.08, light, { finish: 'fabric' })
+      if (type === 'sofa') {
+        // throw pillows leaning against the backrest
+        for (const sx of w > 1.4 ? [-1, 1] : [1]) {
+          const p = pillow(w * 0.2, h * 0.26, d * 0.14, sx * w * 0.26, h * 0.58, -d / 2 + d * 0.3, shade(color, 1.35))
+          p.rotation.x = -0.35
+        }
+      }
       break
     }
     case 'table': {
@@ -83,10 +130,11 @@ export function buildFurniture3D(type, w, d, h, color) {
       box(w, h * 0.3, d, 0, h * 0.15, 0, shade(color, 0.6), { finish: 'wood' })           // frame
       box(w * 0.96, h * 0.45, d * 0.94, 0, h * 0.45, 0, color, { finish: 'fabric' })        // mattress
       box(w, h * 1.5, d * 0.1, 0, h * 0.75, -d / 2 + d * 0.05, shade(color, 0.5), { finish: 'wood' }) // headboard
+      box(w * 0.98, h * 0.16, d * 0.55, 0, h * 0.68, d * 0.19, shade(color, 1.12), { finish: 'fabric' }) // duvet
       const py = h * 0.675 + h * 0.1
       for (let i = 0; i < pillows; i++) {
         const x = pillows === 1 ? 0 : (i === 0 ? -w * 0.22 : w * 0.22)
-        box(pw, h * 0.2, d * 0.18, x, py, -d / 2 + d * 0.16, light, { finish: 'fabric' })
+        pillow(pw, h * 0.28, d * 0.17, x, py, -d / 2 + d * 0.16, light)
       }
       break
     }
@@ -122,30 +170,104 @@ export function buildFurniture3D(type, w, d, h, color) {
       break
     }
     case 'toilet': {
-      box(w * 0.9, h * 0.5, d * 0.3, 0, h * 0.75, -d / 2 + d * 0.15, color, { finish: 'ceramic' }) // tank
-      cyl(w * 0.42, h * 0.45, 0, h * 0.225, d * 0.12, light, { finish: 'ceramic' })                // bowl
+      // cistern against the wall (-z), with lid slab and flush button
+      box(w * 0.92, h * 0.4, d * 0.22, 0, h * 0.55, -d / 2 + d * 0.11, color, { finish: 'ceramic' })
+      box(w * 0.98, h * 0.06, d * 0.26, 0, h * 0.78, -d / 2 + d * 0.11, light, { finish: 'ceramic' })
+      cyl(w * 0.09, h * 0.015, 0, h * 0.815, -d / 2 + d * 0.11, '#c8ccd0', { finish: 'metal' })
+      // tapered pedestal foot rising into the bowl
+      const ped = tcyl(0.5, 0.32, 1, 0, h * 0.19, d * 0.04, color, { finish: 'ceramic' })
+      ped.scale.set(w * 0.6, h * 0.38, d * 0.52)
+      // oval bowl + closed seat lid
+      ell(w * 0.96, h * 0.22, d * 0.72, 0, h * 0.42, d * 0.1, color, { finish: 'ceramic' })
+      ell(w * 1.0, h * 0.08, d * 0.76, 0, h * 0.51, d * 0.1, light, { finish: 'ceramic' })
       break
     }
     case 'bathtub': {
-      box(w, h, d, 0, h / 2, 0, color, { finish: 'ceramic' })
-      box(w * 0.86, h * 0.4, d * 0.8, 0, h * 0.8, 0, light)          // water surface
+      // rounded-rect shell with a real cavity (extruded ring), lying on the floor
+      const t = Math.min(w, d) * 0.13                                // wall thickness
+      const rad = Math.min(w, d) * 0.22                              // corner radius
+      const rr = (hw, hd, cr) => {
+        const s = new THREE.Shape()
+        s.moveTo(-hw + cr, -hd)
+        s.lineTo(hw - cr, -hd); s.absarc(hw - cr, -hd + cr, cr, -Math.PI / 2, 0)
+        s.lineTo(hw, hd - cr); s.absarc(hw - cr, hd - cr, cr, 0, Math.PI / 2)
+        s.lineTo(-hw + cr, hd); s.absarc(-hw + cr, hd - cr, cr, Math.PI / 2, Math.PI)
+        s.lineTo(-hw, -hd + cr); s.absarc(-hw + cr, -hd + cr, cr, Math.PI, Math.PI * 1.5)
+        return s
+      }
+      const outline = rr(w / 2, d / 2, rad)
+      outline.holes.push(rr(w / 2 - t, d / 2 - t, Math.max(0.02, rad - t)))
+      const shellGeo = new THREE.ExtrudeGeometry(outline, {
+        depth: h, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.012, bevelSegments: 2, curveSegments: 20,
+      })
+      const shell = add(new THREE.Mesh(shellGeo, mat(color, { finish: 'ceramic' })), 0, 0, 0)
+      shell.rotation.x = -Math.PI / 2
+      box(w - 2 * t, 0.05, d - 2 * t, 0, 0.025, 0, color, { finish: 'ceramic' })                  // tub floor
+      box(w - 2.4 * t, 0.025, d - 2.4 * t, 0, h * 0.62, 0, '#7fb4d8', { opacity: 0.65, rough: 0.05 }) // water
+      // chrome filler + spout on one end of the rim
+      cyl(0.018, 0.16, w / 2 - t * 0.9, h + 0.07, 0, '#c8ccd0', { finish: 'metal' })
+      box(0.14, 0.026, 0.026, w / 2 - t * 0.9 - 0.07, h + 0.14, 0, '#c8ccd0', { finish: 'metal' })
       break
     }
     case 'shower': {
-      box(w, h * 0.08, d, 0, h * 0.04, 0, light)                     // base
+      const chrome = '#c2cad1'
+      const glass = { opacity: 0.18, rough: 0.05 }
+      // ceramic tray with recessed inner surface + drain
+      box(w, 0.09, d, 0, 0.045, 0, light, { finish: 'ceramic' })
+      box(w * 0.84, 0.02, d * 0.84, 0, 0.095, 0, shade(color, 1.08), { finish: 'ceramic' })
+      cyl(Math.min(w, d) * 0.05, 0.012, 0, 0.108, 0, '#9aa2a8', { finish: 'metal' })
+      // glass cubicle: four panels, chrome corner posts + top rails
+      const gh = h * 0.88
+      const gy = 0.09 + gh / 2
+      box(w - 0.06, gh, 0.014, 0, gy, d / 2 - 0.02, '#cfe6f2', glass)
+      box(w - 0.06, gh, 0.014, 0, gy, -d / 2 + 0.02, '#cfe6f2', glass)
+      box(0.014, gh, d - 0.06, -w / 2 + 0.02, gy, 0, '#cfe6f2', glass)
+      box(0.014, gh, d - 0.06, w / 2 - 0.02, gy, 0, '#cfe6f2', glass)
       for (const sx of [-1, 1]) for (const sz of [-1, 1])
-        box(w * 0.04, h * 0.92, d * 0.04, sx * (w / 2 - w * 0.02), h * 0.5, sz * (d / 2 - d * 0.02), light,
-          { opacity: 0.35, rough: 0.1 })                              // glass posts
+        box(0.032, gh, 0.032, sx * (w / 2 - 0.02), gy, sz * (d / 2 - 0.02), chrome, { finish: 'metal' })
+      box(w, 0.03, 0.03, 0, 0.09 + gh, d / 2 - 0.02, chrome, { finish: 'metal' })
+      box(w, 0.03, 0.03, 0, 0.09 + gh, -d / 2 + 0.02, chrome, { finish: 'metal' })
+      box(0.03, 0.03, d, -w / 2 + 0.02, 0.09 + gh, 0, chrome, { finish: 'metal' })
+      box(0.03, 0.03, d, w / 2 - 0.02, 0.09 + gh, 0, chrome, { finish: 'metal' })
+      // door handle bar on the front (+z) panel
+      box(0.02, 0.34, 0.02, w * 0.3, h * 0.5, d / 2 + 0.012, chrome, { finish: 'metal' })
+      // shower column in the back corner: riser, arm, head + hand control
+      cyl(0.015, h * 0.72, -w / 2 + 0.1, h * 0.45, -d / 2 + 0.1, chrome, { finish: 'metal' })
+      box(0.24, 0.02, 0.02, -w / 2 + 0.21, h * 0.81, -d / 2 + 0.1, chrome, { finish: 'metal' })
+      cyl(0.085, 0.02, -w / 2 + 0.32, h * 0.8, -d / 2 + 0.1, chrome, { finish: 'metal' })
+      cyl(0.03, 0.015, -w / 2 + 0.1, h * 0.38, -d / 2 + 0.1, chrome, { finish: 'metal' })
       break
     }
     case 'plant': {
-      cyl(w * 0.4, h * 0.3, 0, h * 0.15, 0, wood)                    // pot
-      sph(w * 0.45, 0, h * 0.7, 0, leaf)                             // foliage
+      // tapered terracotta pot with a lip, soil, and a fan of long leaves
+      const terra = '#a8664a'
+      tcyl(w * 0.3, w * 0.22, h * 0.26, 0, h * 0.13, 0, terra, { rough: 0.75 })
+      tcyl(w * 0.34, w * 0.32, h * 0.05, 0, h * 0.275, 0, shade(terra, 1.1), { rough: 0.75 })
+      cyl(w * 0.28, h * 0.02, 0, h * 0.3, 0, '#3d2c1e', { rough: 1 })
+      const nLeaves = 9
+      for (let i = 0; i < nLeaves; i++) {
+        const a = (i / nLeaves) * Math.PI * 2 + (i % 2) * 0.35
+        const tilt = i < 3 ? 0.16 : 0.4 + (i % 3) * 0.17          // inner ring upright, outer fanned
+        const len = h * (0.62 - (i % 3) * 0.07)
+        const m = ell(w * 0.17, len, w * 0.05, 0, 0, 0, shade(leaf, 0.9 + (i % 4) * 0.08))
+        m.rotation.order = 'YXZ'
+        m.rotation.y = a
+        m.rotation.x = tilt
+        m.position.set(
+          Math.sin(a) * Math.sin(tilt) * len * 0.5,
+          h * 0.3 + Math.cos(tilt) * len * 0.42,
+          Math.cos(a) * Math.sin(tilt) * len * 0.5,
+        )
+      }
       break
     }
     case 'tree': {
-      cyl(w * 0.12, h * 0.4, 0, h * 0.2, 0, wood)                    // trunk
-      sph(w * 0.45, 0, h * 0.7, 0, leaf)                            // canopy
+      // tapered trunk + layered low-poly canopy (reads stylized, not lollipop)
+      tcyl(w * 0.06, w * 0.1, h * 0.45, 0, h * 0.225, 0, wood, { rough: 0.9 })
+      blob(w * 0.5, 0, h * 0.62, 0, shade(leaf, 0.95))
+      blob(w * 0.42, w * 0.2, h * 0.72, w * 0.12, shade(leaf, 1.08))
+      blob(w * 0.4, -w * 0.22, h * 0.74, -w * 0.14, shade(leaf, 0.86))
+      blob(w * 0.3, w * 0.04, h * 0.88, 0, shade(leaf, 1.16))
       break
     }
     case 'rug': {
@@ -202,7 +324,9 @@ export function buildFurniture3D(type, w, d, h, color) {
       const r = Math.min(w, d) / 2
       cyl(r * 0.5, 0.03, 0, 0.015, 0, shade(color, 0.5), { finish: 'metal' })      // base
       cyl(0.015, h * 0.72, 0, h * 0.38, 0, shade(color, 0.5), { finish: 'metal' }) // pole
-      cyl(r * 0.8, h * 0.22, 0, h * 0.85, 0, shade(color, 1.25), { opacity: 0.85, rough: 0.6 }) // shade
+      cyl(r * 0.8, h * 0.22, 0, h * 0.85, 0, shade(color, 1.25),
+        { opacity: 0.85, rough: 0.6, emissive: '#ffdf9e', emissiveIntensity: 0.55 }) // lit shade
+      sph(r * 0.18, 0, h * 0.8, 0, '#fff3d6', { emissive: '#ffe6ae', emissiveIntensity: 1.4 }) // bulb
       break
     }
     case 'piano': {

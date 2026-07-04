@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 import { openingsOnWall, activeFloor } from '../lib/project.js'
 import { dist, wallCutSegments, pointSegDist } from '../lib/geometry.js'
 import { buildFurniture3D } from '../lib/furniture3d.js'
@@ -97,6 +98,14 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     scene.background = makeSkyTexture()
     scene.fog = new THREE.Fog('#e8ddca', 40, 120)
 
+    // Image-based environment so PBR materials (clearcoat ceramics, metals,
+    // fabric sheen) have something real to reflect instead of flat lights.
+    const pmrem = new THREE.PMREMGenerator(renderer)
+    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
+    pmrem.dispose()
+    scene.environment = envTex
+    scene.environmentIntensity = 0.4
+
     const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 500)
 
     const controls = new OrbitControls(camera, renderer.domElement)
@@ -106,7 +115,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
     controls.minDistance = 2
 
     // Lighting: warm shadow-casting key + hemisphere fill.
-    const hemi = new THREE.HemisphereLight('#ffffff', '#9aa6b2', 0.55)
+    const hemi = new THREE.HemisphereLight('#ffffff', '#9aa6b2', 0.4)
     scene.add(hemi)
     const dir = new THREE.DirectionalLight('#fff6e6', 1.0)
     dir.position.set(8, 14, 6)
@@ -160,6 +169,9 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
 
     const handlePointerDown = (e) => {
       if (modeRef.current !== 'walk') return
+      // Only look-drag from the canvas — capturing from overlay buttons would
+      // steal their click (making it impossible to leave walk mode).
+      if (e.target !== renderer.domElement) return
       isDragging = true
       prevX = e.clientX
       prevY = e.clientY
@@ -279,6 +291,7 @@ const Editor3D = forwardRef(function Editor3D({ project }, ref) {
       const s = stateRef.current
       content.traverse((o) => o.geometry?.dispose?.())
       floor.geometry.dispose()
+      envTex.dispose()
       if (s?.grid) { s.grid.geometry.dispose(); s.grid.material.dispose() }
       renderer.dispose()
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement)
@@ -434,9 +447,10 @@ function rebuild(s, project) {
 
   const wallH = project.settings.wallHeight
   const wallMat = new THREE.MeshStandardMaterial({ color: '#ece4d6', roughness: 0.9 })
-  // Light wood floor slabs (two tones so stacked floors read separately).
-  const slabMats = ['#e6d7bd', '#dccbae'].map((c) => new THREE.MeshStandardMaterial({
-    map: makeWoodTexture(c), roughness: 0.75,
+  // Light wood floor slabs (two tones so stacked floors read separately);
+  // a light clearcoat gives the varnished-parquet glint.
+  const slabMats = ['#e6d7bd', '#dccbae'].map((c) => new THREE.MeshPhysicalMaterial({
+    map: makeWoodTexture(c), roughness: 0.6, clearcoat: 0.3, clearcoatRoughness: 0.5,
   }))
 
   // Only show the active floor and floors below it (so upper floors don't

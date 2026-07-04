@@ -17,12 +17,12 @@ function mulberry(seed) {
   }
 }
 
-function canvasTexture(key, draw) {
+function canvasTexture(key, draw, size = 128) {
   if (cache.has(key)) return cache.get(key)
   const c = document.createElement('canvas')
-  c.width = 128
-  c.height = 128
-  draw(c.getContext('2d'))
+  c.width = size
+  c.height = size
+  draw(c.getContext('2d'), size)
   const tex = new THREE.CanvasTexture(c)
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping
   tex.colorSpace = THREE.SRGBColorSpace
@@ -30,35 +30,43 @@ function canvasTexture(key, draw) {
   return tex
 }
 
-// Horizontal plank stripes with slight tone jitter + thin grain lines.
+// Horizontal plank stripes with slight tone jitter, grain lines + end joints.
 export function makeWoodTexture(baseColor) {
-  return canvasTexture(`wood:${baseColor}`, (ctx) => {
+  return canvasTexture(`wood:${baseColor}`, (ctx, S) => {
     const rnd = mulberry(7)
     ctx.fillStyle = baseColor
-    ctx.fillRect(0, 0, 128, 128)
+    ctx.fillRect(0, 0, S, S)
     const rows = 8
+    const rh = S / rows
     for (let i = 0; i < rows; i++) {
       const f = 0.9 + rnd() * 0.22
       ctx.fillStyle = shade(baseColor, f)
-      ctx.fillRect(0, i * 16, 128, 16)
+      ctx.fillRect(0, i * rh, S, rh)
       ctx.strokeStyle = shade(baseColor, 0.72)
       ctx.globalAlpha = 0.35
       ctx.beginPath()
-      ctx.moveTo(0, i * 16 + 0.5)
-      ctx.lineTo(128, i * 16 + 0.5)
+      ctx.moveTo(0, i * rh + 0.5)
+      ctx.lineTo(S, i * rh + 0.5)
+      ctx.stroke()
+      // plank end joint at a random spot along the row
+      ctx.globalAlpha = 0.3
+      const jx = Math.round(rnd() * S) + 0.5
+      ctx.beginPath()
+      ctx.moveTo(jx, i * rh)
+      ctx.lineTo(jx, i * rh + rh)
       ctx.stroke()
       // faint grain squiggles
       ctx.globalAlpha = 0.12
       for (let k = 0; k < 3; k++) {
-        const y = i * 16 + 3 + rnd() * 11
+        const y = i * rh + rh * 0.2 + rnd() * rh * 0.7
         ctx.beginPath()
         ctx.moveTo(0, y)
-        for (let x = 0; x <= 128; x += 16) ctx.lineTo(x, y + (rnd() - 0.5) * 2.5)
+        for (let x = 0; x <= S; x += S / 8) ctx.lineTo(x, y + (rnd() - 0.5) * rh * 0.16)
         ctx.stroke()
       }
       ctx.globalAlpha = 1
     }
-  })
+  }, 256)
 }
 
 // Fine speckle noise for upholstery.
@@ -76,6 +84,16 @@ export function makeFabricTexture(baseColor) {
       img.data[i + 2] = Math.max(0, Math.min(255, b + n))
     }
     ctx.putImageData(img, 0, 0)
+    // faint woven grid over the speckle
+    ctx.strokeStyle = shade(baseColor, 0.6)
+    ctx.globalAlpha = 0.06
+    ctx.beginPath()
+    for (let p = 2; p < 128; p += 4) {
+      ctx.moveTo(0, p + 0.5); ctx.lineTo(128, p + 0.5)
+      ctx.moveTo(p + 0.5, 0); ctx.lineTo(p + 0.5, 128)
+    }
+    ctx.stroke()
+    ctx.globalAlpha = 1
   })
 }
 
