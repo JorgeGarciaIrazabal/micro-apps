@@ -6,11 +6,22 @@ import { dist, pointSegDist, pointInRotatedRect, projectOnWall } from './geometr
 import { openingsOnWall } from './project.js'
 import { wallUnit } from './geometry.js'
 
-// Topmost (last drawn) furniture containing the point.
+// Topmost (last drawn) furniture containing the point, prioritizing non-rug items
+// since rugs are rendered at the very bottom.
 export function hitFurniture(floor, wx, wy) {
+  // First pass: look for non-rug furniture (rendered on top)
   for (let i = floor.furniture.length - 1; i >= 0; i--) {
     const f = floor.furniture[i]
-    if (pointInRotatedRect(wx, wy, f.x, f.y, f.rotation, f.width, f.depth)) return f
+    if (f.type !== 'rug' && pointInRotatedRect(wx, wy, f.x, f.y, f.rotation, f.width, f.depth)) {
+      return f
+    }
+  }
+  // Second pass: look for rugs (rendered at the bottom)
+  for (let i = floor.furniture.length - 1; i >= 0; i--) {
+    const f = floor.furniture[i]
+    if (f.type === 'rug' && pointInRotatedRect(wx, wy, f.x, f.y, f.rotation, f.width, f.depth)) {
+      return f
+    }
   }
   return null
 }
