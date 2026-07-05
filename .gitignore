@@ -9,3 +9,8 @@ apps/*/emails_confirmations/
 /andalucia-scouting-2026/
 /opencode.json
 
+/casa-prefab-madrid/
+/house-designer/
+/.worktrees/
+tools/playwright-check/test-results/
+tools/playwright-check/report/

@@ -39,7 +39,7 @@ export default function PropertiesPanel({
           ⚙️ {t('props.properties')}
         </button>
         <button
-          className={rightSidebarTab === 'cloud' ? 'active' : ''}
+          className={`tab-cloud${rightSidebarTab === 'cloud' ? ' active' : ''}`}
           onClick={() => setRightSidebarTab('cloud')}
         >
           ☁️ {t('props.cloud_sync')}

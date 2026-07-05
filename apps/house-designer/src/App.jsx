@@ -10,6 +10,7 @@ import { IconRuler } from './components/Icons.jsx'
 import { createProject, serialize, deserialize, downloadBlob, pickFile, safeName, activeFloor, uid, ERR_INVALID_JSON, ERR_NOT_PROJECT } from './lib/project.js'
 import * as M from './lib/mutations.js'
 import { useProjectHistory } from './hooks/useProjectHistory.js'
+import { useProjectFile, EMBED_MODE, PROJECT_URL } from './hooks/useProjectFile.js'
 import { getSample } from './samples/sample.js'
 import { useT } from './contexts/LangContext.jsx'
 
@@ -71,6 +72,14 @@ export default function App() {
     onRedo: (ok) => flash(ok ? t('toast.redo') : t('toast.nothing_to_redo')),
   })
 
+  // File-backed project mode (?project=&save=1) — see hooks/useProjectFile.js
+  useProjectFile({ project, commit, flash, t })
+
+  // Chromeless embed mode (?embed=1): CSS hooks off <html data-embed="1">.
+  useEffect(() => {
+    if (EMBED_MODE) document.documentElement.dataset.embed = '1'
+  }, [])
+
   // Drop the selection when the selected element no longer exists (deleted,
   // undone, floor switched…).
   useEffect(() => {
@@ -84,8 +93,11 @@ export default function App() {
     if (!exists) setSelectedId(null)
   }, [project, selectedId])
 
-  // Persist to localStorage (debounced via rAF).
+  // Persist to localStorage (debounced via rAF). Skipped in file-backed mode
+  // (?project=) — there the file is the source of truth, so we must not clobber
+  // the user's standalone autosave slot with an embedded project.
   useEffect(() => {
+    if (PROJECT_URL) return
     const id = requestAnimationFrame(() => {
       try { localStorage.setItem(STORAGE_KEY, serialize(project)) } catch { /* quota */ }
     })

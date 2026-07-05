@@ -34,7 +34,7 @@ const KNOWN_FURNITURE_TYPES = new Set([
   'counter', 'sink', 'stove', 'fridge', 'island', 'dining-table', 'chair', 'dishwasher',
   'toilet', 'bathtub', 'shower', 'vanity', 'washing-machine',
   'desk', 'office-chair', 'filing-cabinet',
-  'stairs', 'balcony', 'railing',
+  'stairs', 'stairs-l', 'stairs-u', 'stairs-spiral', 'stairs-split', 'balcony', 'railing',
   'plant', 'tree', 'pool', 'bbq', 'bench', 'outdoor-table', 'box',
 ])
 

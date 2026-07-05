@@ -52,7 +52,13 @@ export const FURNITURE = {
   'office-chair':   { label: 'Office Chair', category: OFFICE, width: 0.6, depth: 0.6, height: 1.0, color: '#2f2f2f', symbol: 'office-chair', model: 'office-chair' },
   'filing-cabinet': { label: 'Filing Cabinet', category: OFFICE, width: 0.5, depth: 0.6, height: 1.3, color: '#555', symbol: 'cabinet', model: 'plain-box' },
   // Stairs & balcony (structural pieces that behave like furniture)
-  'stairs':         { label: 'Stairs', category: STAIRS, width: 1.0, depth: 3.0, height: 3.0, color: '#b09a7a', symbol: 'stairs', model: 'stairs' },
+  // Footprints are sized so a 3.0 m rise yields code-compliant steps
+  // (riser ~0.18 m ≤ 0.20 m, tread ~0.25 m ≥ 0.24 m, pitch ~30-37°).
+  'stairs':         { label: 'Straight Stairs', category: STAIRS, width: 1.0, depth: 4.2, height: 3.0, color: '#b09a7a', symbol: 'stairs', model: 'stairs' },
+  'stairs-l':       { label: 'L-Shaped Stairs', category: STAIRS, width: 3.2, depth: 3.2, height: 3.0, color: '#b09a7a', symbol: 'stairs-l', model: 'stairs-l' },
+  'stairs-u':       { label: 'U-Shaped Stairs', category: STAIRS, width: 2.2, depth: 3.0, height: 3.0, color: '#b09a7a', symbol: 'stairs-u', model: 'stairs-u' },
+  'stairs-spiral':  { label: 'Spiral Stairs', category: STAIRS, width: 2.0, depth: 2.0, height: 3.0, color: '#b09a7a', symbol: 'stairs-spiral', model: 'stairs-spiral' },
+  'stairs-split':   { label: 'Split Stairs', category: STAIRS, width: 3.0, depth: 5.0, height: 3.0, color: '#b09a7a', symbol: 'stairs-split', model: 'stairs-split' },
   'balcony':        { label: 'Balcony', category: STAIRS, width: 3.0, depth: 1.5, height: 1.05, color: '#c5c9cf', symbol: 'balcony', model: 'balcony' },
   'railing':        { label: 'Railing', category: STAIRS, width: 2.0, depth: 0.1, height: 1.05, color: '#8b8f96', symbol: 'railing', model: 'railing' },
   // Outdoor & garden

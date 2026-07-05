@@ -13,6 +13,23 @@ description: Create and validate House Designer project JSON files (`.house.json
 - **Import in-app**: Top bar → "Open…" loads a `.house.json` (or any `.json`) file.
 - **Export in-app**: Top bar → "Save JSON" downloads `serialize(project)` = pretty 2-space JSON.
 
+## Editing houses in the `houses/` folder (the primary workflow)
+
+Real house designs are git-tracked files in **`houses/*.house.json`** at the repo root. This is the source of truth shared by the human (editing in the app) and you (editing the file). **When asked to modify a house, edit its file in `houses/` directly** — don't regenerate from scratch.
+
+- **Live sync**: the app is opened by the host (e.g. garbanzo-ai) at `…/house-designer/?project=/micro-apps/houses/<name>.house.json&save=1&embed=1`. In this mode the app loads the file at boot, saves the user's manual edits back to it (via the dev server's `PUT /micro-apps/__save`), and — crucially — **auto-reloads when you edit the file on disk**. So your file edits appear in the user's view within a second, and remain undoable in-app (Ctrl+Z).
+- **Workflow for a change request** ("add a window to the living room", "añade un baño"):
+  1. Read the target `houses/<name>.house.json`.
+  2. Apply the **minimal** edit to the JSON (add/modify the specific walls/furniture/openings). Preserve existing ids; use fresh unique ids for new elements. Follow the data model + geometry rules below.
+  3. Save the file (pretty 2-space JSON, `version: 1`).
+  4. **Gate — always run both before finishing** (fix everything they flag):
+     ```bash
+     node .claude/skills/house-design/validate.mjs houses/<name>.house.json
+     node .claude/skills/house-design/lint-layout.mjs houses/<name>.house.json
+     ```
+  5. Mirror the user's language (English/Spanish) in your explanation of what you changed.
+- Never weaken linter thresholds to make a layout "pass" — fix the geometry instead.
+
 ## Coordinate system
 
 - All geometry is in **meters** (m), resolution-independent. The 2D editor maps meters → pixels via a zoom scale.
@@ -166,7 +183,11 @@ Prefer using the catalog defaults — only override `x, y, rotation` (and option
 | `desk` | Desk | 1.4 | 0.7 | 0.75 | #7a5a44 | Office |
 | `office-chair` | Office Chair | 0.6 | 0.6 | 1.0 | #2f2f2f | Office |
 | `filing-cabinet` | Filing Cabinet | 0.5 | 0.6 | 1.3 | #555 | Office |
-| `stairs` | Stairs | 1.0 | 3.0 | 3.0 | #b09a7a | Stairs & Balcony |
+| `stairs` | Straight Stairs | 1.0 | 4.2 | 3.0 | #b09a7a | Stairs & Balcony |
+| `stairs-l` | L-Shaped Stairs | 3.2 | 3.2 | 3.0 | #b09a7a | Stairs & Balcony |
+| `stairs-u` | U-Shaped Stairs | 2.2 | 3.0 | 3.0 | #b09a7a | Stairs & Balcony |
+| `stairs-spiral` | Spiral Stairs | 2.0 | 2.0 | 3.0 | #b09a7a | Stairs & Balcony |
+| `stairs-split` | Split Stairs | 3.0 | 5.0 | 3.0 | #b09a7a | Stairs & Balcony |
 | `balcony` | Balcony | 3.0 | 1.5 | 1.05 | #c5c9cf | Stairs & Balcony |
 | `railing` | Railing | 2.0 | 0.1 | 1.05 | #8b8f96 | Stairs & Balcony |
 | `plant` | Plant | 0.5 | 0.5 | 1.0 | #4a7c4a | Outdoor & Garden |
@@ -179,6 +200,8 @@ Prefer using the catalog defaults — only override `x, y, rotation` (and option
 
 Placement notes for the structural pieces:
 - `stairs`: rises along its local −y direction (the 2D arrow points "up"); set `height` to the next floor's `level` delta (default 3.0) and place the foot end (+y) where the run starts.
+- `stairs-l` / `stairs-u` / `stairs-spiral` / `stairs-split`: turning/circular variants that fit a squarer footprint. All ascend from the +y (front) foot to `height` at the top; the 2D arrow traces the travel path. `stairs-l` makes a quarter turn (foot at +y, exits toward +x), `stairs-u` a half turn (two parallel runs, both feet at +y), `stairs-spiral` winds anticlockwise around a central post, `stairs-split` climbs a wide central run to a landing then branches left+right. Set `height` to the floor `level` delta as with `stairs`.
+- **Step geometry follows building code** at the default footprints: risers ≈0.18 m (≤0.20 m), treads ≈0.25 m (≥0.24 m), pitch ~30-37°. The step *count* is fixed by `height` (≈`height`/0.18 risers), so **shrinking the footprint below its default makes treads shallower and the stair steeper** — keep the width/depth at or above the catalog defaults for realistic, code-compliant steps. A straight run needs ~1.4 m of depth per metre of rise (hence the deep 4.2 m default for a 3 m rise); the L/U/split variants fold that run into a smaller footprint via landings.
 - `balcony`: the −y edge is the open side that attaches to the house — place its center `depth/2` outside the exterior wall, rotated so the open edge faces the wall. Add a `door` opening on that wall for access. `height` is the railing height.
 - `railing`: a straight guard segment (posts + handrail) for terraces or stair edges.
 

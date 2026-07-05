@@ -459,3 +459,11 @@ kbd {
   -webkit-user-select: none;
   pointer-events: none;
 }
+/* ---- Chromeless embed mode (?embed=1, set as <html data-embed="1">) --------
+   Used when the app is hosted inside another app (e.g. garbanzo-ai) with a
+   file-backed project (?project=...&save=1). Persistence is owned by the host/
+   file, so file-picker, JSON download and Google Drive sync are hidden. */
+html[data-embed='1'] .brand { display: none; }
+html[data-embed='1'] .btn-open-file,
+html[data-embed='1'] .btn-save-json { display: none; }
+html[data-embed='1'] .props-tabs .tab-cloud { display: none; }

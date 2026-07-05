@@ -18,6 +18,7 @@ const SYMBOL_FINISH = {
   seat: 'fabric', bed: 'fabric', rug: 'fabric',
   table: 'wood', chair: 'wood', bench: 'wood', piano: 'wood', cabinet: 'wood',
   nightstand: 'wood', bookshelf: 'wood', 'tv-stand': 'wood', stairs: 'wood',
+  'stairs-l': 'wood', 'stairs-u': 'wood', 'stairs-spiral': 'wood', 'stairs-split': 'wood',
 }
 
 export function FurnitureGraphic({ type, width: w, depth: d, color }) {
@@ -75,6 +76,42 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
       <rect x={-hx} y={-hy} width={w} height={d} rx={clamp0(foot.rx)} fill={`url(#${sheenId})`} />
     </>
   )
+
+  // ---- shared stair helpers (used by the straight/L/U/spiral/split symbols) --
+  // A single wood-finished stair-flight rectangle. Treads are added separately.
+  const flightRect = (x, y, rw, rh, key) => (
+    <g key={key}>
+      <rect x={x} y={y} width={rw} height={rh} fill={color} stroke={dark} strokeWidth={sw * 0.6} />
+      <rect x={x} y={y} width={rw} height={rh} fill={`url(#${texId})`} />
+      <rect x={x} y={y} width={rw} height={rh} fill={`url(#${sheenId})`} />
+    </g>
+  )
+  // Evenly spaced tread lines across a flight. axis 'h' → horizontal lines (a
+  // flight that runs along y); 'v' → vertical lines (a flight that runs along x).
+  const treadLines = (x, y, rw, rh, axis, key) => {
+    const runLen = axis === 'h' ? rh : rw
+    const n = Math.max(3, Math.round(runLen / 0.27))
+    return <g key={key}>
+      {Array.from({ length: n - 1 }).map((_, i) => {
+        const t = (i + 1) / n
+        return axis === 'h'
+          ? <line key={i} x1={x} y1={y + rh * t} x2={x + rw} y2={y + rh * t} stroke={dark} strokeWidth={sw * 0.5} opacity={0.7} />
+          : <line key={i} x1={x + rw * t} y1={y} x2={x + rw * t} y2={y + rh} stroke={dark} strokeWidth={sw * 0.5} opacity={0.7} />
+      })}
+    </g>
+  }
+  // Small arrowhead at (x,y) pointing up/down/left/right — marks the "up" way.
+  const arrowHead = (x, y, dir, key) => {
+    const a = 0.11
+    const d2 = {
+      up: `M ${x - a} ${y + a} L ${x} ${y} L ${x + a} ${y + a}`,
+      down: `M ${x - a} ${y - a} L ${x} ${y} L ${x + a} ${y - a}`,
+      left: `M ${x + a} ${y - a} L ${x} ${y} L ${x + a} ${y + a}`,
+      right: `M ${x - a} ${y - a} L ${x} ${y} L ${x - a} ${y + a}`,
+    }[dir]
+    return <path key={key} d={d2} fill="none" stroke={dark} strokeWidth={sw * 1.2}
+      strokeLinejoin="round" strokeLinecap="round" />
+  }
 
   switch (symbol) {
     case 'seat': {
@@ -341,6 +378,103 @@ export function FurnitureGraphic({ type, width: w, depth: d, color }) {
         <line x1={0} y1={hy - 0.15} x2={0} y2={-hy + 0.25} stroke={dark} strokeWidth={sw * 1.2} />
         <path d={`M ${-0.09} ${-hy + 0.34} L 0 ${-hy + 0.18} L ${0.09} ${-hy + 0.34}`}
           fill="none" stroke={dark} strokeWidth={sw * 1.2} />
+      </>
+    }
+
+    case 'stairs-l': {
+      // quarter-turn: lower flight (left column) → corner landing → upper flight
+      // (top row). Rises toward -y then turns toward +x.
+      const fw = Math.min(w, d) * 0.34
+      const lowY = -hy + fw           // lower flight starts below the landing
+      const upX = -hx + fw            // upper flight starts right of the landing
+      const cxLow = -hx + fw / 2
+      const cyUp = -hy + fw / 2
+      return <>
+        {texDefs}
+        {flightRect(-hx, lowY, fw, hy - lowY, 'low')}
+        {flightRect(-hx, -hy, fw, fw, 'land')}
+        {flightRect(upX, -hy, hx - upX, fw, 'up')}
+        {treadLines(-hx, lowY, fw, hy - lowY, 'h', 'tl')}
+        {treadLines(upX, -hy, hx - upX, fw, 'v', 'tu')}
+        <path d={`M ${cxLow} ${hy - 0.15} L ${cxLow} ${cyUp} L ${hx - 0.22} ${cyUp}`}
+          fill="none" stroke={dark} strokeWidth={sw * 1.1} strokeLinejoin="round" opacity={0.9} />
+        {arrowHead(hx - 0.2, cyUp, 'right', 'ah')}
+      </>
+    }
+
+    case 'stairs-u': {
+      // half-turn: up the left flight, across a top landing, down the right
+      // flight (which keeps rising in elevation). Two parallel runs + a well.
+      const fw = w * 0.42
+      const rightX = hx - fw
+      const landY = -hy + fw
+      const cxL = -hx + fw / 2
+      const cxR = hx - fw / 2
+      return <>
+        {texDefs}
+        {flightRect(-hx, landY, fw, hy - landY, 'left')}
+        {flightRect(rightX, landY, fw, hy - landY, 'right')}
+        {flightRect(-hx, -hy, w, fw, 'land')}
+        {treadLines(-hx, landY, fw, hy - landY, 'h', 'tl')}
+        {treadLines(rightX, landY, fw, hy - landY, 'h', 'tr')}
+        <path d={`M ${cxL} ${hy - 0.15} L ${cxL} ${-hy + fw / 2} L ${cxR} ${-hy + fw / 2} L ${cxR} ${hy - 0.3}`}
+          fill="none" stroke={dark} strokeWidth={sw * 1.1} strokeLinejoin="round" opacity={0.9} />
+        {arrowHead(cxR, hy - 0.16, 'down', 'ah')}
+      </>
+    }
+
+    case 'stairs-spiral': {
+      // circular run of wedge treads around a central newel post
+      const R = Math.min(w, d) / 2
+      const treads = 12
+      // rotation arrow: an arc with a triangular head at its leading tip
+      const ar = R * 0.62, a0 = -Math.PI * 0.85, a1 = Math.PI * 0.35
+      const [x0, y0] = [Math.cos(a0) * ar, Math.sin(a0) * ar]
+      const [x1, y1] = [Math.cos(a1) * ar, Math.sin(a1) * ar]
+      const tx = -Math.sin(a1), ty = Math.cos(a1) // tangent (ascending direction)
+      const nx = Math.cos(a1), ny = Math.sin(a1)   // outward normal
+      const ah = 0.12
+      return <>
+        {texDefs}
+        <circle cx={0} cy={0} r={R} fill={color} stroke={dark} strokeWidth={sw * 0.6} />
+        <circle cx={0} cy={0} r={R} fill={`url(#${texId})`} />
+        <circle cx={0} cy={0} r={R} fill={`url(#${sheenId})`} />
+        {Array.from({ length: treads }).map((_, i) => {
+          const a = (i / treads) * Math.PI * 2
+          return <line key={i} x1={0} y1={0} x2={Math.cos(a) * R} y2={Math.sin(a) * R}
+            stroke={dark} strokeWidth={sw * 0.5} opacity={0.6} />
+        })}
+        <path d={`M ${x0} ${y0} A ${ar} ${ar} 0 1 1 ${x1} ${y1}`}
+          fill="none" stroke={dark} strokeWidth={sw * 1.1} opacity={0.9} />
+        <path d={`M ${x1 - tx * ah + nx * ah * 0.6} ${y1 - ty * ah + ny * ah * 0.6}
+          L ${x1} ${y1} L ${x1 - tx * ah - nx * ah * 0.6} ${y1 - ty * ah - ny * ah * 0.6}`}
+          fill="none" stroke={dark} strokeWidth={sw * 1.1} strokeLinejoin="round" strokeLinecap="round" />
+        <circle cx={0} cy={0} r={R * 0.15} fill={dark} />
+      </>
+    }
+
+    case 'stairs-split': {
+      // bifurcated: a wide central flight up to a landing that splits into two
+      // outer flights rising left and right toward the upper floor.
+      const fw = w * 0.3            // outer flight width
+      const wc = w * 0.5            // central flight width
+      const lb = Math.min(0.5, d * 0.12) // half-depth of the landing band
+      const cxL = -hx + fw / 2
+      const cxR = hx - fw / 2
+      return <>
+        {texDefs}
+        {flightRect(-wc / 2, lb, wc, hy - lb, 'center')}
+        {flightRect(-hx, -lb, w, 2 * lb, 'land')}
+        {flightRect(-hx, -hy, fw, hy - lb, 'ul')}
+        {flightRect(hx - fw, -hy, fw, hy - lb, 'ur')}
+        {treadLines(-wc / 2, lb, wc, hy - lb, 'h', 'tc')}
+        {treadLines(-hx, -hy, fw, hy - lb, 'h', 'tul')}
+        {treadLines(hx - fw, -hy, fw, hy - lb, 'h', 'tur')}
+        <path d={`M 0 ${hy - 0.15} L 0 0`} fill="none" stroke={dark} strokeWidth={sw * 1.1} opacity={0.9} />
+        <path d={`M 0 0 L ${cxL} 0 L ${cxL} ${-hy + 0.3}`} fill="none" stroke={dark} strokeWidth={sw} strokeLinejoin="round" opacity={0.85} />
+        <path d={`M 0 0 L ${cxR} 0 L ${cxR} ${-hy + 0.3}`} fill="none" stroke={dark} strokeWidth={sw} strokeLinejoin="round" opacity={0.85} />
+        {arrowHead(cxL, -hy + 0.16, 'up', 'al')}
+        {arrowHead(cxR, -hy + 0.16, 'up', 'ar')}
       </>
     }
 

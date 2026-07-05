@@ -44,8 +44,8 @@ export default function TopBar({
           ))}
         </select>
         <button onClick={onResetView} title={t('topbar.reset_view_title')}>{t('topbar.reset_view')}</button>
-        <button onClick={onImport} title={t('topbar.open_title')}>{t('topbar.open')}</button>
-        <button onClick={onExportJson} title={t('topbar.save_json_title')}>{t('topbar.save_json')}</button>
+        <button className="btn-open-file" onClick={onImport} title={t('topbar.open_title')}>{t('topbar.open')}</button>
+        <button className="btn-save-json" onClick={onExportJson} title={t('topbar.save_json_title')}>{t('topbar.save_json')}</button>
         <button onClick={onExportPng} title={t('topbar.png_title')}>{t('topbar.png')}</button>
         <button onClick={onHelp} title={t('topbar.help_title')}>?</button>
       </div>

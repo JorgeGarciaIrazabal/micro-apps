@@ -72,6 +72,93 @@ try {
   })
 } catch {}
 
+// --- houses/ data files: save endpoint + change watcher -----------------------
+// Apps loaded with ?project=/micro-apps/houses/<f>.house.json&save=1 PUT their
+// state back through /micro-apps/__save and refetch on `houses-changed` SSE
+// events (agent edits the same files directly on disk).
+const HOUSES_DIR = path.join(ROOT, 'houses')
+const selfWrites = new Map() // rel path -> body of last /__save write (echo suppression)
+
+function housesRelPath(raw) {
+  // Accept "houses/name.house.json" (optionally prefixed with BASE); reject the rest.
+  if (typeof raw !== 'string') return null
+  let rel = raw.startsWith(BASE) ? raw.slice(BASE.length) : raw.replace(/^\//, '')
+  if (!/^houses\/[\w][\w .()-]*\.house\.json$/.test(rel)) return null
+  const abs = path.resolve(ROOT, rel)
+  if (!abs.startsWith(HOUSES_DIR + path.sep)) return null
+  return rel
+}
+
+function handleSave(req, res, query) {
+  const rel = housesRelPath(query.get('path'))
+  if (!rel) { res.writeHead(400, { 'content-type': 'application/json' }); return res.end('{"ok":false,"error":"invalid path"}') }
+  const chunks = []
+  let size = 0
+  req.on('data', (c) => {
+    size += c.length
+    if (size > 5 * 1024 * 1024) { req.destroy(); return }
+    chunks.push(c)
+  })
+  req.on('end', () => {
+    const body = Buffer.concat(chunks).toString('utf8')
+    try { JSON.parse(body) } catch {
+      res.writeHead(400, { 'content-type': 'application/json' })
+      return res.end('{"ok":false,"error":"body is not valid JSON"}')
+    }
+    try {
+      fs.mkdirSync(HOUSES_DIR, { recursive: true })
+      const abs = path.join(ROOT, rel)
+      const tmp = abs + '.tmp'
+      fs.writeFileSync(tmp, body)
+      fs.renameSync(tmp, abs)
+      selfWrites.set(rel, body)
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end('{"ok":true}')
+    } catch (e) {
+      res.writeHead(500, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ ok: false, error: e.message }))
+    }
+  })
+}
+
+function handleHousesList(res) {
+  let files = []
+  try {
+    files = fs.readdirSync(HOUSES_DIR)
+      .filter((f) => f.endsWith('.house.json'))
+      .map((f) => {
+        const st = fs.statSync(path.join(HOUSES_DIR, f))
+        return { path: `houses/${f}`, name: f.replace(/\.house\.json$/, ''), size: st.size, modified: st.mtimeMs }
+      })
+  } catch {}
+  res.writeHead(200, { 'content-type': 'application/json' })
+  res.end(JSON.stringify({ houses: files }))
+}
+
+// Watch houses/ and notify SSE listeners (debounced per file; skip our own
+// /__save echoes so an app saving its project doesn't reload itself).
+const housesDebounce = new Map() // rel path -> timer
+try {
+  fs.mkdirSync(HOUSES_DIR, { recursive: true })
+  fs.watch(HOUSES_DIR, (_ev, filename) => {
+    if (!filename || !filename.endsWith('.house.json')) return
+    const rel = `houses/${filename}`
+    clearTimeout(housesDebounce.get(rel))
+    housesDebounce.set(rel, setTimeout(() => {
+      housesDebounce.delete(rel)
+      // Echo suppression by CONTENT: only skip if the file still holds exactly
+      // what /__save last wrote — an agent edit moments after a user save must
+      // still broadcast.
+      try {
+        if (selfWrites.get(rel) === fs.readFileSync(path.join(ROOT, rel), 'utf8')) return
+      } catch {}
+      for (const res of landingWatchers) {
+        res.write(`event: houses-changed\ndata: ${JSON.stringify({ path: rel })}\n\n`)
+      }
+    }, 150))
+  })
+} catch {}
+
 const LANDING_SNIPPET = `
 <script>(function(){
   const es = new EventSource('/micro-apps/__hmr');
@@ -113,7 +200,16 @@ function proxy(req, res, a) {
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0]
+  const reqUrl = new URL(req.url, 'http://localhost')
+  const urlPath = reqUrl.pathname
+
+  // houses/ data endpoints
+  if (urlPath === path.posix.join(BASE, '__save') && (req.method === 'PUT' || req.method === 'POST')) {
+    return handleSave(req, res, reqUrl.searchParams)
+  }
+  if (urlPath === path.posix.join(BASE, '__houses') && req.method === 'GET') {
+    return handleHousesList(res)
+  }
 
   // landing page (matches prod URL structure)
   if (urlPath === '/') {

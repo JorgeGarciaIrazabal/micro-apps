@@ -27,46 +27,31 @@ jobs:
         with:
           node-version: 22
 
-      # Build clara-summer-camps-madrid
-      - name: Install & build clara-summer-camps-madrid
-        working-directory: apps/clara-summer-camps-madrid
+      # Build every app under apps/ (dynamic — no per-app steps to maintain)
+      - name: Install & build all apps
         run: |
-          npm ci
-          npm run build
+          set -e
+          for app in apps/*/; do
+            name=$(basename "$app")
+            echo "=========================================="
+            echo "Building $name"
+            echo "=========================================="
+            (cd "$app" && npm ci && npm run build)
+          done
 
-      # Build andalucia-scouting-2026
-      - name: Install & build andalucia-scouting-2026
-        working-directory: apps/andalucia-scouting-2026
-        run: |
-          npm ci
-          npm run build
-
-      # Build casa-prefab-madrid
-      - name: Install & build casa-prefab-madrid
-        working-directory: apps/casa-prefab-madrid
-        run: |
-          npm ci
-          npm run build
-      # Build house-designer
-      - name: Install & build house-designer
-        working-directory: apps/house-designer
-        run: |
-          npm ci
-          npm run build
-
-
-      # Assemble final site
+      # Assemble final site: landing page assets + registry + houses + each app's dist
       - name: Assemble site
         run: |
-          mkdir -p _site/clara-summer-camps-madrid
-          mkdir -p _site/andalucia-scouting-2026
-          mkdir -p _site/casa-prefab-madrid
-          mkdir -p _site/house-designer
-          cp index.html _site/
-          cp -r apps/clara-summer-camps-madrid/dist/* _site/clara-summer-camps-madrid/
-          cp -r apps/andalucia-scouting-2026/dist/* _site/andalucia-scouting-2026/
-          cp -r apps/casa-prefab-madrid/dist/* _site/casa-prefab-madrid/
-          cp -r apps/house-designer/dist/* _site/house-designer/
+          set -e
+          mkdir -p _site
+          cp index.html style.css script.js _site/
+          [ -f registry.json ] && cp registry.json _site/ || true
+          [ -d houses ] && cp -r houses _site/houses || true
+          for app in apps/*/; do
+            name=$(basename "$app")
+            mkdir -p "_site/$name"
+            cp -r "$app/dist/." "_site/$name/"
+          done
 
       - uses: actions/upload-pages-artifact@v3
         with:

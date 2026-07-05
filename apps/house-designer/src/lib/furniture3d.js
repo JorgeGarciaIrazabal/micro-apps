@@ -284,6 +284,83 @@ export function buildFurniture3D(type, w, d, h, color) {
       }
       break
     }
+    case 'stairs-l': {
+      // quarter-turn: lower flight rises 0→h/2 toward -z, corner landing, then
+      // upper flight rises h/2→h toward +x.
+      const fw = Math.min(w, d) * 0.34
+      const n = Math.max(3, Math.round((h / 2) / 0.18))
+      const cxLow = -w / 2 + fw / 2
+      const run1 = (d - fw) / n
+      for (let i = 0; i < n; i++) {
+        const y = (h / 2) * (i + 1) / n
+        box(fw, y, run1, cxLow, y / 2, d / 2 - run1 * (i + 0.5), color, { finish: 'wood' })
+      }
+      box(fw, h / 2, fw, cxLow, h / 4, -d / 2 + fw / 2, color, { finish: 'wood' }) // corner landing
+      const run2 = (w - fw) / n
+      const czUp = -d / 2 + fw / 2
+      for (let i = 0; i < n; i++) {
+        const y = h / 2 + (h / 2) * (i + 1) / n
+        box(run2, y, fw, -w / 2 + fw + run2 * (i + 0.5), y / 2, czUp, color, { finish: 'wood' })
+      }
+      break
+    }
+    case 'stairs-u': {
+      // half-turn: left flight rises 0→h/2 toward -z, landing across the back,
+      // right flight rises h/2→h coming back toward +z.
+      const fw = w * 0.42
+      const n = Math.max(3, Math.round((h / 2) / 0.18))
+      const run = (d - fw) / n
+      const cxL = -w / 2 + fw / 2, cxR = w / 2 - fw / 2
+      for (let i = 0; i < n; i++) {
+        const y = (h / 2) * (i + 1) / n
+        box(fw, y, run, cxL, y / 2, d / 2 - run * (i + 0.5), color, { finish: 'wood' })
+      }
+      box(w, h / 2, fw, 0, h / 4, -d / 2 + fw / 2, color, { finish: 'wood' }) // back landing
+      for (let i = 0; i < n; i++) {
+        const y = h / 2 + (h / 2) * (i + 1) / n
+        box(fw, y, run, cxR, y / 2, -d / 2 + fw + run * (i + 0.5), color, { finish: 'wood' })
+      }
+      break
+    }
+    case 'stairs-spiral': {
+      // wedge treads winding up a central newel post
+      const R = Math.min(w, d) / 2
+      const post = R * 0.14
+      const treads = Math.max(8, Math.round(h / 0.18))
+      const totalAngle = Math.PI * 3 // 1.5 turns
+      const thick = Math.min(0.09, (h / treads) * 0.55)
+      cyl(post, h, 0, h / 2, 0, shade(color, 0.7), { finish: 'metal' })
+      for (let i = 0; i < treads; i++) {
+        const y = h * (i + 1) / treads
+        const ang = (totalAngle * i) / treads
+        const t = box(R * 0.92, thick, R * 0.5, 0, 0, 0, color, { finish: 'wood' })
+        t.position.set(Math.cos(ang) * R * 0.46, y - thick / 2, Math.sin(ang) * R * 0.46)
+        t.rotation.y = -ang
+      }
+      break
+    }
+    case 'stairs-split': {
+      // wide central flight rises 0→h/2 to a landing, then splits into two outer
+      // flights rising h/2→h toward the back (-z).
+      const fw = w * 0.3, wc = w * 0.5
+      const n = Math.max(3, Math.round((h / 2) / 0.18))
+      const lb = Math.min(0.5, d * 0.12)
+      const runC = (d / 2 - lb) / n
+      for (let i = 0; i < n; i++) {
+        const y = (h / 2) * (i + 1) / n
+        box(wc, y, runC, 0, y / 2, d / 2 - runC * (i + 0.5), color, { finish: 'wood' })
+      }
+      box(w, h / 2, 2 * lb, 0, h / 4, 0, color, { finish: 'wood' }) // split landing
+      const runO = (d / 2 - lb) / n
+      for (const sx of [-1, 1]) {
+        const cx = sx * (w / 2 - fw / 2)
+        for (let i = 0; i < n; i++) {
+          const y = h / 2 + (h / 2) * (i + 1) / n
+          box(fw, y, runO, cx, y / 2, -lb - runO * (i + 0.5), color, { finish: 'wood' })
+        }
+      }
+      break
+    }
     case 'balcony': {
       // platform + railing on 3 sides; -z edge open (attaches to the house)
       const slabH = 0.12

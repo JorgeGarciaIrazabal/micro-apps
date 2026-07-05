@@ -4,7 +4,7 @@ const browser = await chromium.launch()
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } })
 const errs = []
 page.on('pageerror', (e) => errs.push('PAGEERROR: ' + (e.stack || e)))
-await page.goto('http://127.0.0.1:5182/micro-apps/planner5d/')
+await page.goto('http://127.0.0.1:5182/micro-apps/house-designer/')
 await page.waitForTimeout(400)
 
 const probe = async (label) => {

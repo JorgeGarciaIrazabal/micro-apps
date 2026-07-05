@@ -1,0 +1,488 @@
+{
+  "version": 1,
+  "name": "Modern Apartment",
+  "settings": {
+    "units": "m",
+    "wallHeight": 2.7,
+    "wallThickness": 0.15,
+    "gridSize": 0.1
+  },
+  "floors": [
+    {
+      "id": "floor_mr72c5mg_9",
+      "name": "Main",
+      "level": 0,
+      "walls": [
+        {
+          "id": "w-nqcjzwb",
+          "x1": 0,
+          "y1": 0,
+          "x2": 10,
+          "y2": 0,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-w9vn8bv",
+          "x1": 10,
+          "y1": 0,
+          "x2": 10,
+          "y2": 10,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-gwirc19",
+          "x1": 0,
+          "y1": 10,
+          "x2": 10,
+          "y2": 10,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-cqcjc3u",
+          "x1": 0,
+          "y1": 0,
+          "x2": 0,
+          "y2": 10,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-yyyu1eo",
+          "x1": 4,
+          "y1": 0,
+          "x2": 4,
+          "y2": 10,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-6ektjzi",
+          "x1": 0,
+          "y1": 6,
+          "x2": 4,
+          "y2": 6,
+          "thickness": 0.15
+        },
+        {
+          "id": "w-ui1ugoo",
+          "x1": 0,
+          "y1": 3.5,
+          "x2": 4,
+          "y2": 3.5,
+          "thickness": 0.15
+        }
+      ],
+      "furniture": [
+        {
+          "id": "f-re64ctm",
+          "type": "counter",
+          "x": 6.5,
+          "y": 9.615,
+          "rotation": 3.141592653589793,
+          "width": 2,
+          "depth": 0.6,
+          "height": 0.9,
+          "color": "#cfcfcf",
+          "label": "Counter"
+        },
+        {
+          "id": "f-p0si8we",
+          "type": "sink",
+          "x": 8,
+          "y": 9.615,
+          "rotation": 3.141592653589793,
+          "width": 0.8,
+          "depth": 0.6,
+          "height": 0.9,
+          "color": "#9aa6b2",
+          "label": "Sink"
+        },
+        {
+          "id": "f-451lcjj",
+          "type": "stove",
+          "x": 8.8,
+          "y": 9.615,
+          "rotation": 3.141592653589793,
+          "width": 0.75,
+          "depth": 0.6,
+          "height": 0.9,
+          "color": "#2f2f2f",
+          "label": "Stove"
+        },
+        {
+          "id": "f-qebeq1e",
+          "type": "fridge",
+          "x": 9.55,
+          "y": 9.565000000000001,
+          "rotation": 3.141592653589793,
+          "width": 0.7,
+          "depth": 0.7,
+          "height": 1.9,
+          "color": "#dfe3e6",
+          "label": "Fridge"
+        },
+        {
+          "id": "f-tls1kj0",
+          "type": "island",
+          "x": 6.5,
+          "y": 7.05,
+          "rotation": 0,
+          "width": 1.8,
+          "depth": 0.9,
+          "height": 0.9,
+          "color": "#b8b0a4",
+          "label": "Island"
+        },
+        {
+          "id": "f-3kkvfpq",
+          "type": "dining-table",
+          "x": 6.3999999999999995,
+          "y": 4.95,
+          "rotation": 0,
+          "width": 1.6,
+          "depth": 0.9,
+          "height": 0.75,
+          "color": "#8a5a3b",
+          "label": "Dining Table"
+        },
+        {
+          "id": "f-8zgh74k",
+          "type": "chair",
+          "x": 6.4,
+          "y": 5.7,
+          "rotation": 3.141592653589793,
+          "width": 0.45,
+          "depth": 0.45,
+          "height": 0.9,
+          "color": "#6b4e3d",
+          "label": "Chair"
+        },
+        {
+          "id": "f-pqaspmh",
+          "type": "chair",
+          "x": 6.4,
+          "y": 4.2,
+          "rotation": 0,
+          "width": 0.45,
+          "depth": 0.45,
+          "height": 0.9,
+          "color": "#6b4e3d",
+          "label": "Chair"
+        },
+        {
+          "id": "f-rglyjcf",
+          "type": "chair",
+          "x": 5.25,
+          "y": 4.95,
+          "rotation": 1.5707963267948966,
+          "width": 0.45,
+          "depth": 0.45,
+          "height": 0.9,
+          "color": "#6b4e3d",
+          "label": "Chair"
+        },
+        {
+          "id": "f-ibu4hun",
+          "type": "chair",
+          "x": 7.55,
+          "y": 4.95,
+          "rotation": -1.5707963267948966,
+          "width": 0.45,
+          "depth": 0.45,
+          "height": 0.9,
+          "color": "#6b4e3d",
+          "label": "Chair"
+        },
+        {
+          "id": "f-3na8kkv",
+          "type": "sofa",
+          "x": 9.465000000000002,
+          "y": 2.5,
+          "rotation": 1.5707963267948966,
+          "width": 2,
+          "depth": 0.9,
+          "height": 0.85,
+          "color": "#6c8e9f",
+          "label": "Sofa"
+        },
+        {
+          "id": "f-tobo98r",
+          "type": "tv-stand",
+          "x": 4.31,
+          "y": 2.5,
+          "rotation": -1.5707963267948966,
+          "width": 1.6,
+          "depth": 0.45,
+          "height": 0.55,
+          "color": "#3a3a3a",
+          "label": "TV Stand"
+        },
+        {
+          "id": "f-e7421ky",
+          "type": "coffee-table",
+          "x": 6.8875,
+          "y": 2.5,
+          "rotation": 0,
+          "width": 1.1,
+          "depth": 0.6,
+          "height": 0.45,
+          "color": "#8a5a3b",
+          "label": "Coffee Table"
+        },
+        {
+          "id": "f-cpi1q7z",
+          "type": "rug",
+          "x": 7,
+          "y": 2.5,
+          "rotation": 0,
+          "width": 2.4,
+          "depth": 1.6,
+          "height": 0.05,
+          "color": "#b8845a",
+          "label": "Rug"
+        },
+        {
+          "id": "f-o1ssoiw",
+          "type": "plant",
+          "x": 5.5,
+          "y": 8.5,
+          "rotation": 0,
+          "width": 0.5,
+          "depth": 0.5,
+          "height": 1,
+          "color": "#4a7c4a",
+          "label": "Plant"
+        },
+        {
+          "id": "f-ddhy5mk",
+          "type": "bed-double",
+          "x": 1.9999999999999998,
+          "y": 8.865,
+          "rotation": 3.141592653589793,
+          "width": 1.6,
+          "depth": 2.1,
+          "height": 0.55,
+          "color": "#9aa7c2",
+          "label": "Double Bed"
+        },
+        {
+          "id": "f-b8omony",
+          "type": "nightstand",
+          "x": 0.9,
+          "y": 9.715000000000002,
+          "rotation": 3.141592653589793,
+          "width": 0.5,
+          "depth": 0.4,
+          "height": 0.55,
+          "color": "#8a5a3b",
+          "label": "Nightstand"
+        },
+        {
+          "id": "f-jc3ntxn",
+          "type": "nightstand",
+          "x": 3.1,
+          "y": 9.715000000000002,
+          "rotation": 3.141592653589793,
+          "width": 0.5,
+          "depth": 0.4,
+          "height": 0.55,
+          "color": "#8a5a3b",
+          "label": "Nightstand"
+        },
+        {
+          "id": "f-rkqw4md",
+          "type": "wardrobe",
+          "x": 0.385,
+          "y": 8,
+          "rotation": -1.5707963267948966,
+          "width": 1.5,
+          "depth": 0.6,
+          "height": 2.1,
+          "color": "#6b4e3d",
+          "label": "Wardrobe"
+        },
+        {
+          "id": "f-x8aml2a",
+          "type": "bed-single",
+          "x": 2.2,
+          "y": 2.415,
+          "rotation": 3.141592653589793,
+          "width": 0.9,
+          "depth": 2,
+          "height": 0.55,
+          "color": "#9aa7c2",
+          "label": "Single Bed"
+        },
+        {
+          "id": "f-mx09n82",
+          "type": "nightstand",
+          "x": 3,
+          "y": 3.215,
+          "rotation": 3.141592653589793,
+          "width": 0.5,
+          "depth": 0.4,
+          "height": 0.55,
+          "color": "#8a5a3b",
+          "label": "Nightstand"
+        },
+        {
+          "id": "f-opej1iu",
+          "type": "wardrobe",
+          "x": 0.385,
+          "y": 1.5,
+          "rotation": -1.5707963267948966,
+          "width": 1.5,
+          "depth": 0.6,
+          "height": 2.1,
+          "color": "#6b4e3d",
+          "label": "Wardrobe"
+        },
+        {
+          "id": "f-4uyvle6",
+          "type": "toilet",
+          "x": 1,
+          "y": 3.91,
+          "rotation": 0,
+          "width": 0.4,
+          "depth": 0.65,
+          "height": 0.8,
+          "color": "#eef2f5",
+          "label": "Toilet"
+        },
+        {
+          "id": "f-7i7eb7a",
+          "type": "vanity",
+          "x": 1.6,
+          "y": 5.665,
+          "rotation": 3.141592653589793,
+          "width": 0.9,
+          "depth": 0.5,
+          "height": 0.85,
+          "color": "#d9cfc4",
+          "label": "Vanity"
+        },
+        {
+          "id": "f-mfve720",
+          "type": "shower",
+          "x": 0.535,
+          "y": 5.47,
+          "rotation": -1.5707963267948966,
+          "width": 0.9,
+          "depth": 0.9,
+          "height": 2,
+          "color": "#cfe0e8",
+          "label": "Shower"
+        }
+      ],
+      "openings": [
+        {
+          "id": "o-yt3y6fw",
+          "type": "door",
+          "style": "swing",
+          "wallId": "w-nqcjzwb",
+          "offset": 7,
+          "width": 0.9,
+          "height": 2.1,
+          "sill": 0,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-9nnzmmw",
+          "type": "door",
+          "style": "swing",
+          "wallId": "w-yyyu1eo",
+          "offset": 7.6,
+          "width": 0.9,
+          "height": 2.1,
+          "sill": 0,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-wqwbasq",
+          "type": "door",
+          "style": "swing",
+          "wallId": "w-yyyu1eo",
+          "offset": 5.2,
+          "width": 0.9,
+          "height": 2.1,
+          "sill": 0,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-dnpv4aj",
+          "type": "door",
+          "style": "swing",
+          "wallId": "w-yyyu1eo",
+          "offset": 1.75,
+          "width": 0.9,
+          "height": 2.1,
+          "sill": 0,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-u6l9kp7",
+          "type": "window",
+          "style": "swing",
+          "wallId": "w-nqcjzwb",
+          "offset": 7,
+          "width": 2.5,
+          "height": 1.1,
+          "sill": 0.9,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-45zj68g",
+          "type": "window",
+          "style": "swing",
+          "wallId": "w-w9vn8bv",
+          "offset": 7,
+          "width": 1.5,
+          "height": 1.1,
+          "sill": 0.9,
+          "hinge": 0,
+          "side": 1
+        },
+        {
+          "id": "o-e8xb3d9",
+          "type": "window",
+          "style": "swing",
+          "wallId": "w-gwirc19",
+          "offset": 2,
+          "width": 1.5,
+          "height": 1.1,
+          "sill": 0.9,
+          "hinge": 0,
+          "side": -1
+        },
+        {
+          "id": "o-wecvtlq",
+          "type": "window",
+          "style": "swing",
+          "wallId": "w-cqcjc3u",
+          "offset": 4.75,
+          "width": 0.8,
+          "height": 1.1,
+          "sill": 0.9,
+          "hinge": 0,
+          "side": -1
+        },
+        {
+          "id": "o-clithx9",
+          "type": "window",
+          "style": "swing",
+          "wallId": "w-cqcjc3u",
+          "offset": 1.75,
+          "width": 1.5,
+          "height": 1.1,
+          "sill": 0.9,
+          "hinge": 0,
+          "side": -1
+        }
+      ]
+    }
+  ],
+  "activeFloorId": "floor_mr72c5mg_9"
+}

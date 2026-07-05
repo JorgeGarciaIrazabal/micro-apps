@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "apps": [
+    {
+      "id": "house-designer",
+      "name": "House Designer",
+      "icon": "🏠",
+      "path": "house-designer/",
+      "description": "2D/3D floor-plan editor. Projects are single .house.json documents.",
+      "projectParam": true,
+      "dataDir": "houses/",
+      "dataExt": ".house.json",
+      "suggestions": [
+        "Add a window to the living room",
+        "Añade un baño en la planta de arriba",
+        "Make the kitchen bigger",
+        "Cambia el color del sofá a azul"
+      ]
+    },
+    {
+      "id": "andalucia-scouting-2026",
+      "name": "Andalucía Scouting 2026",
+      "icon": "🧭",
+      "path": "andalucia-scouting-2026/",
+      "description": "Trip scouting guide for Andalucía 2026."
+    },
+    {
+      "id": "casa-prefab-madrid",
+      "name": "Casa Prefab Madrid",
+      "icon": "🏡",
+      "path": "casa-prefab-madrid/",
+      "description": "Prefab house comparison for Madrid."
+    },
+    {
+      "id": "clara-summer-camps-madrid",
+      "name": "Clara Summer Camps",
+      "icon": "⛺",
+      "path": "clara-summer-camps-madrid/",
+      "description": "Summer camp comparison in Madrid."
+    }
+  ]
+}
