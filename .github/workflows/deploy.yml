@@ -18,12 +18,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
 
@@ -53,7 +53,7 @@ jobs:
             cp -r "$app/dist/." "_site/$name/"
           done
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -64,42 +64,42 @@ jobs:
       name: github-pages
       url: ${{ steps.attempt5.outputs.page_url || steps.attempt4.outputs.page_url || steps.attempt3.outputs.page_url || steps.attempt2.outputs.page_url || steps.attempt1.outputs.page_url }}
     steps:
-      # actions/deploy-pages@v4 intermittently fails with "Deployment failed, try
+      # actions/deploy-pages@v5 intermittently fails with "Deployment failed, try
       # again later" on the GitHub Pages backend's first status poll — a transient
       # infra glitch that succeeds on retry. So we attempt up to 5 times, each
       # gated on the previous attempt's outcome, with a short backoff between
       # attempts to let the Pages backend recover.
       - id: attempt1
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Backoff 2
         if: steps.attempt1.outcome == 'failure'
         run: sleep 20
       - id: attempt2
         if: steps.attempt1.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Backoff 3
         if: steps.attempt2.outcome == 'failure'
         run: sleep 30
       - id: attempt3
         if: steps.attempt2.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Backoff 4
         if: steps.attempt3.outcome == 'failure'
         run: sleep 30
       - id: attempt4
         if: steps.attempt3.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Backoff 5
         if: steps.attempt4.outcome == 'failure'
         run: sleep 30
       - id: attempt5
         if: steps.attempt4.outcome == 'failure'
         continue-on-error: true
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Fail if every attempt failed
         if: steps.attempt1.outcome == 'failure' && steps.attempt2.outcome == 'failure' && steps.attempt3.outcome == 'failure' && steps.attempt4.outcome == 'failure' && steps.attempt5.outcome == 'failure'
         run: |
