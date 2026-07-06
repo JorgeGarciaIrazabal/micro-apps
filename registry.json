@@ -37,6 +37,13 @@
       "icon": "⛺",
       "path": "clara-summer-camps-madrid/",
       "description": "Summer camp comparison in Madrid."
+    },
+    {
+      "id": "madrid-fire-planner",
+      "name": "Madrid FIRE Planner",
+      "icon": "🔥",
+      "path": "madrid-fire-planner/",
+      "description": "Interactive early-retirement budget what-if planner for a family relocating to Madrid."
     }
   ]
 }

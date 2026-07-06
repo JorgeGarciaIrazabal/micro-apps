@@ -432,6 +432,19 @@ function initModalsAndCarousels() {
         '<b>Realtime 3D Walkthrough:</b> Switch view modes from 2D blueprints to 3D Orbit camera or FPS walk-through, built directly using WebGL.',
         '<b>JSON import/export:</b> Save design configurations locally or export layout files to share with builders.'
       ]
+    },
+    'madrid-fire-planner': {
+      title: 'Madrid FIRE Planner — What-If Budget',
+      icon: '🔥',
+      tech: ['React 19', 'Live Capital Engine', 'Capitalised-Cost Model', 'EUR/USD Toggle', 'Vite'],
+      overview: 'An interactive early-retirement (FIRE) planner for a family of 4 relocating to the eastern Madrid commuter belt (Alcalá de Henares) to live off investments with no earned income. Define your starting capital, then add, remove, or edit any expense to see in real time whether you reach the goal — and exactly what each choice costs your nest-egg.',
+      features: [
+        '<b>Starting-capital → goal engine:</b> Enter what you have; the app shows the tax-adjusted capital target, the gap, and a live "% of goal funded" bar.',
+        '<b>Capitalised cost per line:</b> Every recurring expense reveals what it truly ties up in your nest-egg (annual ÷ safe-withdrawal-rate) — a €250/mo line is really ~€86k of capital.',
+        '<b>Give-up / add what-ifs:</b> Toggle any expense off, edit amounts, or add custom lines; the "Biggest levers" panel ranks what closes the gap fastest.',
+        '<b>Fact-checked defaults:</b> Values verified against 2026 sources (idealista, Numbeo, INE, Adeslas/Sanitas, CRTM, Agencia Tributaria); switch to the original xlsx figures to compare.',
+        '<b>Faithful financial model:</b> Perpetual costs are capitalised at an adjustable SWR (default 3.5%), children funded as a finite lump through age 18, home/car/furniture bought outright.'
+      ]
     }
   };
 

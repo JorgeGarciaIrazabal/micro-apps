@@ -1,0 +1,4 @@
+# Plaintext personal budget data — NEVER commit. Only the encrypted blob
+# (src/encrypted-data.json) is committed & shipped.
+src/data.plain.js
+.env
