@@ -1,6 +1,7 @@
 {
   "type": "module",
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "duckduckgo-websearch": "^2.0.3"
   }
 }

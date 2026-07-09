@@ -14,3 +14,4 @@ apps/*/emails_confirmations/
 /.worktrees/
 tools/playwright-check/test-results/
 tools/playwright-check/report/
+.playwright-mcp/

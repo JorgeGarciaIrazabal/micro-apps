@@ -445,6 +445,19 @@ function initModalsAndCarousels() {
         '<b>Fact-checked defaults:</b> Values verified against 2026 sources (idealista, Numbeo, INE, Adeslas/Sanitas, CRTM, Agencia Tributaria); switch to the original xlsx figures to compare.',
         '<b>Faithful financial model:</b> Perpetual costs are capitalised at an adjustable SWR (default 3.5%), children funded as a finite lump through age 18, home/car/furniture bought outright.'
       ]
+    },
+    'spain-retirement-scouting': {
+      title: 'Spain Retirement Scouting — Sub-€50k Plots',
+      icon: '🇪🇸',
+      tech: ['React 19', 'Bilingual UI (ES/EN)', 'Wealth-Tax Analysis', 'Legal Citation Engine', 'Vite'],
+      overview: 'A bilingual research dashboard comparing five affordable, family-oriented suburbs in Spain where urbanized building plots cost around or under €50,000. Covers Madrid Province, a Guadalajara border option, and a Granada value pick — with a full Wealth Tax analysis, the 50/50 spousal split strategy, and the critical pre-move asset-planning rule.',
+      features: [
+        '<b>Bilingual Switcher:</b> Full Spanish/English toggle for all content — text, tables, legal citations, and recommendations.',
+        '<b>Wealth Tax by Region:</b> Per-region breakdown (Madrid €0, Andalucía €0, Castilla-La Mancha ~€122/mo) with cited legal articles and DGT rulings.',
+        '<b>50/50 Split Strategy:</b> Detailed explanation of how joint-account asset attribution works under Spanish law, plus the essential pre-move rule to avoid Gift Tax.',
+        '<b>Side-by-Side Comparison:</b> Financial table comparing plot cost, ITP, build cost, monthly expenses, and Wealth Tax across all five locations.',
+        '<b>Location Detail Cards:</b> Each suburb has schools, shopping malls, sports/padel facilities, and commute times with direct links.'
+      ]
     }
   };
 

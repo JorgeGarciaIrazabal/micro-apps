@@ -44,6 +44,13 @@
       "icon": "🔥",
       "path": "madrid-fire-planner/",
       "description": "Interactive early-retirement budget what-if planner for a family relocating to Madrid."
+    },
+    {
+      "id": "spain-retirement-scouting",
+      "name": "Spain Retirement Scouting",
+      "icon": "🇪🇸",
+      "path": "spain-retirement-scouting/",
+      "description": "Bilingual sub-€50k plot comparison across Madrid, Guadalajara & Granada with wealth-tax analysis."
     }
   ]
 }
