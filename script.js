@@ -171,7 +171,6 @@ function initTerminal() {
 
   const APPS_LIST = [
     { id: 'camp', name: 'clara-summer-camps-madrid', label: '🏕️ Campamentos de Verano Clara' },
-    { id: 'scout', name: 'andalucia-scouting-2026', label: '🏠 Andalucía Real Estate Scouting' },
     { id: 'prefab', name: 'casa-prefab-madrid', label: '🏗️ Modular House Cost Calculator' },
     { id: 'designer', name: 'house-designer', label: '📐 3D House & Floor Plan Designer' }
   ];
@@ -397,17 +396,6 @@ function initModalsAndCarousels() {
         '<b>Priority Registration Alerts:</b> Uptime tracking of the Madrid municipal registration window (Apr 23 - Apr 29).',
         '<b>Flexible Sorting Matrix:</b> Instantly sort options by weekly pricing, walking distance (Peñagrande center base), or age eligibility.',
         '<b>Strategic Priority Advisor:</b> Built-in decision matrices highlighting optimal camp sequences to balance budget and dates.'
-      ]
-    },
-    'andalucia-scouting-2026': {
-      title: 'Andalucía Real Estate Scouting 2026',
-      icon: '🏠',
-      tech: ['React', 'Dynamic Map Routing', 'Bilingual UI (ES/EN)', 'Structured Checklists', 'Responsive CSS'],
-      overview: 'Detailed travel planner and real-estate evaluation dashboard for a 4-day intensive scouting trip (Aug 12–15, 2026) across Málaga, Granada, and Sevilla.',
-      features: [
-        '<b>Bilingual Switcher:</b> Quick localized Spanish/English layouts for shared agent and buyer workflows.',
-        '<b>Town Comparison Sheet:</b> Side-by-side assessment of climate comfort, parking logistics, local school access, and neighborhood pros/cons.',
-        '<b>Comprehensive Buying Analysis:</b> Curated checklists tailored for three development types: Obra Nueva (new builds), Resale, and Suelo Urbano (buildable plots under LISTA 2022).'
       ]
     },
     'casa-prefab-madrid': {
