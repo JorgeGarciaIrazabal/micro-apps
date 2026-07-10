@@ -10,7 +10,7 @@ Skills live in `.claude/skills/` (symlinked into `.opencode/skills/`). Match the
 
 - **`house-design`** — the House Designer app's `.house.json` data model, geometry rules, furniture catalog, and the **required** `validate.mjs` + `lint-layout.mjs` gates. Use for ANY house/floor-plan edit. Houses are git-tracked files in `houses/`; edit them minimally and preserve ids.
 - **`microapp-embed`** — the file-backed embedding contract (`?project=&save=1&embed=1`, `/__save`, `houses-changed` SSE, `registry.json`). Use when integrating an app into a host or making an app embed-compliant.
-- **`microapp-new`** — scaffold a new app (app dir + landing card + `script.js` details + `registry.json`; CI is dynamic, no workflow edit).
+- **`microapp-new`** — scaffold a new app (app dir + landing card + `script.js` details + `registry.json`; CI is dynamic, no workflow edit). **Design the app for its stated purpose before coding — do not read or copy the UX/layout of any existing app under `apps/`.**
 - **`microapp-publish`** — build/validate/commit/push → GitHub Pages CI. Publishing is outward-facing; confirm first.
 - **`microapp-revert`** — safely discard/roll back changes.
 
@@ -30,4 +30,5 @@ Skills live in `.claude/skills/` (symlinked into `.opencode/skills/`). Match the
 - Never weaken the layout linter to make a design "pass" — fix the geometry.
 - Never edit `.github/workflows/deploy.yml` for a new app — CI builds `apps/*` dynamically.
 - Never stage the built root copies (`house-designer/`, `casa-prefab-madrid/`, etc.) — they're gitignored build output.
+- **When creating a new app, do not read or copy the UX, layout, or visual design of any existing app under `apps/`.** Design for the app's stated purpose. You may reference other apps only for mechanical wiring (package.json versions, vite base path, landing card HTML structure) — never for App.jsx, App.css, or data structure.
 - Keep edits minimal and scoped to the request.
