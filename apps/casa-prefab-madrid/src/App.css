@@ -393,6 +393,11 @@ body {
   position: absolute; top: 0.7rem; right: 0.7rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.04em; background: var(--accent); color: white; padding: 3px 7px; border-radius: 6px;
 }
+.opt-badge {
+  position: absolute; top: 0.7rem; right: 0.7rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; background: #e2e8f0; color: var(--muted); padding: 3px 7px; border-radius: 6px;
+}
+.visit-card.optional { opacity: 0.78; }
 .visit-head { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.2rem; }
 .visit-icon { font-size: 1.8rem; }
 .visit-name { font-size: 0.98rem; font-weight: 800; color: var(--ink); line-height: 1.2; margin-bottom: 0.15rem; padding-right: 5rem; }

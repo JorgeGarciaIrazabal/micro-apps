@@ -505,8 +505,9 @@ function Visitar() {
         <p className="alicante-sub">Alicante y Valencia concentran la mayor densidad de fábricas de casas modulares de España. Merecen un día de viaje.</p>
         <div className="visit-grid">
           {visitPlacesAlicante.map((p) => (
-            <article key={p.name} className={`visit-card ${p.recommended ? 'recommended' : ''}`} style={{ borderTopColor: '#16a34a' }}>
+            <article key={p.name} className={`visit-card ${p.recommended ? 'recommended' : ''} ${p.optional ? 'optional' : ''}`} style={{ borderTopColor: '#16a34a' }}>
               {p.recommended && <span className="rec-badge">★ Recomendado</span>}
+              {p.optional && <span className="opt-badge">Opcional</span>}
               <div className="visit-head">
                 <span className="visit-icon">{p.icon}</span>
                 <div>
