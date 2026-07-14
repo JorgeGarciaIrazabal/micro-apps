@@ -1,384 +1,688 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import {
-  meta, techs, techProsCons, companies, includedItems, excludedItems,
-  costByQuality, costBreakdownPercents, extraCosts, pitfalls, sources, questionsToAsk,
-  visitPlaces, visitPlacesAlicante, ferias, feriasAlicante,
+  models,
+  techs,
+  companies,
 } from './data'
 
-const NAV = [
-  { id: 'calc', label: 'Calculadora' },
-  { id: 'techs', label: 'Tecnologías' },
-  { id: 'empresas', label: 'Empresas' },
-  { id: 'visitar', label: 'Visitar' },
-  { id: 'alcance', label: 'Alcance' },
-  { id: 'trampas', label: 'Trampas' },
-  { id: 'preguntas', label: 'Preguntas' },
+const fmt = (n) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Math.round(n))
+const fmtNum = (n) => new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 }).format(n)
+
+const TECH_COLORS = {
+  hormigon: '#ea580c',
+  madera: '#16a34a',
+  lsf: '#0284c7',
+  sip: '#6366f1',
+  mod3d: '#9333ea',
+  contenedor: '#64748b',
+}
+
+const TABS = [
+  { id: 'overview', label: 'Resumen' },
+  { id: 'models', label: 'Comparar modelos' },
+  { id: 'tech', label: 'Comparar tecnologías' },
+  { id: 'companies', label: 'Comparar fabricantes' },
+  { id: 'visits', label: 'Lugares para visitar' },
 ]
 
-const fmt = (n) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(Math.round(n))
-const fmtK = (n) => `${Math.round(n / 1000)}k`
+const techName = (id) => techs.find((t) => t.id === id)?.name.split(' (')[0] ?? id
+const techLongName = (id) => techs.find((t) => t.id === id)?.name ?? id
 
-const BREAKDOWN_COLORS = {
-  cimentacion:   '#c2410c',
-  estructura:    '#0f766e',
-  cubierta:      '#7c3aed',
-  carpinteria:   '#0369a1',
-  revestimientos:'#ca8a04',
-  instalaciones: '#db2777',
-  acabados:      '#16a34a',
-  direccion:     '#64748b',
+const energyScore = (rating) => {
+  const map = { 'a+': 1, a: 2, b: 3, c: 4, d: 5, e: 6, f: 7, g: 8 }
+  return map[rating?.toLowerCase()] ?? 4
 }
-const BREAKDOWN_LABELS = {
-  cimentacion:   'Cimentación',
-  estructura:    'Estructura + envolvente',
-  cubierta:      'Cubierta',
-  carpinteria:   'Carpintería exterior',
-  revestimientos:'Revestimientos',
-  instalaciones: 'Instalaciones',
-  acabados:      'Acabados interiores',
-  direccion:     'Proyecto + dirección',
+
+const energyLabel = (score) => {
+  const map = { 1: 'A+', 2: 'A', 3: 'B', 4: 'C', 5: 'D', 6: 'E', 7: 'F', 8: 'G' }
+  return map[Math.round(score)] ?? '—'
 }
 
 export default function App() {
-  const [active, setActive] = useState('calc')
-  const sectionRefs = useRef({})
+  const [tab, setTab] = useState('overview')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [minSize, setMinSize] = useState('')
+  const [maxSize, setMaxSize] = useState('')
+  const [bedrooms, setBedrooms] = useState('all')
+  const [selectedTech, setSelectedTech] = useState('all')
+  const [sort, setSort] = useState({ col: 'pricePerM2', dir: 'asc' })
 
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive(e.target.id)
-        })
-      },
-      { rootMargin: '-30% 0px -60% 0px' }
-    )
-    NAV.forEach((n) => {
-      const el = document.getElementById(n.id)
-      if (el) obs.observe(el)
-    })
-    return () => obs.disconnect()
-  }, [])
+  const allPrices = useMemo(() => models.map((m) => m.price), [])
+  const allSizes = useMemo(() => models.map((m) => m.size), [])
+  const [priceScopeFilter, setPriceScopeFilter] = useState('all')
+  const minP = Math.min(...allPrices)
+  const maxP = Math.max(...allPrices)
+  const minS = Math.min(...allSizes)
+  const maxS = Math.max(...allSizes)
 
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const bedroomOptions = useMemo(
+    () => Array.from(new Set(models.map((m) => m.bedrooms).filter(Boolean))).sort((a, b) => a - b),
+    []
+  )
+  const techOptions = useMemo(() => Array.from(new Set(models.map((m) => m.tech))), [])
+
+  const getPriceScope = (scope = '') => {
+    const s = scope.toLowerCase()
+    if (s.includes('llave en mano')) return 'llave_en_mano'
+    if (s.includes('casa móvil') || s.includes('casa movil') || s.includes('solo casa') || s.includes('kit básico') || s.includes('kit basico') || s.includes('casa + montaje')) return 'solo_casa'
+    return 'otro'
   }
 
-  return (
-    <div className="page">
-      <nav className="float-nav">
-        <span className="nav-logo" onClick={() => scrollTo('hero')}>🏠</span>
-        {NAV.map((n) => (
-          <button key={n.id} className={`nav-pill ${active === n.id ? 'active' : ''}`} onClick={() => scrollTo(n.id)}>
-            {n.label}
-          </button>
-        ))}
-      </nav>
+  const filtered = useMemo(() => {
+    const min = minPrice === '' ? -Infinity : Number(minPrice)
+    const max = maxPrice === '' ? Infinity : Number(maxPrice)
+    const minSz = minSize === '' ? -Infinity : Number(minSize)
+    const maxSz = maxSize === '' ? Infinity : Number(maxSize)
+    return models.filter((m) => {
+      const okPrice = m.price >= min && m.price <= max
+      const okSize = m.size >= minSz && m.size <= maxSz
+      const okBed = bedrooms === 'all' || String(m.bedrooms) === bedrooms
+      const okTech = selectedTech === 'all' || m.tech === selectedTech
+      const okScope = priceScopeFilter === 'all' || getPriceScope(m.deliveryScope) === priceScopeFilter
+      return okPrice && okSize && okBed && okTech && okScope
+    })
+  }, [minPrice, maxPrice, minSize, maxSize, bedrooms, selectedTech, priceScopeFilter])
 
-      <Hero scrollTo={scrollTo} />
-      <Calculator sectionRef={(el) => (sectionRefs.current.calc = el)} />
-      <TechSpectrum />
-      <Companies />
-      <Visitar />
-      <Scope />
-      <Pitfalls />
-      <Questions />
-      <Sources />
-      <footer className="page-footer">
-        <p>Investigación recopilada junio 2026 · Precios orientativos — verifica cada presupuesto con la empresa</p>
-      </footer>
-    </div>
-  )
-}
+  const withMetrics = useMemo(() => filtered.map((m) => ({ ...m, pricePerM2: m.price / m.size })), [filtered])
 
-/* ===== HERO ===== */
-function Hero({ scrollTo }) {
-  return (
-    <section className="hero" id="hero">
-      <div className="hero-bg" />
-      <div className="hero-content">
-        <span className="hero-tag">Investigación interactiva · Junio 2026</span>
-        <h1 className="hero-title">
-          Casa Prefabricada<br />
-          <span className="hero-title-accent">en Madrid</span>
-        </h1>
-        <p className="hero-sub">
-          Tecnología, empresas y costes reales para una vivienda de 100–120 m²,<br />
-          llave en mano, sin contar el terreno.
-        </p>
-        <div className="hero-stats">
-          <div className="stat-pill">
-            <span className="stat-num">200k</span>
-            <span className="stat-label">objetivo ideal</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-pill">
-            <span className="stat-num">300k</span>
-            <span className="stat-label">presupuesto máx</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-pill">
-            <span className="stat-num">110</span>
-            <span className="stat-label">m² objetivo</span>
-          </div>
+  const sortedRows = useMemo(() => {
+    const { col, dir } = sort
+    return [...withMetrics].sort((a, b) => {
+      const va = a[col]
+      const vb = b[col]
+      if (typeof va === 'string') {
+        return dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va)
+      }
+      return dir === 'asc' ? va - vb : vb - va
+    })
+  }, [withMetrics, sort])
+
+  const kpis = useMemo(() => {
+    const n = filtered.length
+    if (n === 0) return null
+    const avgPricePerM2 = filtered.reduce((s, m) => s + m.price / m.size, 0) / n
+    const prices = filtered.map((m) => m.price)
+    const sizes = filtered.map((m) => m.size)
+    const times = filtered.map((m) => m.buildTimeMonths)
+    const avgBuildTime = times.reduce((s, t) => s + t, 0) / n
+    return {
+      totalModels: n,
+      avgPricePerM2,
+      minPrice: Math.min(...prices),
+      maxPrice: Math.max(...prices),
+      avgSize: sizes.reduce((s, z) => s + z, 0) / n,
+      avgBuildTime,
+      minBuildTime: Math.min(...times),
+      maxBuildTime: Math.max(...times),
+    }
+  }, [filtered])
+
+  const histogram = useMemo(() => {
+    const bins = [
+      { label: '<100k', min: 0, max: 100000 },
+      { label: '100–150k', min: 100000, max: 150000 },
+      { label: '150–200k', min: 150000, max: 200000 },
+      { label: '200–250k', min: 200000, max: 250000 },
+      { label: '250–300k', min: 250000, max: 300000 },
+      { label: '>300k', min: 300000, max: Infinity },
+    ]
+    return bins.map((b) => ({
+      ...b,
+      count: filtered.filter((m) => m.price >= b.min && m.price < b.max).length,
+    }))
+  }, [filtered])
+
+  const maxBin = useMemo(() => Math.max(1, ...histogram.map((b) => b.count)), [histogram])
+
+  const techSummary = useMemo(() => {
+    const byTech = {}
+    for (const t of techs) {
+      const rows = models.filter((m) => m.tech === t.id)
+      const count = rows.length
+      const avgP = count ? rows.reduce((s, m) => s + m.price / m.size, 0) / count : 0
+      const avgSize = count ? rows.reduce((s, m) => s + m.size, 0) / count : 0
+      const avgTime = count ? rows.reduce((s, m) => s + m.buildTimeMonths, 0) / count : 0
+      byTech[t.id] = {
+        ...t,
+        count,
+        avgPricePerM2: avgP,
+        avgSize,
+        avgTime,
+        minPricePerM2: count ? Math.min(...rows.map((m) => m.price / m.size)) : 0,
+        maxPricePerM2: count ? Math.max(...rows.map((m) => m.price / m.size)) : 0,
+      }
+    }
+    return byTech
+  }, [])
+
+  const companySummary = useMemo(() => {
+    return companies.map((c) => {
+      const rows = models.filter((m) => m.manufacturer === c.name)
+      const count = rows.length
+      const avgP = count ? rows.reduce((s, m) => s + m.price / m.size, 0) / count : c.avgPricePerM2
+      const avgSize = count ? rows.reduce((s, m) => s + m.size, 0) / count : 0
+      const avgTime = count ? rows.reduce((s, m) => s + m.buildTimeMonths, 0) / count : 0
+      return { ...c, modelCount: count, avgPricePerM2: avgP || c.avgPricePerM2, avgSize, avgTime }
+    })
+  }, [])
+
+  const handleSort = (col) => {
+    setSort((prev) => ({ col, dir: prev.col === col && prev.dir === 'asc' ? 'desc' : 'asc' }))
+  }
+
+  const sortIcon = (col) => (sort.col === col ? (sort.dir === 'asc' ? '▲' : '▼') : '↕')
+
+  const resetFilters = () => {
+    setMinPrice('')
+    setMaxPrice('')
+    setMinSize('')
+    setMaxSize('')
+    setBedrooms('all')
+    setSelectedTech('all')
+    setPriceScopeFilter('all')
+    setSort({ col: 'pricePerM2', dir: 'asc' })
+  }
+
+  const Filters = () => (
+    <section className="filter-bar card">
+      <div className="filter-group">
+        <label>Precio total</label>
+        <div className="range-inputs">
+          <input type="number" placeholder={minP} min={0} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} />
+          <span>–</span>
+          <input type="number" placeholder={maxP} min={0} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
         </div>
-        <button className="hero-cta" onClick={() => scrollTo('calc')}>Calcular mi presupuesto →</button>
       </div>
+      <div className="filter-group">
+        <label>Tamaño (m²)</label>
+        <div className="range-inputs">
+          <input type="number" placeholder={minS} min={0} value={minSize} onChange={(e) => setMinSize(e.target.value)} />
+          <span>–</span>
+          <input type="number" placeholder={maxS} min={0} value={maxSize} onChange={(e) => setMaxSize(e.target.value)} />
+        </div>
+      </div>
+      <div className="filter-group">
+        <label>Dormitorios</label>
+        <select value={bedrooms} onChange={(e) => setBedrooms(e.target.value)}>
+          <option value="all">Todos</option>
+          {bedroomOptions.map((b) => (
+            <option key={b} value={b}>{b}</option>
+          ))}
+        </select>
+      </div>
+      <div className="filter-group">
+        <label>Tecnología</label>
+        <select value={selectedTech} onChange={(e) => setSelectedTech(e.target.value)}>
+          <option value="all">Todas</option>
+          {techOptions.map((t) => (
+            <option key={t} value={t}>{techName(t)}</option>
+          ))}
+        </select>
+      </div>
+      <div className="filter-group">
+        <label>Ámbito del precio</label>
+        <select value={priceScopeFilter} onChange={(e) => setPriceScopeFilter(e.target.value)}>
+          <option value="all">Todos</option>
+          <option value="llave_en_mano">Llave en mano</option>
+          <option value="solo_casa">Solo casa / estructura / kit</option>
+        </select>
+      </div>
+      <button className="reset-btn" onClick={resetFilters}>
+        Restablecer
+      </button>
     </section>
   )
-}
 
-/* ===== CALCULATOR ===== */
-function Calculator() {
-  const [size, setSize] = useState(110)
-  const [techId, setTechId] = useState('sip')
-  const [quality, setQuality] = useState('low')
-  const [acometidas, setAcometidas] = useState(true)
-  const [earthworks, setEarthworks] = useState(false)
-  const [extras, setExtras] = useState({ fencing: false, porch: true, photovoltaic: false })
-  const [animatedTotal, setAnimatedTotal] = useState(0)
-
-  const tech = techs.find((t) => t.id === techId)
-
-  const calc = useMemo(() => {
-    const pPerM2 = quality === 'low' ? tech.pricePerM2[0] : tech.pricePerM2[1]
-    const pem = pPerM2 * size
-    const structParts = Object.entries(costBreakdownPercents).map(([k, pct]) => ({
-      key: k, label: BREAKDOWN_LABELS[k], color: BREAKDOWN_COLORS[k], amount: pem * pct, pct,
-    }))
-    const iva = pem * 0.10
-    const icio = pem * 0.04
-    const licenciaTasa = pem * 0.02
-    const mid = (e) => (e[0] + e[1]) / 2
-    const acomCost = acometidas ? mid(extraCosts.acometidas) : 0
-    const earthCost = earthworks ? mid(extraCosts.earthworks) : 0
-    const altas = mid(extraCosts.altas)
-    const extrasCost = Object.entries(extras).filter(([, v]) => v).reduce((s, [k]) => {
-      const m = { fencing: 'fencing', porch: 'porch', photovoltaic: 'photovoltaic' }
-      return s + mid(extraCosts[m[k]])
-    }, 0)
-    const taxes = iva + icio + licenciaTasa
-    const civilAndExtras = acomCost + earthCost + altas + extrasCost
-    const total = pem + taxes + civilAndExtras
-    return { pPerM2, pem, structParts, iva, icio, licenciaTasa, taxes, acomCost, earthCost, altas, extrasCost, civilAndExtras, total }
-  }, [size, tech, quality, acometidas, earthworks, extras])
-
-  useEffect(() => {
-    const target = calc.total
-    const start = animatedTotal
-    const diff = target - start
-    if (Math.abs(diff) < 1) { setAnimatedTotal(target); return }
-    let raf
-    const duration = 400
-    const t0 = performance.now()
-    const tick = (t) => {
-      const p = Math.min(1, (t - t0) / duration)
-      const eased = 1 - Math.pow(1 - p, 3)
-      setAnimatedTotal(start + diff * eased)
-      if (p < 1) raf = requestAnimationFrame(tick)
+  const overviewKpis = useMemo(() => {
+    const techCovered = techs.length
+    const analyzedCompanies = companies.length
+    const prices = models.map((m) => m.price)
+    const sizes = models.map((m) => m.size)
+    const times = models.map((m) => m.buildTimeMonths)
+    const avgPricePerM2 =
+      models.reduce((s, m) => s + m.price / m.size, 0) / (models.length || 1)
+    const avgEnergy =
+      models.reduce((s, m) => s + energyScore(m.energyRating), 0) /
+      (models.length || 1)
+    return {
+      analyzedCompanies,
+      techCovered,
+      minPrice: Math.min(...prices),
+      maxPrice: Math.max(...prices),
+      minSize: Math.min(...sizes),
+      maxSize: Math.max(...sizes),
+      avgBuildTime: times.reduce((s, t) => s + t, 0) / (times.length || 1),
+      minBuildTime: Math.min(...times),
+      maxBuildTime: Math.max(...times),
+      avgPricePerM2,
+      avgEnergy,
     }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [calc.total])
+  }, [])
 
-  const over = calc.total > meta.budget.max
-  const overIdeal = calc.total > meta.budget.ideal
-  const verdict = over
-    ? { text: `Excede tu máximo en ${fmt(calc.total - meta.budget.max)}`, class: 'over' }
-    : overIdeal
-    ? { text: `${fmt(calc.total - meta.budget.ideal)} por encima del ideal`, class: 'warn' }
-    : { text: `Dentro del ideal con ${fmt(meta.budget.ideal - calc.total)} de margen`, class: 'ok' }
+  const priceByTechnology = useMemo(
+    () =>
+      Object.values(techSummary).sort(
+        (a, b) => (b.avgPricePerM2 || 0) - (a.avgPricePerM2 || 0)
+      ),
+    [techSummary]
+  )
 
-  const totalForBars = Math.max(calc.total, 1)
-  const maxBarScale = 320000
+  const scopeSummary = useMemo(() => {
+    const rows = models.map((m) => ({ ...m, scope: getPriceScope(m.deliveryScope) }))
+    const turnkey = rows.filter((m) => m.scope === 'llave_en_mano')
+    const onlyHouse = rows.filter((m) => m.scope === 'solo_casa')
+    const avg = (arr) =>
+      arr.length ? arr.reduce((s, m) => s + m.price / m.size, 0) / arr.length : 0
+    return {
+      turnkeyCount: turnkey.length,
+      onlyHouseCount: onlyHouse.length,
+      turnkeyAvg: avg(turnkey),
+      onlyHouseAvg: avg(onlyHouse),
+    }
+  }, [])
 
-  return (
-    <section className="section calc-section" id="calc">
-      <SectionHeader num="01" title="Calculadora de presupuesto" sub="Mueve los controles y mira cómo cambia tu coste total, desglosado por partidas." />
+  const rankings = useMemo(() => {
+    const withAvg = Object.values(techSummary)
+      .filter((t) => t.count)
+      .map((t) => ({
+        id: t.id,
+        name: t.name.split(' (')[0],
+        icon: t.icon,
+        color: TECH_COLORS[t.id],
+        avgPricePerM2: t.avgPricePerM2,
+        avgTime: t.avgTime,
+        energyClass: t.energyClass,
+      }))
+    const sortedPrice = [...withAvg].sort((a, b) => a.avgPricePerM2 - b.avgPricePerM2)
+    const sortedTime = [...withAvg].sort((a, b) => a.avgTime - b.avgTime)
+    const sortedEnergy = [...withAvg].sort(
+      (a, b) => energyScore(a.energyClass[0]) - energyScore(b.energyClass[0])
+    )
+    return {
+      mostAffordable: sortedPrice[0] || null,
+      fastest: sortedTime[0] || null,
+      mostEfficient: sortedEnergy[0] || null,
+    }
+  }, [techSummary])
 
-      <div className="calc-layout">
-        {/* LEFT: CONTROLS */}
-        <div className="calc-controls">
-          <div className="ctrl">
-            <label>Superficie</label>
-            <div className="slider-row">
-              <input type="range" min="80" max="150" step="5" value={size} onChange={(e) => setSize(+e.target.value)} />
-              <span className="slider-val">{size} m²</span>
-            </div>
-          </div>
+  const Kpis = () => (
+    <section className="kpi-row">
+      <Kpi label="Modelos mostrados" value={kpis ? `${kpis.totalModels}` : '—'} sub="en la selección" />
+      <Kpi label="Precio medio / m²" value={kpis ? `${fmtNum(kpis.avgPricePerM2)} €` : '—'} sub="entre selección" />
+      <Kpi label="Rango de precio" value={kpis ? `${fmt(kpis.minPrice)} – ${fmt(kpis.maxPrice)}` : '—'} sub="precio total del modelo" />
+      <Kpi label="Plazo medio de ejecución" value={kpis ? `${fmtNum(kpis.avgBuildTime)} meses` : '—'} sub={`${kpis?.minBuildTime}–${kpis?.maxBuildTime} meses`} />
+    </section>
+  )
 
-          <div className="ctrl">
-            <label>Tecnología</label>
-            <div className="tech-picker">
-              {techs.map((t) => (
-                <button
-                  key={t.id}
-                  className={`tech-pick ${techId === t.id ? 'active' : ''}`}
-                  style={techId === t.id ? { borderColor: BREAKDOWN_COLORS[t.id] } : {}}
-                  onClick={() => setTechId(t.id)}
-                >
-                  <span className="tech-pick-icon">{t.icon}</span>
-                  <span className="tech-pick-name">{t.name.split(' (')[0].split(' 3D')[0]}</span>
-                </button>
-              ))}
-            </div>
-            <p className="tech-hint">{tech.summary} <strong>{tech.pricePerM2[0]}–{tech.pricePerM2[1]} €/m²</strong> · {tech.timeframe}</p>
-          </div>
+  const technologyCounts = useMemo(() => {
+    const counts = {}
+    for (const t of techs) counts[t.id] = { ...t, count: 0, companies: 0 }
+    for (const m of models) counts[m.tech].count += 1
+    for (const c of companies) {
+      for (const t of c.techOffered) {
+        if (counts[t]) counts[t].companies += 1
+      }
+    }
+    return Object.values(counts).sort((a, b) => b.count - a.count)
+  }, [])
 
-          <div className="ctrl">
-            <label>Calidad de acabados</label>
-            <div className="seg">
-              <button className={quality === 'low' ? 'active' : ''} onClick={() => setQuality('low')}>
-                <span className="seg-label">Media</span>
-                <span className="seg-sub">{tech.pricePerM2[0]} €/m²</span>
-              </button>
-              <button className={quality === 'high' ? 'active' : ''} onClick={() => setQuality('high')}>
-                <span className="seg-label">Alta</span>
-                <span className="seg-sub">{tech.pricePerM2[1]} €/m²</span>
-              </button>
-            </div>
-          </div>
+  const Overview = () => (
+    <>
+      <section className="kpi-row kpi-row--overview">
+        <Kpi
+          label="Empresas analizadas"
+          value={overviewKpis.analyzedCompanies}
+          sub="fabricantes / integradores"
+        />
+        <Kpi
+          label="Modelos en base"
+          value={models.length}
+          sub="referencia de precios"
+        />
+        <Kpi
+          label="Rango de precios"
+          value={`${fmt(overviewKpis.minPrice)} – ${fmt(overviewKpis.maxPrice)}`}
+          sub="precio total en base"
+        />
+        <Kpi
+          label="€/m² medio"
+          value={`${fmtNum(overviewKpis.avgPricePerM2)} €`}
+          sub="media ponderada por modelo"
+        />
+        <Kpi
+          label="Plazos"
+          value={`${overviewKpis.minBuildTime}–${overviewKpis.maxBuildTime} meses`}
+          sub={`media ${fmtNum(overviewKpis.avgBuildTime)} meses`}
+        />
+        <Kpi
+          label="Eficiencia media"
+          value={energyLabel(overviewKpis.avgEnergy)}
+          sub="certificación aproximada"
+        />
+      </section>
 
-          <div className="ctrl">
-            <label>Obra civil y extras</label>
-            <div className="mini-toggles">
-              <MiniToggle label="Acometidas" checked={acometidas} onChange={setAcometidas} />
-              <MiniToggle label="Tierras" checked={earthworks} onChange={setEarthworks} />
-              <MiniToggle label="Valla" checked={extras.fencing} onChange={(v) => setExtras((x) => ({ ...x, fencing: v }))} />
-              <MiniToggle label="Porche" checked={extras.porch} onChange={(v) => setExtras((x) => ({ ...x, porch: v }))} />
-              <MiniToggle label="Solar" checked={extras.photovoltaic} onChange={(v) => setExtras((x) => ({ ...x, photovoltaic: v }))} />
-            </div>
-          </div>
-
-          <div className="quick-info">
-            <p>Plazo típico de ejecución: <strong>6–9 meses</strong></p>
-            <p>IVA aplicable: <strong>10%</strong> (vivienda habitual)</p>
-          </div>
-        </div>
-
-        {/* RIGHT: VISUAL RESULT */}
-        <div className="calc-display">
-          <div className={`total-block ${verdict.class}`}>
-            <span className="total-label">Total estimado · sin terreno</span>
-            <span className="total-amount">{fmt(animatedTotal)}</span>
-            <span className={`total-verdict ${verdict.class}`}>{verdict.text}</span>
-          </div>
-
-          <div className="budget-bar-wrap">
-            <div className="budget-bar-track">
-              <div className="budget-bar-fill" style={{ width: `${Math.min(100, (calc.total / maxBarScale) * 100)}%`, background: over ? 'var(--over)' : overIdeal ? 'var(--accent)' : 'var(--ok)' }} />
-              <div className="budget-marker ideal" style={{ left: `${(meta.budget.ideal / maxBarScale) * 100}%` }} />
-              <div className="budget-marker max" style={{ left: `${(meta.budget.max / maxBarScale) * 100}%` }} />
-            </div>
-            <div className="budget-labels">
-              <span className="bm-ideal">▲ ideal {fmtK(meta.budget.ideal)}€</span>
-              <span className="bm-max">▲ máx {fmtK(meta.budget.max)}€</span>
-            </div>
-          </div>
-
-          <div className="comp-bars">
-            <h4>Composición del coste</h4>
-            {calc.structParts.map((p) => (
-              <div key={p.key} className="comp-bar-row">
-                <span className="comp-bar-label">{p.label}</span>
-                <div className="comp-bar-track">
-                  <div className="comp-bar-fill" style={{ width: `${(p.amount / totalForBars) * 100}%`, background: p.color }} />
+      <section className="charts-row two-col">
+        <div className="card chart-card">
+          <h2>Distribución de tecnologías</h2>
+          <div className="tech-dist-chart">
+            {technologyCounts.map((t) => (
+              <div key={t.id} className="tech-dist-row">
+                <span className="tech-dist-icon">{t.icon}</span>
+                <div className="tech-dist-info">
+                  <span className="tech-dist-name">{t.name.split(' (')[0]}</span>
+                  <span className="tech-dist-sub">
+                    {t.count} modelos · {t.companies} fabricante{t.companies === 1 ? '' : 's'}
+                  </span>
                 </div>
-                <span className="comp-bar-amt">{fmt(p.amount)}</span>
+                <div className="tech-dist-bar-wrap">
+                  <div
+                    className="tech-dist-bar"
+                    style={{
+                      width: `${(t.count / Math.max(...technologyCounts.map((x) => x.count))) * 100}%`,
+                      background: TECH_COLORS[t.id],
+                    }}
+                  />
+                </div>
               </div>
             ))}
-            <div className="comp-bar-row comp-bar-section">
-              <span className="comp-bar-label">IVA + ICIO + licencia</span>
-              <div className="comp-bar-track">
-                <div className="comp-bar-fill" style={{ width: `${(calc.taxes / totalForBars) * 100}%`, background: '#b91c1c' }} />
+          </div>
+        </div>
+
+        <div className="card chart-card">
+          <h2>Panorama de precios por tecnología</h2>
+          <div className="price-range-chart">
+            {priceByTechnology.map((t) => (
+              <div key={t.id} className="price-range-row">
+                <span className="price-range-name">
+                  <span className="tech-dot" style={{ background: TECH_COLORS[t.id] }} />
+                  {t.name.split(' (')[0]}
+                </span>
+                <div className="price-range-bar">
+                  <span
+                    className="price-range-fill"
+                    style={{
+                      left: `${(t.minPricePerM2 / 3000) * 100}%`,
+                      right: `${100 - (t.maxPricePerM2 / 3000) * 100}%`,
+                      background: TECH_COLORS[t.id],
+                    }}
+                  />
+                </div>
+                <span className="price-range-val">
+                  {t.count ? `${Math.round(t.minPricePerM2)}–${Math.round(t.maxPricePerM2)} €` : '—'}
+                </span>
               </div>
-              <span className="comp-bar-amt">{fmt(calc.taxes)}</span>
+            ))}
+          </div>
+          <div className="chart-footnote">
+            Rango de €/m² real por tecnología. Precio medio global:{' '}
+            <strong>{fmtNum(overviewKpis.avgPricePerM2)} €/m²</strong>.
+          </div>
+        </div>
+      </section>
+
+      <section className="charts-row two-col">
+        <div className="card chart-card">
+          <h2>Llave en mano vs. solo casa</h2>
+          <div className="scope-compare">
+            <div className="scope-box">
+              <span className="scope-box-label">Solo casa / estructura / kit</span>
+              <span className="scope-box-value">
+                {scopeSummary.onlyHouseCount ? (
+                  <>
+                    <strong>{fmtNum(scopeSummary.onlyHouseAvg)} €/m²</strong>
+                    <span className="scope-box-sub">media · {scopeSummary.onlyHouseCount} modelos</span>
+                  </>
+                ) : (
+                  <span className="scope-box-sub">Sin datos</span>
+                )}
+              </span>
             </div>
-            <div className="comp-bar-row comp-bar-section">
-              <span className="comp-bar-label">Obra civil + extras</span>
-              <div className="comp-bar-track">
-                <div className="comp-bar-fill" style={{ width: `${(calc.civilAndExtras / totalForBars) * 100}%`, background: '#a16207' }} />
-              </div>
-              <span className="comp-bar-amt">{fmt(calc.civilAndExtras)}</span>
+            <div className="scope-arrow">→</div>
+            <div className="scope-box">
+              <span className="scope-box-label">Llave en mano</span>
+              <span className="scope-box-value">
+                {scopeSummary.turnkeyCount ? (
+                  <>
+                    <strong>{fmtNum(scopeSummary.turnkeyAvg)} €/m²</strong>
+                    <span className="scope-box-sub">media · {scopeSummary.turnkeyCount} modelos</span>
+                  </>
+                ) : (
+                  <span className="scope-box-sub">Sin datos</span>
+                )}
+              </span>
+            </div>
+          </div>
+          <p className="chart-footnote">
+            El salto de precio refleja proyecto, licencia, cimentación, acometidas y acabados.
+          </p>
+        </div>
+
+        <div className="card chart-card">
+          <h2>Comparativa rápida de tecnologías</h2>
+          <div className="ranking-row ranking-row--inner">
+            <div className="ranking-card">
+              <h3>Más asequible</h3>
+              {rankings.mostAffordable ? (
+                <>
+                  <span className="ranking-icon" style={{ color: rankings.mostAffordable.color }}>
+                    {rankings.mostAffordable.icon}
+                  </span>
+                  <p className="ranking-name">{rankings.mostAffordable.name}</p>
+                  <p className="ranking-metric">{fmtNum(rankings.mostAffordable.avgPricePerM2)} €/m²</p>
+                </>
+              ) : (
+                <p className="ranking-metric">—</p>
+              )}
+            </div>
+            <div className="ranking-card">
+              <h3>Más rápida</h3>
+              {rankings.fastest ? (
+                <>
+                  <span className="ranking-icon" style={{ color: rankings.fastest.color }}>
+                    {rankings.fastest.icon}
+                  </span>
+                  <p className="ranking-name">{rankings.fastest.name}</p>
+                  <p className="ranking-metric">{fmtNum(rankings.fastest.avgTime)} meses</p>
+                </>
+              ) : (
+                <p className="ranking-metric">—</p>
+              )}
+            </div>
+            <div className="ranking-card">
+              <h3>Más eficiente</h3>
+              {rankings.mostEfficient ? (
+                <>
+                  <span className="ranking-icon" style={{ color: rankings.mostEfficient.color }}>
+                    {rankings.mostEfficient.icon}
+                  </span>
+                  <p className="ranking-name">{rankings.mostEfficient.name}</p>
+                  <p className="ranking-metric">{rankings.mostEfficient.energyClass.join('–')}</p>
+                </>
+              ) : (
+                <p className="ranking-metric">—</p>
+              )}
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="executive-summary card">
+        <p>
+          Los precios finales dependen más del alcance del presupuesto que de la tecnología.
+          Compara siempre “llave en mano” frente a “solo casa” y verifica qué incluye cada
+          partida: cimentación, acometidas, proyecto y licencia.
+        </p>
+      </section>
+    </>
+  )
+
+  const priceScopeLabel = (scope = '') => {
+    const s = scope.toLowerCase()
+    if (s.includes('llave en mano')) return { label: 'Llave en mano', desc: 'Casa + obra completa' }
+    if (s.includes('casa móvil') || s.includes('casa movil') || s.includes('solo casa') || s.includes('kit básico') || s.includes('kit basico') || s.includes('casa + montaje')) return { label: 'Solo casa / estructura', desc: 'Sin obra completa' }
+    return { label: 'Otro', desc: 'Consultar alcance' }
+  }
+
+  const ModelsTable = () => (
+    <section className="table-section card">
+      <div className="table-head">
+        <h2>Comparativa de modelos</h2>
+        <span className="table-count">{sortedRows.length} resultados</span>
+      </div>
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th className="sortable" onClick={() => handleSort('name')}>Modelo {sortIcon('name')}</th>
+              <th className="sortable" onClick={() => handleSort('manufacturer')}>Fabricante {sortIcon('manufacturer')}</th>
+              <th className="sortable" onClick={() => handleSort('tech')}>Tecnología {sortIcon('tech')}</th>
+              <th className="sortable" onClick={() => handleSort('deliveryScope')}>Ámbito del precio {sortIcon('deliveryScope')}</th>
+              <th className="sortable right" onClick={() => handleSort('price')}>Precio {sortIcon('price')}</th>
+              <th className="sortable right" onClick={() => handleSort('size')}>m² {sortIcon('size')}</th>
+              <th className="sortable right" onClick={() => handleSort('pricePerM2')}>€/m² {sortIcon('pricePerM2')}</th>
+              <th className="sortable right" onClick={() => handleSort('bedrooms')}>Dorm. {sortIcon('bedrooms')}</th>
+              <th className="sortable right" onClick={() => handleSort('bathrooms')}>Baños {sortIcon('bathrooms')}</th>
+              <th className="sortable right" onClick={() => handleSort('buildTimeMonths')}>Plazo {sortIcon('buildTimeMonths')}</th>
+              <th className="sortable" onClick={() => handleSort('energyRating')}>Energía {sortIcon('energyRating')}</th>
+              <th>Estructura</th>
+              <th>Cimentación</th>
+              <th>Personalización</th>
+              <th>Garantía</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedRows.map((m) => {
+              const scope = priceScopeLabel(m.deliveryScope)
+              return (
+                <tr key={m.id}>
+                  <td className="model-name">
+                    {m.url ? (
+                      <a className="model-link" href={m.url} target="_blank" rel="noreferrer" title="Ver ficha del modelo">
+                        {m.name}
+                      </a>
+                    ) : (
+                      m.name
+                    )}
+                  </td>
+                  <td>{m.manufacturer}</td>
+                  <td>
+                    <span className="tech-dot" style={{ background: TECH_COLORS[m.tech] }} />
+                    {techName(m.tech)}
+                  </td>
+                  <td>
+                    <span className="scope-badge scope-{scope.label === 'Llave en mano' ? 'turnkey' : 'only'}">
+                      {scope.label}
+                    </span>
+                    <span className="scope-desc" title={m.deliveryScope}>{scope.desc}</span>
+                  </td>
+                  <td className="right">{fmt(m.price)}</td>
+                  <td className="right">{m.size}</td>
+                  <td className="right">{fmtNum(m.pricePerM2)}</td>
+                  <td className="right">{m.bedrooms}</td>
+                  <td className="right">{m.bathrooms}</td>
+                  <td className="right">{m.buildTimeMonths} m</td>
+                  <td>
+                    <span className={`energy-badge energy-${m.energyRating[0].toLowerCase()}`}>{m.energyRating}</span>
+                  </td>
+                  <td className="small-text" title={m.structureType}>{m.structureType || '—'}</td>
+                  <td className="small-text">{m.foundation || '—'}</td>
+                  <td className="small-text">{m.customizationLevel || '—'}</td>
+                  <td className="small-text">{m.warranty || '—'}</td>
+                </tr>
+              )
+            })}
+            {sortedRows.length === 0 && (
+              <tr>
+                <td colSpan={15} className="no-results">No hay modelos que coincidan con los filtros aplicados.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </section>
   )
-}
 
-function Toggle({ label, hint, checked, onChange }) {
-  return (
-    <label className={`toggle-card ${checked ? 'checked' : ''}`}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="toggle-info">
-        <span className="toggle-label">{label}</span>
-        <span className="toggle-hint">{hint}</span>
-      </span>
-      <span className="toggle-check">{checked ? '✓' : ''}</span>
-    </label>
-  )
-}
-
-function MiniToggle({ label, checked, onChange }) {
-  return (
-    <button className={`mini-toggle ${checked ? 'checked' : ''}`} onClick={() => onChange(!checked)}>
-      <span>{label}</span>
-      <span className="mini-check">{checked ? '✓' : '+'}</span>
-    </button>
-  )
-}
-
-/* ===== TECH SPECTRUM ===== */
-function TechSpectrum() {
-  const [openId, setOpenId] = useState(null)
-  const maxScale = 2200
-  return (
-    <section className="section" id="techs">
-      <SectionHeader num="02" title="Tecnologías constructoras" sub="Compara los 6 sistemas por precio, plazo y prestaciones. Pulsa para ver pros y contras." />
-
-      <div className="spectrum">
-        <div className="spectrum-axis">
-          <span>0</span><span>500</span><span>1.000</span><span>1.500</span><span>2.000</span><span>€/m²</span>
-        </div>
-        {techs.map((t) => {
-          const leftPct = (t.pricePerM2[0] / maxScale) * 100
-          const widthPct = ((t.pricePerM2[1] - t.pricePerM2[0]) / maxScale) * 100
-          return (
-            <div key={t.id} className={`spectrum-row ${openId === t.id ? 'open' : ''}`}>
-              <div className="spectrum-label" onClick={() => setOpenId(openId === t.id ? null : t.id)}>
-                <span className="spectrum-icon">{t.icon}</span>
-                <span className="spectrum-name">{t.name}</span>
-                <span className="spectrum-expand">{openId === t.id ? '−' : '+'}</span>
-              </div>
-              <div className="spectrum-bar-area" onClick={() => setOpenId(openId === t.id ? null : t.id)}>
-                <div className="spectrum-bar-bg" />
-                <div
-                  className="spectrum-bar-fill"
-                  style={{ left: `${leftPct}%`, width: `${widthPct}%`, background: BREAKDOWN_COLORS[t.id] || '#c2410c' }}
-                />
-                <span className="spectrum-price-tag" style={{ left: `${leftPct + widthPct + 1}%` }}>
-                  {t.pricePerM2[0]}–{t.pricePerM2[1]} €/m²
+  const Technologies = () => (
+    <section className="tech-section">
+      <div className="card chart-card">
+        <h2>Rango de €/m² por tecnología</h2>
+        <div className="per-m2-chart">
+          {Object.values(techSummary)
+            .sort((a, b) => b.avgPricePerM2 - a.avgPricePerM2)
+            .map((t) => (
+              <div key={t.id} className="per-m2-row">
+                <span className="per-m2-name">
+                  <span className="tech-dot" style={{ background: TECH_COLORS[t.id] }} />
+                  {t.name}
                 </span>
+                <div className="per-m2-bar-wrap">
+                  <div
+                    className="per-m2-bar"
+                    style={{
+                      width: `${Math.min(100, ((t.avgPricePerM2 / 3500) * 100))}%`,
+                      background: TECH_COLORS[t.id],
+                    }}
+                  />
+                </div>
+                <span className="per-m2-val">{fmtNum(t.avgPricePerM2)} €/m²</span>
               </div>
-              {openId === t.id && (
-                <div className="spectrum-detail">
-                  <p className="spectrum-summary">{t.summary}</p>
-                  <div className="spectrum-specs">
-                    <SpecChip label="Plazo" value={t.timeframe} />
-                    <SpecChip label="Energía" value={t.energyClass.join('–')} />
-                    <SpecChip label="Masa térmica" value={t.thermalMass} />
-                    <SpecChip label="Transporte" value={t.transportWeight} />
+            ))}
+        </div>
+      </div>
+      <div className="tech-grid">
+        {techs.map((t) => {
+          const s = techSummary[t.id]
+          const pc = techProsCons[t.id]
+          return (
+            <div className="card tech-card" key={t.id}>
+              <div className="tech-card-head">
+                <span className="tech-icon">{t.icon}</span>
+                <div>
+                  <h3>{t.name}</h3>
+                  <p className="tech-sub">{t.timeframe} · energía {t.energyClass.join('–')} · {s.count} modelos en la base</p>
+                </div>
+              </div>
+              <p className="tech-summary">{t.summary}</p>
+              <div className="tech-stats">
+                <div className="tech-stat">
+                  <span className="tech-stat-label">Rango €/m²</span>
+                  <span className="tech-stat-value">{t.pricePerM2[0]} – {t.pricePerM2[1]} €</span>
+                </div>
+                <div className="tech-stat">
+                  <span className="tech-stat-label">Media base</span>
+                  <span className="tech-stat-value">{s.count ? fmtNum(s.avgPricePerM2) : '—'} €/m²</span>
+                </div>
+                <div className="tech-stat">
+                  <span className="tech-stat-label">Plazo</span>
+                  <span className="tech-stat-value">{t.timeframe}</span>
+                </div>
+                <div className="tech-stat">
+                  <span className="tech-stat-label">Masa térmica</span>
+                  <span className="tech-stat-value">{t.thermalMass}</span>
+                </div>
+                <div className="tech-stat">
+                  <span className="tech-stat-label">Uso típico</span>
+                  <span className="tech-stat-value">{t.typicalUse}</span>
+                </div>
+              </div>
+              {pc && (
+                <div className="pros-cons">
+                  <div>
+                    <h4>Ventajas</h4>
+                    <ul>
+                      {pc.pros.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="spectrum-proscons">
-                    <div className="pc-col">
-                      <h5>Pros</h5>
-                      <ul>{techProsCons[t.id].pros.map((p, i) => <li key={i}>{p}</li>)}</ul>
-                    </div>
-                    <div className="pc-col">
-                      <h5>Contras</h5>
-                      <ul>{techProsCons[t.id].cons.map((c, i) => <li key={i}>{c}</li>)}</ul>
-                    </div>
+                  <div>
+                    <h4>Desventajas</h4>
+                    <ul>
+                      {pc.cons.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               )}
@@ -388,257 +692,293 @@ function TechSpectrum() {
       </div>
     </section>
   )
-}
 
-function SpecChip({ label, value }) {
+  const Companies = () => (
+    <section className="company-section">
+      <div className="card chart-card">
+        <h2>Precio medio por m² por fabricante</h2>
+        <div className="per-m2-chart">
+          {[...companySummary]
+            .sort((a, b) => b.avgPricePerM2 - a.avgPricePerM2)
+            .map((c) => (
+              <div key={c.name} className="per-m2-row">
+                <span className="per-m2-name">{c.name}</span>
+                <div className="per-m2-bar-wrap">
+                  <div
+                    className="per-m2-bar"
+                    style={{
+                      width: `${Math.min(100, ((c.avgPricePerM2 / 3000) * 100))}%`,
+                      background: TECH_COLORS[c.tech] || '#64748b',
+                    }}
+                  />
+                </div>
+                <span className="per-m2-val">{fmtNum(c.avgPricePerM2)} €/m²</span>
+              </div>
+            ))}
+        </div>
+      </div>
+      <div className="company-grid">
+        {companySummary.map((c) => (
+          <div className="card company-card" key={c.name}>
+            <div className="company-head">
+              <span className="company-icon">{c.icon}</span>
+              <div>
+                <h3>{c.name}</h3>
+                <p className="company-sub">{c.location}</p>
+              </div>
+            </div>
+            <div className="company-tags">
+              {c.techOffered.map((id) => (
+                <span key={id} className="company-tag" style={{ background: TECH_COLORS[id] + '18', color: TECH_COLORS[id] }}>
+                  {techName(id)}
+                </span>
+              ))}
+            </div>
+            <dl className="company-dl">
+              <dt>Zona de actuación</dt>
+              <dd>{c.madridRadius}</dd>
+              <dt>Rango de precio / m²</dt>
+              <dd>{c.priceRange ? `${c.priceRange[0]} – ${c.priceRange[1]} €` : c.priceFrom}</dd>
+              <dt>Precio medio / m² estimado</dt>
+              <dd>{fmtNum(c.avgPricePerM2)} €/m²</dd>
+              <dt>Plazo típico</dt>
+              <dd>{c.typicalBuildTime}</dd>
+              <dt>Garantía</dt>
+              <dd>{c.warranty}</dd>
+            </dl>
+            <p className="company-scope">{c.scope}</p>
+            {c.url && (
+              <a className="company-link" href={c.url} target="_blank" rel="noreferrer">
+                Ver web del fabricante
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="card table-section">
+        <div className="table-head">
+          <h2>Tabla comparativa de fabricantes</h2>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fabricante</th>
+                <th>Tecnologías</th>
+                <th>Ubicación</th>
+                <th className="right">Rango €/m²</th>
+                <th className="right">Precio medio / m²</th>
+                <th>Plazo típico</th>
+                <th>Garantía</th>
+                <th>Zona de actuación</th>
+              </tr>
+            </thead>
+            <tbody>
+              {companySummary.map((c) => (
+                <tr key={c.name}>
+                  <td className="model-name">{c.name}</td>
+                  <td>{c.techOffered.map(techName).join(', ')}</td>
+                  <td>{c.location}</td>
+                  <td className="right">{c.priceRange ? `${c.priceRange[0]}–${c.priceRange[1]} €` : '—'}</td>
+                  <td className="right">{fmtNum(c.avgPricePerM2)} €/m²</td>
+                  <td>{c.typicalBuildTime}</td>
+                  <td>{c.warranty}</td>
+                  <td>{c.madridRadius}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  )
+
+  const Visits = () => {
+    const [visitFilter, setVisitFilter] = useState('all')
+    const [recFilter, setRecFilter] = useState(false)
+    const [locationFilter, setLocationFilter] = useState('Alicante')
+    const [locationSort, setLocationSort] = useState('none')
+    const [showAlicante, setShowAlicante] = useState(true)
+    const allVisits = useMemo(() => {
+      const combined = [...visitPlaces, ...visitPlacesAlicante]
+      return combined.map((v) => ({
+        ...v,
+        locationCity: v.locationCity || (v.alicante ? 'Alicante' : 'Madrid'),
+      }))
+    }, [])
+    const visitTypes = useMemo(() => Array.from(new Set(allVisits.map((v) => v.type))).sort(), [])
+    const locationOptions = useMemo(
+      () => Array.from(new Set(allVisits.map((v) => v.locationCity))).sort(),
+      []
+    )
+    const filteredVisits = useMemo(
+      () => {
+        let rows = allVisits.filter((v) => {
+          const okType = visitFilter === 'all' || v.type === visitFilter
+          const okRec = !recFilter || v.recommended
+          const okAlicante = showAlicante || !v.alicante
+          const okLoc = locationFilter === 'all' || v.locationCity === locationFilter
+          return okType && okRec && okLoc && okAlicante
+        })
+        if (locationSort !== 'none') {
+          rows = [...rows].sort((a, b) => {
+            const ca = a.locationCity
+            const cb = b.locationCity
+            return locationSort === 'asc' ? ca.localeCompare(cb) : cb.localeCompare(ca)
+          })
+        }
+        return rows
+      },
+      [allVisits, visitFilter, recFilter, locationFilter, locationSort, showAlicante]
+    )
+    return (
+      <section className="visit-section">
+        <div className="card visit-filters">
+          <div className="filter-group">
+            <label>Tipo de visita</label>
+            <select value={visitFilter} onChange={(e) => setVisitFilter(e.target.value)}>
+              <option value="all">Todas</option>
+              {visitTypes.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>Ubicación</label>
+            <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+              <option value="all">Todas</option>
+              {locationOptions.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-group">
+            <label>Ordenar por ubicación</label>
+            <select value={locationSort} onChange={(e) => setLocationSort(e.target.value)}>
+              <option value="none">Sin orden</option>
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
+          <label className="check-toggle">
+            <input type="checkbox" checked={recFilter} onChange={(e) => setRecFilter(e.target.checked)} />
+            <span>Solo recomendados</span>
+          </label>
+          <label className="check-toggle">
+            <input type="checkbox" checked={showAlicante} onChange={(e) => setShowAlicante(e.target.checked)} />
+            <span>Incluir exposiciones de Alicante/Valencia</span>
+          </label>
+        </div>
+        <div className="visit-grid">
+          {filteredVisits.map((v) => {
+            const city = v.locationCity || 'Madrid'
+            return (
+              <div className="card visit-card" key={v.name}>
+                <div className="visit-head">
+                  <span className="visit-icon">{v.icon}</span>
+                  <div>
+                    <h3>{v.name}</h3>
+                    <span className="visit-type">{v.type}</span>
+                    {v.recommended && <span className="visit-rec">Recomendado</span>}
+                  </div>
+                </div>
+                <div className="visit-location">
+                  <span className={`location-badge location-${city.toLowerCase().replace(/[^a-z]/g, '-')}`}>{city}</span>
+                  <span className="location-hint">
+                    {city === 'Madrid'
+                      ? 'En la Comunidad de Madrid'
+                      : city === 'Alicante'
+                        ? 'En la provincia de Alicante'
+                        : city === 'A Coruña' || city === 'Valencia' || city === 'Nacional'
+                          ? `Ubicación: ${city}`
+                          : 'Fuera de Madrid'}
+                  </span>
+                </div>
+                <p className="visit-address">{v.address}</p>
+                <div className="visit-meta">
+                  <div>
+                    <span className="meta-label">Horario</span>
+                    <span className="meta-value">{v.hours}</span>
+                  </div>
+                  <div>
+                    <span className="meta-label">Cita</span>
+                    <span className="meta-value">{v.appointment}</span>
+                  </div>
+                  <div>
+                    <span className="meta-label">Tecnología</span>
+                    <span className="meta-value" style={{ color: TECH_COLORS[v.tech] }}>{techName(v.tech)}</span>
+                  </div>
+                </div>
+                <p className="visit-what">{v.what}</p>
+                <div className="visit-links">
+                  {v.maps && (
+                    <a className="company-link" href={v.maps} target="_blank" rel="noreferrer">
+                      Ver en mapa
+                    </a>
+                  )}
+                  {v.url && (
+                    <a className="company-link" href={v.url} target="_blank" rel="noreferrer">
+                      Web
+                    </a>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <div className="spec-chip">
-      <span className="spec-chip-label">{label}</span>
-      <span className="spec-chip-value">{value}</span>
+    <div className="dashboard">
+      <header className="dash-header">
+        <div>
+          <h1>Casa Prefab Madrid</h1>
+          <p>Panel de comparación de viviendas prefabricadas · datos orientativos · junio 2026</p>
+        </div>
+        <div className="dash-meta">
+          <span>{models.length} modelos en base de datos</span>
+          <span>Precios sin terreno</span>
+        </div>
+      </header>
+
+      <nav className="tab-bar">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            className={`tab-btn ${tab === t.id ? 'active' : ''}`}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === 'overview' && <Overview />}
+      {tab === 'models' && (
+        <>
+          <Filters />
+          <ModelsTable />
+        </>
+      )}
+      {tab === 'tech' && <Technologies />}
+      {tab === 'companies' && <Companies />}
+      {tab === 'visits' && <Visits />}
+
+      <footer className="dash-footer">
+        <p>Datos recopilados de fabricantes y medios especializados · Precios orientativos · Verifica cada presupuesto con la empresa correspondiente</p>
+      </footer>
     </div>
   )
 }
 
-/* ===== COMPANIES ===== */
-function Companies() {
-  const [filter, setFilter] = useState('all')
-  const filtered = filter === 'all' ? companies : companies.filter((c) => c.tech === filter)
+function Kpi({ label, value, sub }) {
   return (
-    <section className="section" id="empresas">
-      <SectionHeader num="03" title="Empresas en Madrid" sub={`${companies.length} empresas con sede o servicio en la Comunidad de Madrid. Filtra por tecnología.`} />
-      <div className="filter-chips">
-        <button className={`chip ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Todas</button>
-        {techs.map((t) => (
-          <button key={t.id} className={`chip ${filter === t.id ? 'active' : ''}`} onClick={() => setFilter(t.id)}>
-            {t.icon} {t.name.split(' (')[0].split(' 3D')[0]}
-          </button>
-        ))}
-      </div>
-      <div className="co-grid">
-        {filtered.map((c) => (
-          <article key={c.name} className={`co-card co-${c.tech}`}>
-            <div className="co-top">
-              <span className="co-emoji">{c.icon}</span>
-              <span className="co-tech-tag">{techs.find((t) => t.id === c.tech)?.name.split(' (')[0]}</span>
-            </div>
-            <h3 className="co-name">{c.name}</h3>
-            <p className="co-loc">📍 {c.location}</p>
-            <p className="co-radius">🚚 {c.madridRadius}</p>
-            <p className="co-scope-text">{c.scope}</p>
-            <div className="co-price-box">
-              <span className="co-price-tag">Precio</span>
-              <span className="co-price-val">{c.priceFrom}</span>
-            </div>
-            <p className="co-notes-text">{c.notes}</p>
-            <a href={c.url} target="_blank" rel="noreferrer" className="co-link">Visitar web ↗</a>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ===== VISITAR ===== */
-function Visitar() {
-  const [filter, setFilter] = useState('all')
-  const types = [
-    { id: 'all', label: 'Todo' },
-    { id: 'showroom', label: 'Showrooms' },
-    { id: 'pilot', label: 'Casas piloto' },
-    { id: 'office', label: 'Oficinas' },
-    { id: 'factory', label: 'Fábricas' },
-  ]
-  const filtered = filter === 'all' ? visitPlaces : visitPlaces.filter((p) => p.type === filter)
-  return (
-    <section className="section" id="visitar">
-      <SectionHeader num="04" title="Dónde ver casas en Madrid" sub="Showrooms, casas piloto y oficinas para visitar en persona. Cita previa en casi todos." />
-
-      <div className="filter-chips">
-        {types.map((t) => (
-          <button key={t.id} className={`chip ${filter === t.id ? 'active' : ''}`} onClick={() => setFilter(t.id)}>{t.label}</button>
-        ))}
-      </div>
-
-      <div className="visit-grid">
-        {filtered.map((p) => (
-          <article key={p.name} className={`visit-card ${p.recommended ? 'recommended' : ''}`}>
-            {p.recommended && <span className="rec-badge">★ Recomendado</span>}
-            <div className="visit-head">
-              <span className="visit-icon">{p.icon}</span>
-              <div>
-                <h3 className="visit-name">{p.name}</h3>
-                <span className="visit-type-tag">{p.type === 'showroom' ? 'Showroom' : p.type === 'pilot' ? 'Casa piloto' : p.type === 'office' ? 'Oficina' : 'Fábrica'}</span>
-              </div>
-            </div>
-            <p className="visit-addr">📍 {p.address}</p>
-            <p className="visit-hours">🕒 {p.hours}</p>
-            <p className="visit-appt">📞 {p.appointment}</p>
-            <p className="visit-what">{p.what}</p>
-            <div className="visit-links">
-              {p.maps && <a href={p.maps} target="_blank" rel="noreferrer" className="visit-link maps">Maps ↗</a>}
-              <a href={p.url} target="_blank" rel="noreferrer" className="visit-link web">Web ↗</a>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="ferias-block">
-        <h3 className="ferias-title">📅 Ferias y eventos 2026</h3>
-        <div className="feria-list">
-          {ferias.map((f) => (
-            <article key={f.name} className={`feria-card ${f.recommended ? 'recommended' : ''}`}>
-              {f.recommended && <span className="rec-badge">★ Imperdible</span>}
-              <div className="feria-head">
-                <h4>{f.name}</h4>
-                <span className="feria-date">{f.date}</span>
-              </div>
-              <p className="feria-addr">📍 {f.address}</p>
-              <p className="feria-what">{f.what}</p>
-              <a href={f.url} target="_blank" rel="noreferrer" className="visit-link web">Más info ↗</a>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <div className="alicante-block">
-        <h3 className="alicante-title">✈️ Comunidad Valenciana · Viaje de 2–3h desde Madrid</h3>
-        <p className="alicante-sub">Alicante y Valencia concentran la mayor densidad de fábricas de casas modulares de España. Merecen un día de viaje.</p>
-        <div className="visit-grid">
-          {visitPlacesAlicante.map((p) => (
-            <article key={p.name} className={`visit-card ${p.recommended ? 'recommended' : ''} ${p.optional ? 'optional' : ''}`} style={{ borderTopColor: '#16a34a' }}>
-              {p.recommended && <span className="rec-badge">★ Recomendado</span>}
-              {p.optional && <span className="opt-badge">Opcional</span>}
-              <div className="visit-head">
-                <span className="visit-icon">{p.icon}</span>
-                <div>
-                  <h3 className="visit-name">{p.name}</h3>
-                  <span className="visit-type-tag">Fábrica</span>
-                </div>
-              </div>
-              <p className="visit-addr">📍 {p.address}</p>
-              <p className="visit-hours">🕒 {p.hours}</p>
-              <p className="visit-appt">📞 {p.appointment}</p>
-              <p className="visit-what">{p.what}</p>
-              <div className="visit-links">
-                {p.maps && <a href={p.maps} target="_blank" rel="noreferrer" className="visit-link maps">Maps ↗</a>}
-                <a href={p.url} target="_blank" rel="noreferrer" className="visit-link web">Web ↗</a>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="feria-list" style={{ marginTop: '0.9rem' }}>
-          {feriasAlicante.map((f) => (
-            <article key={f.name} className="feria-card" style={{ borderLeftColor: '#16a34a' }}>
-              <div className="feria-head">
-                <h4>{f.name}</h4>
-                <span className="feria-date">{f.date}</span>
-              </div>
-              <p className="feria-addr">📍 {f.address}</p>
-              <p className="feria-what">{f.what}</p>
-              <a href={f.url} target="_blank" rel="noreferrer" className="visit-link web">Más info ↗</a>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ===== SCOPE ===== */
-function Scope() {
-  return (
-    <section className="section" id="alcance">
-      <SectionHeader num="05" title="¿Qué incluye el llave en mano?" sub="El contrato típico en España cubre bastante — pero hay partidas que siempre pagas tú." />
-      <div className="scope-cols">
-        <div className="scope-in">
-          <div className="scope-header-in">
-            <span className="scope-icon">✓</span>
-            <h3>Incluido en el contrato</h3>
-          </div>
-          {includedItems.map((g) => (
-            <div key={g.area} className="scope-group">
-              <h4>{g.area}</h4>
-              <ul>{g.items.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
-          ))}
-        </div>
-        <div className="scope-out">
-          <div className="scope-header-out">
-            <span className="scope-icon">✗</span>
-            <h3>Tú pagas (extra)</h3>
-          </div>
-          <ul className="scope-out-list">
-            {excludedItems.map((e) => (
-              <li key={e.label}>
-                <strong>{e.label}</strong>
-                <p>{e.desc}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ===== PITFALLS ===== */
-function Pitfalls() {
-  return (
-    <section className="section" id="trampas">
-      <SectionHeader num="06" title="Trampas a verificar" sub="12 puntos críticos que aparecen una y otra vez. Léelos antes de firmar." />
-      <div className="pit-grid">
-        {pitfalls.map((p, i) => (
-          <article key={i} className="pit-card">
-            <span className="pit-num">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{p.title}</h3>
-            <p>{p.detail}</p>
-          </article>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ===== QUESTIONS ===== */
-function Questions() {
-  return (
-    <section className="section" id="preguntas">
-      <SectionHeader num="07" title="Preguntas para cada empresa" sub="Una empresa seria responderá sin esquivar ninguna de estas 10 preguntas." />
-      <div className="qlist">
-        {questionsToAsk.map((q, i) => (
-          <div key={i} className="qlist-item">
-            <span className="qlist-num">{String(i + 1).padStart(2, '0')}</span>
-            <span className="qlist-text">{q}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ===== SOURCES ===== */
-function Sources() {
-  return (
-    <section className="section" id="sources">
-      <SectionHeader num="08" title="Fuentes" sub="Datos compilados de medios especializados y páginas de fabricantes." />
-      <div className="src-grid">
-        {sources.map((s, i) => (
-          <a key={i} href={s.url} target="_blank" rel="noreferrer" className="src-link">{s.label} ↗</a>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ===== SHARED ===== */
-function SectionHeader({ num, title, sub }) {
-  return (
-    <div className="sec-header">
-      <span className="sec-num">{num}</span>
-      <div>
-        <h2 className="sec-title">{title}</h2>
-        <p className="sec-sub">{sub}</p>
-      </div>
+    <div className="kpi-card card">
+      <span className="kpi-label">{label}</span>
+      <span className="kpi-value">{value}</span>
+      <span className="kpi-sub">{sub}</span>
     </div>
   )
 }
