@@ -446,6 +446,19 @@ function initModalsAndCarousels() {
         '<b>Side-by-Side Comparison:</b> Financial table comparing plot cost, ITP, build cost, monthly expenses, and Wealth Tax across all five locations.',
         '<b>Location Detail Cards:</b> Each suburb has schools, shopping malls, sports/padel facilities, and commute times with direct links.'
       ]
+    },
+    'madrid-agosto-2026': {
+      title: 'Madrid Agosto 2026 — Family Roadbook',
+      icon: '🧭',
+      tech: ['React 19', 'Bilingual UI (ES/EN)', 'Day-by-Day Agenda', 'Tag Filtering', 'Vite'],
+      overview: 'A bilingual day-by-day roadbook for a two-week family trip to Madrid and the Sierra (August 2–14, 2026). Built for a party of two adults, a 5-year-old, and grandparents (70+), it balances prefab-house showrooms (one of each build type), American-style low-density town scouting, and heat-safe sightseeing with rest days and a booking checklist.',
+      features: [
+        '<b>13-day itinerary strip:</b> Scrollable day pills with per-day corridor, emoji, and heat ("cooler day" badges for Sierra days); auto-centres on the active day.',
+        '<b>Tag filtering:</b> Toggle stops by Showroom, Town scouting, Kid-friendly, Grandparent-easy, Food, Nature, Culture, Water, Friends, Rest, or Needs-booking — days with no match dim themselves.',
+        '<b>August reality checks:</b> Heat windows (35–40 °C), August closures, cita-previa booking rules, and driving-time estimates folded into each stop.',
+        '<b>Booking checklist:</b> One-tap checklist with progress bar for the showrooms/towns that need confirmation calls, persisted to localStorage.',
+        '<b>Reference panels:</b> Collapsible showroom directory (starred picks, phone, day) and town comparison table with Idealista links — plus the excluded Las Gabias town and a wood-build caveat.'
+      ]
     }
   };
 

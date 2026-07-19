@@ -44,6 +44,13 @@
       "icon": "🇪🇸",
       "path": "spain-retirement-scouting/",
       "description": "Bilingual sub-€50k plot comparison across Madrid, Guadalajara & Granada with wealth-tax analysis."
+    },
+    {
+      "id": "madrid-agosto-2026",
+      "name": "Madrid Agosto 2026",
+      "icon": "🧭",
+      "path": "madrid-agosto-2026/",
+      "description": "Bilingual 13-day family roadbook for Madrid & the Sierra (Aug 2–14), with prefab showrooms, town scouting, and kid/grandparent-friendly stops."
     }
   ]
 }
