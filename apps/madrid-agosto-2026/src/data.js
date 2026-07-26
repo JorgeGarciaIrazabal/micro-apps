@@ -238,8 +238,8 @@ export const days = [
           { label: { en: 'Casa José ☎', es: 'Casa José ☎' }, type: 'phone', url: 'tel:+34918911488' },
           { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('El Rana Verde Aranjuez') }] },
       { icon: '👥', kind: { en: 'Evening · 17:00', es: 'Noche · 17:00' }, title: { en: 'BBQ with friends', es: 'BBQ con amigos' }, place: { en: "Torrejón de la Calzada (friend's house)", es: "Torrejón de la Calzada (casa de amigos)" }, drive: '~45 min S', time: '17:00',
-        desc: { en: "BBQ with friends at 5 pm. Friend's address: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático).", es: "BBQ con amigos a las 17:00. Dirección del amigo: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático)." },
-        tags: ['friends', 'food'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Calle Letonia 1 28760 Tres Cantos Madrid') }] },
+        desc: { en: "BBQ with friends at 5 pm in Torrejón de la Calzada.", es: "BBQ con amigos a las 17:00 en Torrejón de la Calzada." },
+        tags: ['friends', 'food'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Torrejón de la Calzada Madrid') }] },
     ],
   },
   {
