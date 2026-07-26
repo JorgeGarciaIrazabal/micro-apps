@@ -1,4 +1,4 @@
-// Madrid family trip — 2–14 August 2026
+// Madrid family trip — 1–14 August 2026
 // Bilingual (EN/ES). Translatable strings are { en, es }; plain strings (names, times, phones) stay as-is.
 
 const maps = (q) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
@@ -9,7 +9,7 @@ export const trip = {
     en: 'Family trip agenda — prefab showrooms, American-style towns & easy sights for a 5-year-old and grandparents (70+)',
     es: 'Agenda del viaje — showrooms de casas prefabricadas, pueblos estilo americano y planes fáciles para una niña de 5 años y los abuelos (70+)',
   },
-  dateRange: '2 – 14 August 2026',
+  dateRange: '1 – 14 August 2026',
   homeBase: { en: 'Peñagrande / NW Madrid', es: 'Peñagrande / NO de Madrid' },
   travellers: { en: 'You + partner + daughter (5) + parents (70+)', es: 'Vosotros + hija (5) + abuelos (70+)' },
   car: { en: 'Family car', es: 'Coche familiar' },
@@ -71,7 +71,7 @@ export const realityChecks = [
 
 export const days = [
   {
-    id: 'aug02', dow: { en: 'Sun', es: 'Dom' }, label: 'Aug 2', emoji: '🛬',
+    id: 'aug01', dow: { en: 'Sat', es: 'Sáb' }, label: 'Aug 1', emoji: '🛬',
     title: { en: 'Arrival & gentle start', es: 'Llegada y arranque tranquilo' },
     corridor: { en: 'Home / in-city', es: 'Casa / ciudad' },
     heat: null, tags: ['seniors', 'kids', 'rest'],
@@ -87,6 +87,32 @@ export const days = [
     ],
   },
   {
+    id: 'aug02', dow: { en: 'Sun', es: 'Dom' }, label: 'Aug 2', emoji: '🏘️',
+    title: { en: 'SE towns + Chinchón (castles + postcard plaza)', es: 'Pueblos SE + Chinchón (castillos + plaza de postal)' },
+    corridor: { en: 'Southeast (A-3)', es: 'Sureste (A-3)' },
+    heat: null, tags: ['town', 'culture', 'kids', 'seniors', 'food', 'booking'],
+    summary: {
+      en: 'The Urtajo subdivision, Chinchón’s medieval plaza for a long Sunday lunch, and a castle keep for the little one.',
+      es: 'La urbanización de Urtajo, la plaza medieval de Chinchón para una comida larga de domingo y una torre del homenaje para la peque.' },
+    stops: [
+      { icon: '📍', kind: { en: 'Town scouting', es: 'Ver pueblo' }, title: { en: 'Colmenar de Oreja (Urtajo)', es: 'Colmenar de Oreja (Urtajo)' }, place: { en: 'Madrid', es: 'Madrid' }, drive: '~1h',
+        desc: { en: 'The "Urtajo" American-style subdivision + historic Plaza Mayor porticada (BIC) + market. Arrange a plot viewing.', es: 'La urbanización americana "Urtajo" + Plaza Mayor porticada histórica (BIC) + mercado. Concierta ver una parcela.' },
+        tags: ['town', 'culture', 'booking'], booking: { en: 'Pre-arrange a plot viewing', es: 'Concierta antes ver una parcela' },
+        links: [{ label: { en: 'Urtajo map', es: 'Mapa Urtajo' }, type: 'map', url: maps('Urbanizacion Urtajo Colmenar de Oreja') }, { label: { en: 'Idealista · plots', es: 'Idealista · parcelas' }, type: 'plots', url: 'https://www.idealista.com/venta-terrenos/colmenar-de-oreja-madrid/' }, { label: { en: 'Tourism', es: 'Turismo' }, type: 'web', url: 'http://turismo.aytocdo.com/' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Plaza Mayor Colmenar de Oreja') }] },
+      { icon: '🍽️', kind: { en: 'Lunch', es: 'Comida' }, title: { en: 'Chinchón — medieval Plaza Mayor', es: 'Chinchón — Plaza Mayor medieval' }, place: { en: 'Chinchón', es: 'Chinchón' }, drive: '10–15 min',
+        desc: { en: 'Famous medieval square; long Sunday lunch of cochinillo/cordero at Mesón Cuevas del Vino, La Casa del Pregonero, Café de la Iberia or the Parador. Reserve.', es: 'Famosa plaza medieval; comida larga de domingo de cochinillo/cordero en Mesón Cuevas del Vino, La Casa del Pregonero, Café de la Iberia o el Parador. Reservar.' },
+        tags: ['food', 'culture', 'kids', 'seniors', 'booking'], booking: { en: 'Reserve — busy August Sunday', es: 'Reservar — domingo de agosto con mucha gente' },
+        links: [
+          { label: { en: 'Cuevas del Vino ☎', es: 'Cuevas del Vino ☎' }, type: 'phone', url: 'tel:+34918940206' },
+          { label: { en: 'La Casa del Pregonero ☎', es: 'La Casa del Pregonero ☎' }, type: 'phone', url: 'tel:+34918940696' },
+          { label: { en: 'Parador ☎', es: 'Parador ☎' }, type: 'phone', url: 'tel:+34918940836' },
+          { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Plaza Mayor Chinchon') }] },
+      { icon: '🏰', kind: { en: 'Optional', es: 'Opcional' }, title: { en: 'Villarejo de Salvanés — castle keep', es: 'Villarejo de Salvanés — torre del homenaje' }, place: { en: 'Madrid', es: 'Madrid' }, drive: '20–25 min',
+        desc: { en: 'Castle keep tower (kid: castle; weekend theatrical tours for children) + old town + subdivision. Skip if everyone’s done.', es: 'Torre del homenaje (peque: castillo; visitas teatralizadas infantiles los findes) + casco + urbanización. Sáltatelo si estáis cansados.' },
+        tags: ['town', 'kids', 'culture'], links: [{ label: { en: 'Idealista · plots', es: 'Idealista · parcelas' }, type: 'plots', url: 'https://www.idealista.com/venta-terrenos/villarejo-de-salvanes-madrid/' }, { label: { en: 'Tourism', es: 'Turismo' }, type: 'web', url: 'https://www.turismovillarejodesalvanes.com/index.php' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Castillo Villarejo de Salvanes') }] },
+    ],
+  },
+  {
     id: 'aug03', dow: { en: 'Mon', es: 'Lun' }, label: 'Aug 3', emoji: '🚣',
     title: { en: 'Gentle Madrid morning + friends', es: 'Mañana tranquila en Madrid + amigos' },
     corridor: { en: 'In-city', es: 'Ciudad' },
@@ -98,8 +124,9 @@ export const days = [
       { icon: '🚣', kind: { en: 'Morning', es: 'Mañana' }, title: { en: 'El Retiro — rowboat + puppet theatre', es: 'El Retiro — barca + teatro de títeres' }, place: { en: 'Parque del Retiro', es: 'Parque del Retiro' }, drive: '15–20 min',
         desc: { en: 'Rowboat on the lake (kid hit), free summer puppet theatre (Teatro de Títeres, mornings), Palacio de Cristal, ice cream. Flat, shaded, benches for the grandparents.', es: 'Barca en el estanque (triunfo con la peque), teatro de títeres gratis (por las mañanas), Palacio de Cristal, helado. Llano, con sombra y bancos para los abuelos.' },
         tags: ['kids', 'seniors', 'culture'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Estanque del Retiro Madrid barcas') }] },
-      { icon: '👥', kind: { en: 'Afternoon', es: 'Tarde' }, title: { en: 'Friends (~2 hours)', es: 'Amigos (~2 horas)' }, place: { en: 'In/near Madrid', es: 'En/cerca de Madrid' },
-        desc: { en: 'Keep it in-city — no long drive. Evening free to rest before the busy week.', es: 'En la ciudad — sin desplazamientos largos. Noche libre para descansar antes de la semana intensa.' }, tags: ['friends'], links: [] },
+      { icon: '👥', kind: { en: 'Evening · 18:00', es: 'Tarde · 18:00' }, title: { en: 'Ismael & family', es: 'Ismael y familia' }, place: { en: 'Tres Cantos (their home)', es: 'Tres Cantos (su casa)' }, time: '18:00',
+        desc: { en: "Meet Ismael and family at 6 pm. Address: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático).", es: "Ver a Ismael y su familia a las 18:00. Dirección: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático)." },
+        tags: ['friends'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Calle Letonia 1 28760 Tres Cantos Madrid') }] },
     ],
   },
   {
@@ -210,8 +237,9 @@ export const days = [
           { label: { en: 'El Rana Verde ☎', es: 'El Rana Verde ☎' }, type: 'phone', url: 'tel:+34918911325' },
           { label: { en: 'Casa José ☎', es: 'Casa José ☎' }, type: 'phone', url: 'tel:+34918911488' },
           { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('El Rana Verde Aranjuez') }] },
-      { icon: '👥', kind: { en: 'Evening', es: 'Noche' }, title: { en: 'Friends', es: 'Amigos' }, place: { en: 'In/near Madrid', es: 'En/cerca de Madrid' },
-        desc: { en: 'Back late afternoon; evening with friends.', es: 'Vuelta a media tarde; noche con amigos.' }, tags: ['friends'], links: [] },
+      { icon: '👥', kind: { en: 'Evening · 17:00', es: 'Noche · 17:00' }, title: { en: 'BBQ with friends', es: 'BBQ con amigos' }, place: { en: "Torrejón de la Calzada (friend's house)", es: "Torrejón de la Calzada (casa de amigos)" }, drive: '~45 min S', time: '17:00',
+        desc: { en: "BBQ with friends at 5 pm. Friend's address: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático).", es: "BBQ con amigos a las 17:00. Dirección del amigo: C. Letonia 1, 28760 Tres Cantos, Madrid (Portal 1, Ático)." },
+        tags: ['friends', 'food'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Calle Letonia 1 28760 Tres Cantos Madrid') }] },
     ],
   },
   {
@@ -236,33 +264,7 @@ export const days = [
     ],
   },
   {
-    id: 'aug10', dow: { en: 'Mon', es: 'Lun' }, label: 'Aug 10', emoji: '🏘️',
-    title: { en: 'SE towns + Chinchón (castles + postcard plaza)', es: 'Pueblos SE + Chinchón (castillos + plaza de postal)' },
-    corridor: { en: 'Southeast (A-3)', es: 'Sureste (A-3)' },
-    heat: null, tags: ['town', 'culture', 'kids', 'seniors', 'food', 'booking'],
-    summary: {
-      en: 'The Urtajo subdivision, Chinchón’s medieval plaza for a long lunch, and a castle keep for the little one.',
-      es: 'La urbanización de Urtajo, la plaza medieval de Chinchón para una comida larga y una torre del homenaje para la peque.' },
-    stops: [
-      { icon: '📍', kind: { en: 'Town scouting', es: 'Ver pueblo' }, title: { en: 'Colmenar de Oreja (Urtajo)', es: 'Colmenar de Oreja (Urtajo)' }, place: { en: 'Madrid', es: 'Madrid' }, drive: '~1h',
-        desc: { en: 'The "Urtajo" American-style subdivision + historic Plaza Mayor porticada (BIC) + market. Arrange a plot viewing.', es: 'La urbanización americana "Urtajo" + Plaza Mayor porticada histórica (BIC) + mercado. Concierta ver una parcela.' },
-        tags: ['town', 'culture', 'booking'], booking: { en: 'Pre-arrange a plot viewing', es: 'Concierta antes ver una parcela' },
-        links: [{ label: { en: 'Idealista · plots', es: 'Idealista · parcelas' }, type: 'plots', url: 'https://www.idealista.com/venta-terrenos/colmenar-de-oreja-madrid/' }, { label: { en: 'Tourism', es: 'Turismo' }, type: 'web', url: 'http://turismo.aytocdo.com/' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Plaza Mayor Colmenar de Oreja') }] },
-      { icon: '🍽️', kind: { en: 'Lunch', es: 'Comida' }, title: { en: 'Chinchón — medieval Plaza Mayor', es: 'Chinchón — Plaza Mayor medieval' }, place: { en: 'Chinchón', es: 'Chinchón' }, drive: '10–15 min',
-        desc: { en: 'Famous medieval square; long lunch of cochinillo/cordero at Mesón Cuevas del Vino, La Casa del Pregonero, Café de la Iberia or the Parador. Reserve.', es: 'Famosa plaza medieval; comida larga de cochinillo/cordero en Mesón Cuevas del Vino, La Casa del Pregonero, Café de la Iberia o el Parador. Reservar.' },
-        tags: ['food', 'culture', 'kids', 'seniors', 'booking'], booking: { en: 'Reserve', es: 'Reservar' },
-        links: [
-          { label: { en: 'Cuevas del Vino ☎', es: 'Cuevas del Vino ☎' }, type: 'phone', url: 'tel:+34918940206' },
-          { label: { en: 'La Casa del Pregonero ☎', es: 'La Casa del Pregonero ☎' }, type: 'phone', url: 'tel:+34918940696' },
-          { label: { en: 'Parador ☎', es: 'Parador ☎' }, type: 'phone', url: 'tel:+34918940836' },
-          { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Plaza Mayor Chinchon') }] },
-      { icon: '🏰', kind: { en: 'Optional', es: 'Opcional' }, title: { en: 'Villarejo de Salvanés — castle keep', es: 'Villarejo de Salvanés — torre del homenaje' }, place: { en: 'Madrid', es: 'Madrid' }, drive: '20–25 min',
-        desc: { en: 'Castle keep tower (kid: castle; weekend theatrical tours for children) + old town + subdivision. Skip if everyone’s done.', es: 'Torre del homenaje (peque: castillo; visitas teatralizadas infantiles los findes) + casco + urbanización. Sáltatelo si estáis cansados.' },
-        tags: ['town', 'kids', 'culture'], links: [{ label: { en: 'Idealista · plots', es: 'Idealista · parcelas' }, type: 'plots', url: 'https://www.idealista.com/venta-terrenos/villarejo-de-salvanes-madrid/' }, { label: { en: 'Tourism', es: 'Turismo' }, type: 'web', url: 'https://www.turismovillarejodesalvanes.com/index.php' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Castillo Villarejo de Salvanes') }] },
-    ],
-  },
-  {
-    id: 'aug11', dow: { en: 'Tue', es: 'Mar' }, label: 'Aug 11', emoji: '😴',
+    id: 'aug10', dow: { en: 'Mon', es: 'Lun' }, label: 'Aug 10', emoji: '😴',
     title: { en: 'Rest day (or easy Faunia)', es: 'Día de descanso (o Faunia tranquilo)' },
     corridor: { en: 'Home / SE', es: 'Casa / SE' },
     heat: null, tags: ['rest', 'kids', 'seniors', 'water'],
@@ -271,28 +273,45 @@ export const days = [
       es: 'Un descanso de verdad por el calor — o un día fácil de parque de animales si la peque tiene energía.' },
     stops: [
       { icon: '😴', kind: { en: 'Rest', es: 'Descanso' }, title: { en: 'Downshift', es: 'Bajar el ritmo' }, place: { en: 'Home / neighbourhood', es: 'Casa / barrio' },
-        desc: { en: 'Pool, home, short shaded stroll. Recover mid-trip.', es: 'Piscina, casa, paseo corto a la sombra. Recuperar fuerzas a mitad de viaje.' }, tags: ['rest'], links: [] },
+        desc: { en: 'Pool, home, short shaded stroll. Recover mid-trip before the Segovia overnight.', es: 'Piscina, casa, paseo corto a la sombra. Recuperar a mitad de viaje antes de la noche en Segovia.' }, tags: ['rest'], links: [] },
       { icon: '🐧', kind: { en: 'Optional fun-but-easy', es: 'Opcional divertido y fácil' }, title: { en: 'Faunia bioparque', es: 'Faunia bioparque' }, place: { en: 'SE Madrid', es: 'SE de Madrid' }, drive: '25–30 min',
         desc: { en: 'Hourly tropical storm, penguins, water-play "estacas del aguador", partly indoor/AC. Kid highlight; grandparents stroll & sit. Great hot-day fallback.', es: 'Tormenta tropical cada hora, pingüinos, juegos de agua "estacas del aguador", parte cubierta/con aire. Triunfo con la peque; abuelos pasean y se sientan. Gran plan para día de calor.' },
         tags: ['kids', 'seniors', 'water', 'nature'], links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://www.faunia.es/' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Faunia Madrid') }] },
     ],
   },
   {
-    id: 'aug12', dow: { en: 'Wed', es: 'Mié' }, label: 'Aug 12', emoji: '📍',
-    title: { en: 'Duruelo + El Guijar (overnight)', es: 'Duruelo + El Guijar (noche allí)' },
-    corridor: { en: 'North (A-1) · NE Segovia', es: 'Norte (A-1) · NE de Segovia' },
-    heat: 'cooler', tags: ['town', 'culture', 'seniors', 'kids', 'food', 'rest', 'booking'],
+    id: 'aug11', dow: { en: 'Tue', es: 'Mar' }, label: 'Aug 11', emoji: '👥',
+    title: { en: 'Visit friends — Carlos & Lidia', es: 'Visita a amigos — Carlos y Lidia' },
+    corridor: { en: 'Home / flexible', es: 'Casa / flexible' },
+    heat: null, tags: ['friends', 'rest', 'kids', 'seniors', 'food'],
     summary: {
-      en: 'Two tiny NE-Segovia villages to show the family, then a relaxed overnight in El Guijar before the Segovia day tomorrow.',
-      es: 'Dos pueblitos del NE de Segovia para enseñar a la familia y luego noche tranquila en El Guijar antes del día de Segovia de mañana.' },
+      en: 'A day between trips to see Carlos and Lidia — relaxed, kid- and grandparent-friendly.',
+      es: 'Un día entre excursiones para ver a Carlos y Lidia — tranquilo, apto para la peque y los abuelos.' },
     stops: [
-      { icon: '⛪', kind: { en: 'Villages + lunch', es: 'Pueblos + comida' }, title: { en: 'Duruelo + El Guijar / Valdevacas', es: 'Duruelo + El Guijar / Valdevacas' }, place: { en: 'NE Segovia', es: 'NE de Segovia' }, drive: '~90 min',
-        desc: { en: 'Show the family these two tiny villages — Duruelo: Iglesia de la Natividad (Renaissance frescoes). El Guijar/Valdevacas: Iglesia de la Virgen del Rosario; oak & juniper scenery. Have a relaxed lunch in a local mesón. Bring kid entertainment for the drive.', es: 'Enseñad a la familia estos dos pueblitos — Duruelo: Iglesia de la Natividad (frescos renacentistas). El Guijar/Valdevacas: Iglesia de la Virgen del Rosario; paisaje de encinas y sabinas. Comida tranquila en un mesón local. Llevad entretenimiento para la peque en el coche.' },
-        tags: ['town', 'culture', 'food'], links: [{ label: { en: 'Duruelo map', es: 'Mapa Duruelo' }, type: 'map', url: maps('Duruelo Segovia') }, { label: { en: 'El Guijar map', es: 'Mapa El Guijar' }, type: 'map', url: maps('El Guijar Segovia') }] },
-      { icon: '🏠', kind: { en: 'Overnight', es: 'Noche' }, title: { en: 'Stay overnight in El Guijar', es: 'Noche en El Guijar' }, place: { en: 'El Guijar / Valdevacas', es: 'El Guijar / Valdevacas' },
-        desc: { en: 'Sleep in a rural house (casa rural) in El Guijar — tiny village, dark skies, total quiet. Book early; few options in a hamlet this small. Tomorrow is a short drive to Segovia.', es: 'Dormir en una casa rural en El Guijar — pueblito, cielos oscuros, silencio total. Reservad pronto; pocas opciones en una aldea tan pequeña. Mañana es un trayecto corto a Segovia.' },
-        tags: ['rest', 'booking'], booking: { en: 'Book a casa rural early — very limited stock', es: 'Reservad una casa rural pronto — muy pocas opciones' },
-        links: [{ label: { en: 'EscapadaRural · El Guijar', es: 'EscapadaRural · El Guijar' }, type: 'web', url: 'https://www.escapadarural.com/buscar?q=El+Guijar+Segovia' }, { label: { en: 'Valdevacas map', es: 'Mapa Valdevacas' }, type: 'map', url: maps('Valdevacas de Montejo Segovia') }] },
+      { icon: '👥', kind: { en: 'Morning / day', es: 'Mañana / día' }, title: { en: 'Carlos & Lidia', es: 'Carlos y Lidia' }, place: { en: 'Their place / flexible', es: 'Su casa / flexible' },
+        desc: { en: 'Catch up with Carlos and Lidia — a relaxed mid-trip day with no long drive.', es: 'Poneos al día con Carlos y Lidia — un día tranquilo a mitad de viaje sin desplazamientos largos.' }, tags: ['friends'], links: [] },
+      { icon: '😴', kind: { en: 'Optional rest', es: 'Descanso opcional' }, title: { en: 'Downshift', es: 'Bajar el ritmo' }, place: { en: 'Home / neighbourhood', es: 'Casa / barrio' },
+        desc: { en: 'Pool, home, short shaded stroll if energy is low — recover mid-trip.', es: 'Piscina, casa, paseo corto a la sombra si falta energía — recuperar a mitad de viaje.' }, tags: ['rest'], links: [] },
+    ],
+  },
+  {
+    id: 'aug12', dow: { en: 'Wed', es: 'Mié' }, label: 'Aug 12', emoji: '🎂',
+    title: { en: 'Duruelo + El Guijar — family & grandma’s birthday', es: 'Duruelo + El Guijar — familia y cumpleaños de la abuela' },
+    corridor: { en: 'North (A-1) · NE Segovia', es: 'Norte (A-1) · NE de Segovia' },
+    heat: 'cooler', tags: ['town', 'culture', 'seniors', 'kids', 'food', 'rest', 'friends'],
+    summary: {
+      en: 'Family day: stay at your uncle’s in Duruelo, visit the family house in El Guijar, and celebrate grandma’s birthday. Overnight before the Segovia day tomorrow.',
+      es: 'Día familiar: noche en casa de tu tío en Duruelo, visita a la casa familiar en El Guijar y celebración del cumpleaños de la abuela. Noche allí antes del día de Segovia de mañana.' },
+    stops: [
+      { icon: '🎂', kind: { en: 'Arrive · family day', es: 'Llegada · día en familia' }, title: { en: 'Duruelo — uncle’s house + grandma’s birthday', es: 'Duruelo — casa del tío + cumpleaños de la abuela' }, place: { en: 'Duruelo, NE Segovia', es: 'Duruelo, NE de Segovia' }, drive: '~90 min',
+        desc: { en: 'Arrive at your uncle’s in Duruelo — walk the village (Iglesia de la Natividad, oak & juniper scenery), relaxed family lunch, and celebrate grandma’s birthday with cake, photos and a village stroll.', es: 'Llegada a casa de tu tío en Duruelo — pasear el pueblo (Iglesia de la Natividad, paisaje de encinas y sabinas), comida tranquila en familia y celebración del cumpleaños de la abuela con tarta, fotos y paseo por el pueblo.' },
+        tags: ['town', 'culture', 'food', 'friends', 'kids', 'seniors'], links: [{ label: { en: 'Duruelo map', es: 'Mapa Duruelo' }, type: 'map', url: maps('Duruelo Segovia') }] },
+      { icon: '🏠', kind: { en: 'Afternoon visit', es: 'Visita tarde' }, title: { en: 'El Guijar — family house', es: 'El Guijar — casa familiar' }, place: { en: 'El Guijar / Valdevacas', es: 'El Guijar / Valdevacas' }, drive: 'short',
+        desc: { en: 'Visit the family house in El Guijar — oak & juniper scenery, village stroll. Bring kid entertainment for the drive.', es: 'Visitar la casa familiar en El Guijar — paisaje de encinas y sabinas, paseo por el pueblo. Llevad entretenimiento para la peque en el coche.' },
+        tags: ['town', 'culture'], links: [{ label: { en: 'El Guijar map', es: 'Mapa El Guijar' }, type: 'map', url: maps('El Guijar Segovia') }] },
+      { icon: '🏠', kind: { en: 'Overnight', es: 'Noche' }, title: { en: 'Overnight at the family house (El Guijar)', es: 'Noche en la casa familiar (El Guijar)' }, place: { en: 'El Guijar / Valdevacas', es: 'El Guijar / Valdevacas' },
+        desc: { en: 'Sleep at the family house in El Guijar — tomorrow is a short drive to Segovia.', es: 'Dormir en la casa familiar en El Guijar — mañana es un trayecto corto a Segovia.' },
+        tags: ['rest'], links: [{ label: { en: 'El Guijar map', es: 'Mapa El Guijar' }, type: 'map', url: maps('El Guijar Segovia') }] },
     ],
   },
   {
@@ -356,10 +375,10 @@ export const townsRef = [
   { name: 'Valdeluz', region: { en: 'Guadalajara', es: 'Guadalajara' }, kid: { en: 'Condo scouting — 3-bed from ~155k', es: 'Ver pisos — 3 dorms desde ~155k' }, day: 'Aug 5', idealista: 'https://www.idealista.com/geo/venta-viviendas/valdeluz/' },
   { name: 'El Espinar (Los Ángeles de San Rafael)', region: { en: 'Segovia', es: 'Segovia' }, kid: { en: 'La Panera natural pool', es: 'Piscina natural La Panera' }, day: 'Aug 7', idealista: 'https://www.idealista.com/venta-terrenos/el-espinar-segovia/' },
   { name: 'Sotillo de la Adrada (Valle del Tiétar)', region: { en: 'Ávila', es: 'Ávila' }, kid: { en: 'Gredos views, community pools', es: 'Vistas a Gredos, piscinas comunitarias' }, day: 'Aug 9', idealista: 'https://www.idealista.com/venta-viviendas/sotillo-de-la-adrada-avila/' },
-  { name: 'Colmenar de Oreja (Urtajo)', region: { en: 'Madrid', es: 'Madrid' }, kid: { en: 'Plaza + market', es: 'Plaza + mercado' }, day: 'Aug 10', idealista: 'https://www.idealista.com/venta-terrenos/colmenar-de-oreja-madrid/' },
-  { name: 'Villarejo de Salvanés', region: { en: 'Madrid', es: 'Madrid' }, kid: { en: 'Castle keep + kids’ theatrical tours', es: 'Torre del homenaje + visitas teatralizadas' }, day: 'Aug 10', idealista: 'https://www.idealista.com/venta-terrenos/villarejo-de-salvanes-madrid/' },
+  { name: 'Colmenar de Oreja (Urtajo)', region: { en: 'Madrid', es: 'Madrid' }, kid: { en: 'Plaza + market', es: 'Plaza + mercado' }, day: 'Aug 2', idealista: 'https://www.idealista.com/venta-terrenos/colmenar-de-oreja-madrid/' },
+  { name: 'Villarejo de Salvanés', region: { en: 'Madrid', es: 'Madrid' }, kid: { en: 'Castle keep + kids’ theatrical tours', es: 'Torre del homenaje + visitas teatralizadas' }, day: 'Aug 2', idealista: 'https://www.idealista.com/venta-terrenos/villarejo-de-salvanes-madrid/' },
   { name: 'Villacastín', region: { en: 'Segovia', es: 'Segovia' }, kid: { en: 'Drive-through on the way home', es: 'De paso de vuelta' }, day: 'Aug 13', idealista: 'https://www.idealista.com/venta-terrenos/villacastin-segovia/' },
-  { name: 'Duruelo + El Guijar / Valdevacas', region: { en: 'Segovia', es: 'Segovia' }, kid: { en: 'Oak & juniper scenery, village churches', es: 'Encinas y sabinas, iglesias de pueblo' }, day: 'Aug 12', idealista: 'https://www.idealista.com/venta-terrenos/sepulveda-segovia/' },
+  { name: 'Duruelo + El Guijar / Valdevacas', region: { en: 'Segovia', es: 'Segovia' }, kid: { en: "Uncle's village + family house — grandma's birthday", es: "Pueblo del tío + casa familiar — cumple de la abuela" }, day: 'Aug 12', idealista: 'https://www.idealista.com/venta-terrenos/sepulveda-segovia/' },
 ]
 
 export const bookingChecklist = [
@@ -390,16 +409,12 @@ export const bookingChecklist = [
       { label: { en: 'José María ✉', es: 'José María ✉' }, type: 'email', url: 'mailto:reservas@restaurantejosemaria.com' },
       { label: { en: 'Casa Duque ☎', es: 'Casa Duque ☎' }, type: 'phone', url: 'tel:+34921462487' },
     ] },
-  { id: 'b5', text: { en: 'Reserve Chinchón lunch — Aug 10', es: 'Reservar comida en Chinchón — 10 ago' },
+  { id: 'b5', text: { en: 'Reserve Chinchón lunch — Aug 2', es: 'Reservar comida en Chinchón — 2 ago' },
     links: [
       { label: { en: 'Cuevas del Vino ☎', es: 'Cuevas del Vino ☎' }, type: 'phone', url: 'tel:+34918940206' },
       { label: { en: 'La Casa del Pregonero ☎', es: 'La Casa del Pregonero ☎' }, type: 'phone', url: 'tel:+34918940696' },
       { label: { en: 'Parador ☎', es: 'Parador ☎' }, type: 'phone', url: 'tel:+34918940836' },
       { label: { en: 'Parador ✉', es: 'Parador ✉' }, type: 'email', url: 'mailto:chinchon@parador.es' },
-    ] },
-  { id: 'b6', text: { en: 'Book a casa rural in El Guijar — Aug 12 overnight (very limited stock)', es: 'Reservar casa rural en El Guijar — noche del 12 ago (muy pocas opciones)' },
-    links: [
-      { label: { en: 'EscapadaRural · El Guijar', es: 'EscapadaRural · El Guijar' }, type: 'web', url: 'https://www.escapadarural.com/buscar?q=El+Guijar+Segovia' },
     ] },
   { id: 'b7', text: { en: 'Buy Aranjuez Palace + Segovia Alcázar tickets online', es: 'Comprar entradas Palacio de Aranjuez + Alcázar de Segovia online' },
     links: [

@@ -26,8 +26,8 @@ build:
 	@echo "----------------------------------------"
 
 kill-port:
-	@echo "Clearing port 8000 if in use..."
-	@lsof -t -i:8000 | xargs kill -9 2>/dev/null || true
+	@echo "Clearing dev ports (8000 + 5173-5200) if in use..."
+	@for p in 8000 $$(seq 5173 5200); do lsof -t -i:$$p | xargs kill -9 2>/dev/null || true; done
 
 serve: build kill-port
 	@echo "Creating self-referential symlink for asset mapping..."
