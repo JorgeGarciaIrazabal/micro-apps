@@ -153,17 +153,13 @@ export const days = [
   },
   {
     id: 'aug05', dow: { en: 'Wed', es: 'Mié' }, label: 'Aug 5', emoji: '🧱',
-    title: { en: 'NORTH — Acerormigón (concrete/steel) + Galápagos', es: 'NORTE — Acerormigón (hormigón/acero) + Galápagos' },
+    title: { en: 'NORTH — Galápagos / Montelar + Valdeluz', es: 'NORTE — Galápagos / Montelar + Valdeluz' },
     corridor: { en: 'North (A-1)', es: 'Norte (A-1)' },
-    heat: null, tags: ['showroom', 'town', 'kids', 'food', 'booking', 'seniors'],
+    heat: null, tags: ['town', 'kids', 'food', 'booking', 'seniors'],
     summary: {
-      en: 'The biggest steel+concrete house expo in the region, the gated Montelar community with a pumptrack for the kid, then Valdeluz condos on the way home.',
-      es: 'La mayor exposición de casas de acero+hormigón de la región, la urbanización cerrada de Montelar con un pumptrack para la peque y luego los pisos de Valdeluz de vuelta.' },
+      en: 'The gated Montelar community with a pumptrack for the kid, then Valdeluz condos on the way home.',
+      es: 'La urbanización cerrada de Montelar con un pumptrack para la peque y luego los pisos de Valdeluz de vuelta.' },
     stops: [
-      { icon: '🧱', kind: { en: 'Showroom · concrete/steel', es: 'Showroom · hormigón/acero' }, title: { en: 'Acerormigón', es: 'Acerormigón' }, place: { en: 'S.S. de los Reyes (A-1 km 27)', es: 'S.S. de los Reyes (A-1 km 27)' }, drive: '20–25 min N', time: '09:30',
-        desc: { en: 'Biggest steel+concrete house expo in the region — 1- & 2-storey models in one visit, ideal for comparing. ~1h. (Mon–Thu; Fri mornings only.)', es: 'La mayor exposición de casas de acero+hormigón de la región — modelos de 1 y 2 plantas en una visita, ideal para comparar. ~1h. (Lun–Jue; Vie solo mañanas.)' },
-        tags: ['showroom', 'booking'], booking: { en: 'Cita previa 682 49 58 46', es: 'Cita previa 682 49 58 46' },
-        links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://acerormigon.es/visitanos/' }, { label: { en: 'Call', es: 'Llamar' }, type: 'phone', url: 'tel:+34682495846' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Acerormigon San Sebastian de los Reyes') }] },
       { icon: '📍', kind: { en: 'Town scouting', es: 'Ver pueblo' }, title: { en: 'Galápagos / Montelar', es: 'Galápagos / Montelar' }, place: { en: 'Guadalajara', es: 'Guadalajara' }, drive: '30–40 min',
         desc: { en: 'Gated American-style community, giant plots, 24h security. Kid: the Pumptrack Park + kids’ climbing wall + parks. Grown-ups: El Casar town centre & market. Lunch in El Casar. Arrange a plot viewing.', es: 'Urbanización americana cerrada, parcelas enormes, seguridad 24h. Peque: Pumptrack Park + rocódromo infantil + parques. Mayores: centro y mercado de El Casar. Comida en El Casar. Concierta ver una parcela.' },
         tags: ['town', 'kids', 'food', 'booking'], booking: { en: 'Pre-arrange a plot viewing', es: 'Concierta antes ver una parcela' },
@@ -357,7 +353,7 @@ export const days = [
 
 export const showrooms = [
   { type: { en: 'SIP', es: 'SIP' }, name: 'EcoSip House', where: { en: 'Coslada (Av. de Moscú 1)', es: 'Coslada (Av. de Moscú 1)' }, book: '665 964 071 / 617 008 642', day: 'Aug 4', star: true, url: 'https://www.ecosiphouse.com/precios-y-servicios/' },
-  { type: { en: 'Concrete / steel', es: 'Hormigón / acero' }, name: 'Acerormigón', where: { en: 'S.S. de los Reyes (A-1 km 27)', es: 'S.S. de los Reyes (A-1 km 27)' }, book: '682 49 58 46 · Mon–Thu, Fri AM', day: 'Aug 5', star: true, url: 'https://acerormigon.es/visitanos/' },
+
   { type: { en: 'Concrete (finished house)', es: 'Hormigón (casa acabada)' }, name: 'Modulartis piloto', where: { en: 'Sierra NW (on booking)', es: 'Sierra NO (al reservar)' }, book: '910 467 187', day: 'Aug 6', star: true, url: 'https://modulartis.com/casa-piloto-modulartis/' },
   { type: { en: 'Wood (full-size)', es: 'Madera (tamaño real)' }, name: 'Canexel', where: { en: 'Guadarrama (C/ Valle del Alberche 20E)', es: 'Guadarrama (C/ Valle del Alberche 20E)' }, book: '918 513 000 · American/Canadian style', day: 'Aug 6', star: true, url: 'https://www.canexel.es/casas-madera-madrid/' },
   { type: { en: 'Modular / mobil (optional)', es: 'Modular / mobil (opcional)' }, name: 'Casaredia', where: { en: 'Getafe (C. Estrategia 15)', es: 'Getafe (C. Estrategia 15)' }, book: 'web form', day: 'Aug 13', star: false, url: 'https://casaredia.com/madrid/' },
@@ -382,10 +378,9 @@ export const townsRef = [
 ]
 
 export const bookingChecklist = [
-  { id: 'b1', text: { en: 'Confirm showroom appointments before the Aug 10–18 shutdown — EcoSip (Aug 4), Acerormigón (Aug 5), Modulartis + Canexel (Aug 6)', es: 'Confirmar citas de showroom antes del cierre del 10–18 ago — EcoSip (4 ago), Acerormigón (5 ago), Modulartis + Canexel (6 ago)' },
+  { id: 'b1', text: { en: 'Confirm showroom appointments before the Aug 10–18 shutdown — EcoSip (Aug 4), Modulartis + Canexel (Aug 6)', es: 'Confirmar citas de showroom antes del cierre del 10–18 ago — EcoSip (4 ago), Modulartis + Canexel (6 ago)' },
     links: [
       { label: { en: 'EcoSip ☎', es: 'EcoSip ☎' }, type: 'phone', url: 'tel:+34665964071' },
-      { label: { en: 'Acerormigón ☎', es: 'Acerormigón ☎' }, type: 'phone', url: 'tel:+34682495846' },
       { label: { en: 'Modulartis ☎', es: 'Modulartis ☎' }, type: 'phone', url: 'tel:+34910467187' },
       { label: { en: 'Canexel ☎', es: 'Canexel ☎' }, type: 'phone', url: 'tel:+34918513000' },
     ] },
