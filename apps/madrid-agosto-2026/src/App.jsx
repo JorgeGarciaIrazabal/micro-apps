@@ -224,7 +224,11 @@ export default function App() {
             <div className="ref-table">
               {townsRef.map((t, i) => (
                 <div className="ref-row" key={i}>
-                  <div className="rr-name">{t.name}{t.idealista && <a className="rr-idealista" href={t.idealista} target="_blank" rel="noreferrer">🏡 Idealista</a>}</div>
+                  <div className="rr-name">
+                    {t.name}
+                    {t.idealista && <a className="rr-idealista" href={t.idealista} target="_blank" rel="noreferrer">🏡 Idealista</a>}
+                    {t.interest && <a className="rr-idealista" href={t.interest.url} target="_blank" rel="noreferrer">{t.interest.icon} {L(t.interest.label)}</a>}
+                  </div>
                   <div className="rr-region">{L(t.region)}</div>
                   <div className="rr-kid">🧒 {L(t.kid)}</div>
                   <div className="rr-day mono">{t.day}</div>
