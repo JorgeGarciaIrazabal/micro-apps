@@ -25,7 +25,7 @@ export const ui = {
   coolDay: { en: '❄️ cooler day', es: '❄️ día más fresco' },
   checklistTitle: { en: '✅ Book this week', es: '✅ Reservar esta semana' },
   referenceTitle: { en: '📚 Reference', es: '📚 Referencia' },
-  showroomsSummary: { en: '🏭 Showrooms — one of each build type', es: '🏭 Showrooms — uno de cada tipo de construcción' },
+  showroomsSummary: { en: '🏭 Showrooms — real houses you can enter', es: '🏭 Showrooms — casas reales que se pueden recorrer' },
   townsSummary: { en: '📍 American-style / low-density towns', es: '📍 Pueblos estilo americano / baja densidad' },
   woodCaveat: { en: '🌲 Wood caveat: ', es: '🌲 Nota sobre madera: ' },
   statDays: { en: 'days', es: 'días' },
@@ -59,8 +59,8 @@ export const realityChecks = [
     en: 'Heat 35–40 °C in Madrid & SE towns. Main sight before ~13:30, long lunch, siesta, out again after 19:00. Sierra days are 5–8° cooler — save them for the hottest forecasts.',
     es: 'Calor 35–40 °C en Madrid y pueblos del sureste. El plan principal antes de las 13:30, comida larga, siesta y salir de nuevo tras las 19:00. Los días de sierra son 5–8° más frescos — guárdalos para los días de más calor.' } },
   { icon: '🚪', text: {
-    en: 'August closures: many firms shut ~Aug 10–18. Every showroom is by appointment — book week 1 (Aug 4–6) and phone-confirm 2–3 days ahead.',
-    es: 'Cierres de agosto: muchas empresas cierran ~10–18 ago. Todos los showrooms son con cita — reserva la semana 1 (4–6 ago) y confirma por teléfono 2–3 días antes.' } },
+    en: 'August showroom check (28 Jul): Acerormigón is officially closed Aug 3–17, so it is excluded. Casaredia’s live calendar currently offers Aug 10 slots; Modulartis and Canexel remain appointment-only and must confirm Aug 6 in writing. Recheck every booking 2–3 days ahead.',
+    es: 'Comprobación de showrooms (28 jul): Acerormigón cierra oficialmente del 3 al 17 de agosto, por eso queda fuera. El calendario de Casaredia ofrece ahora citas el 10 de agosto; Modulartis y Canexel siguen siendo solo con cita y deben confirmar por escrito el 6 de agosto. Reconfirma todo 2–3 días antes.' } },
   { icon: '🏗️', text: {
     en: 'Plot viewings are not walk-in. Call a local inmobiliaria in each town a few days ahead to see parcels / meet an agent.',
     es: 'Ver parcelas no es sin cita. Llama a una inmobiliaria local de cada pueblo unos días antes para ver parcelas / hablar con un agente.' } },
@@ -184,10 +184,10 @@ export const days = [
         desc: { en: 'Walk a fully finished concrete modular home — the best "how would we actually live here" visit.', es: 'Recorrer una casa modular de hormigón totalmente acabada — la mejor visita para imaginar cómo se vive de verdad.' },
         tags: ['showroom', 'booking'], booking: { en: 'Form or 910 467 187', es: 'Formulario o 910 467 187' },
         links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://modulartis.com/casa-piloto-modulartis/' }, { label: { en: 'Call', es: 'Llamar' }, type: 'phone', url: 'tel:+34910467187' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Modulartis Madrid') }] },
-      { icon: '🌲', kind: { en: 'Showroom · wood', es: 'Showroom · madera' }, title: { en: 'Canexel — Guadarrama', es: 'Canexel — Guadarrama' }, place: { en: 'Guadarrama (C/ Valle del Alberche 20E)', es: 'Guadarrama (C/ Valle del Alberche 20E)' }, drive: '10 min',
-        desc: { en: 'Full-size Canadian/American-style wood houses (300+ built) — on-theme with the American-style towns. Their Madrid base is right here in Guadarrama; call ahead to see a model or a nearby finished house.', es: 'Casas de madera completas estilo canadiense/americano (+300 construidas) — en línea con los pueblos estilo americano. Su base en Madrid está aquí en Guadarrama; llama antes para ver un modelo o una casa terminada cercana.' },
-        tags: ['showroom', 'booking'], booking: { en: 'Call 918 513 000 to arrange a model / finished-house visit', es: 'Llama al 918 513 000 para concertar ver un modelo / casa terminada' },
-        links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://www.canexel.es/casas-madera-madrid/' }, { label: { en: 'Call', es: 'Llamar' }, type: 'phone', url: 'tel:+34918513000' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Canexel Guadarrama Valle del Alberche 20') }] },
+      { icon: '🌲', kind: { en: 'Pilot house · wood', es: 'Casa piloto · madera' }, title: { en: 'Canexel — 450 m² pilot chalet', es: 'Canexel — chalet piloto de 450 m²' }, place: { en: 'Guadarrama (C/ Valle del Alberche 20E)', es: 'Guadarrama (C/ Valle del Alberche 20E)' }, drive: '10 min',
+        desc: { en: 'This is a genuine full-size visit: Canexel’s Madrid headquarters occupies its 450 m² Canadian/American-style pilot chalet. Walk the two floors and basement, inspect the timber construction and finishes, and ask about a current nearby build. It is appointment-only.', es: 'Esta sí es una visita a tamaño completo: la sede madrileña de Canexel ocupa su chalet piloto de 450 m² estilo canadiense/americano. Recorre sus dos plantas y sótano, examina la construcción de madera y los acabados y pregunta por una obra cercana en curso. Solo con cita.' },
+        tags: ['showroom', 'booking'], booking: { en: 'Call 918 513 000 · request written confirmation for Aug 6', es: 'Llama al 918 513 000 · pide confirmación escrita para el 6 ago' },
+        links: [{ label: { en: 'Pilot chalet details', es: 'Detalles chalet piloto' }, type: 'web', url: 'https://www.canexel.es/blog/canexel-instala-placas-solares-en-su-chalet-piloto/' }, { label: { en: 'Madrid office', es: 'Sede Madrid' }, type: 'web', url: 'https://www.canexel.es/arquitectura/' }, { label: { en: 'Call', es: 'Llamar' }, type: 'phone', url: 'tel:+34918513000' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Canexel Guadarrama Valle del Alberche 20') }] },
       { icon: '🍽️', kind: { en: 'Lunch', es: 'Comida' }, title: { en: 'Relaxed sierra lunch', es: 'Comida tranquila de sierra' }, place: { en: 'Guadarrama / Cercedilla', es: 'Guadarrama / Cercedilla' },
         desc: { en: 'Cooler mountain air, casual asador. Grandparents + kid downshift for the afternoon.', es: 'Aire de montaña más fresco, asador informal. Abuelos + peque bajan el ritmo por la tarde.' },
         tags: ['food', 'nature'], links: [{ label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('asador Guadarrama Madrid') }] },
@@ -260,16 +260,20 @@ export const days = [
     ],
   },
   {
-    id: 'aug10', dow: { en: 'Mon', es: 'Lun' }, label: 'Aug 10', emoji: '😴',
-    title: { en: 'Rest day (or easy Faunia)', es: 'Día de descanso (o Faunia tranquilo)' },
-    corridor: { en: 'Home / SE', es: 'Casa / SE' },
-    heat: null, tags: ['rest', 'kids', 'seniors', 'water'],
+    id: 'aug10', dow: { en: 'Mon', es: 'Lun' }, label: 'Aug 10', emoji: '🏭',
+    title: { en: 'BIG SHOW — Casaredia + restful afternoon', es: 'GRAN EXPOSICIÓN — Casaredia + tarde tranquila' },
+    corridor: { en: 'South Madrid / Getafe', es: 'Sur de Madrid / Getafe' },
+    heat: null, tags: ['showroom', 'booking', 'rest', 'kids', 'seniors', 'water'],
     summary: {
-      en: 'A true downshift for the heat — or an easy animal-park day if the little one has energy.',
-      es: 'Un descanso de verdad por el calor — o un día fácil de parque de animales si la peque tiene energía.' },
+      en: 'The trip’s large multi-house exhibition: walk several modular and mobile homes in Getafe in the morning, then keep the afternoon light.',
+      es: 'La gran exposición con varias casas del viaje: recorrer por la mañana distintas casas modulares y mobile homes en Getafe y dejar la tarde ligera.' },
     stops: [
+      { icon: '🏭', kind: { en: 'Priority showroom · 10:00', es: 'Showroom prioritario · 10:00' }, title: { en: 'Casaredia — 12,000 m² multi-house exhibition', es: 'Casaredia — exposición de 12.000 m² con varias casas' }, place: { en: 'Getafe (C. Estrategia 15)', es: 'Getafe (C. Estrategia 15)' }, drive: '25–35 min', time: '10:00',
+        desc: { en: 'The best big-show option open during the trip: walk through several new and used homes, not just samples. Ask to compare the full-size Universal Grand Luxe 120 (120 m², 3 bedrooms, 2 bathrooms) with the other modular and mobile models. The live calendar currently shows Aug 10 appointments; reserve a full guided visit and phone-confirm.', es: 'La mejor gran exposición abierta durante el viaje: entrar en varias casas nuevas y de ocasión, no solo ver muestras. Pide comparar la Universal Grand Luxe 120 a tamaño real (120 m², 3 dormitorios, 2 baños) con los demás modelos modulares y móviles. El calendario en directo ofrece ahora citas el 10 de agosto; reserva una visita guiada completa y confirma por teléfono.' },
+        tags: ['showroom', 'booking'], booking: { en: 'Book Aug 10 online · Madrid: 638 939 450', es: 'Reservar online el 10 ago · Madrid: 638 939 450' },
+        links: [{ label: { en: 'Book appointment', es: 'Reservar cita' }, type: 'book', url: 'https://casaredia.com/cita-online/' }, { label: { en: 'Exhibition + models', es: 'Exposición + modelos' }, type: 'web', url: 'https://casaredia.com/madrid/' }, { label: { en: 'Independent walkthrough', es: 'Visita independiente' }, type: 'web', url: 'https://cadenaser.com/nacional/2025/10/29/casas-prefabricadas-es-una-alternativa-real-a-la-crisis-de-la-vivienda-cadena-ser/' }, { label: { en: 'Call', es: 'Llamar' }, type: 'phone', url: 'tel:+34638939450' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Casaredia Getafe Calle Estrategia 15') }] },
       { icon: '😴', kind: { en: 'Rest', es: 'Descanso' }, title: { en: 'Downshift', es: 'Bajar el ritmo' }, place: { en: 'Home / neighbourhood', es: 'Casa / barrio' },
-        desc: { en: 'Pool, home, short shaded stroll. Recover mid-trip before the Segovia overnight.', es: 'Piscina, casa, paseo corto a la sombra. Recuperar a mitad de viaje antes de la noche en Segovia.' }, tags: ['rest'], links: [] },
+        desc: { en: 'Home, lunch and a short shaded stroll. Recover mid-trip before the Segovia overnight.', es: 'Casa, comida y paseo corto a la sombra. Recuperar a mitad de viaje antes de la noche en Segovia.' }, tags: ['rest'], links: [] },
       { icon: '🐧', kind: { en: 'Optional fun-but-easy', es: 'Opcional divertido y fácil' }, title: { en: 'Faunia bioparque', es: 'Faunia bioparque' }, place: { en: 'SE Madrid', es: 'SE de Madrid' }, drive: '25–30 min',
         desc: { en: 'Hourly tropical storm, penguins, water-play "estacas del aguador", partly indoor/AC. Kid highlight; grandparents stroll & sit. Great hot-day fallback.', es: 'Tormenta tropical cada hora, pingüinos, juegos de agua "estacas del aguador", parte cubierta/con aire. Triunfo con la peque; abuelos pasean y se sientan. Gran plan para día de calor.' },
         tags: ['kids', 'seniors', 'water', 'nature'], links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://www.faunia.es/' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Faunia Madrid') }] },
@@ -314,10 +318,10 @@ export const days = [
     id: 'aug13', dow: { en: 'Thu', es: 'Jue' }, label: 'Aug 13', emoji: '🏰',
     title: { en: 'Segovia (from El Guijar) + Villacastín', es: 'Segovia (desde El Guijar) + Villacastín' },
     corridor: { en: 'NW (A-6 / AP-61)', es: 'NO (A-6 / AP-61)' },
-    heat: 'cooler', tags: ['culture', 'kids', 'seniors', 'food', 'town', 'booking', 'showroom'],
+    heat: 'cooler', tags: ['culture', 'kids', 'seniors', 'food', 'town', 'booking'],
     summary: {
-      en: 'Short drive from the overnight to Segovia — Alcázar, aqueduct, cochinillo lunch — then tick Villacastín on the drive home. Optional showroom overflow in the evening.',
-      es: 'Trayecto corto desde la noche allí a Segovia — Alcázar, acueducto, cochinillo — y de vuelta marcamos Villacastín. Showroom opcional por la tarde.' },
+      en: 'Short drive from the overnight to Segovia — Alcázar, aqueduct, cochinillo lunch — then tick Villacastín on the drive home.',
+      es: 'Trayecto corto desde la noche allí a Segovia — Alcázar, acueducto, cochinillo — y de vuelta marcamos Villacastín.' },
     stops: [
       { icon: '🏰', kind: { en: 'Morning', es: 'Mañana' }, title: { en: 'Segovia — Alcázar + Aqueduct', es: 'Segovia — Alcázar + Acueducto' }, place: { en: 'Segovia', es: 'Segovia' }, drive: '~50 min from El Guijar',
         desc: { en: 'Alcázar (the castle that inspired Disney — kid heaven; grandparents: flat courtyard, tower optional), Roman Aqueduct, Plaza Mayor, cathedral. Mostly flat old town.', es: 'Alcázar (el castillo que inspiró a Disney — paraíso para la peque; abuelos: patio llano, torre opcional), Acueducto romano, Plaza Mayor, catedral. Casco casi todo llano.' },
@@ -333,9 +337,6 @@ export const days = [
       { icon: '📍', kind: { en: 'On the way home', es: 'De vuelta a casa' }, title: { en: 'Villacastín (drive-through)', es: 'Villacastín (de paso)' }, place: { en: 'Segovia (A-6)', es: 'Segovia (A-6)' }, drive: '+15 min',
         desc: { en: 'Crossroads American-style town — ticks another town with no real detour.', es: 'Pueblo estilo americano en el cruce de caminos — marca otro pueblo sin apenas desvío.' },
         tags: ['town'], links: [{ label: { en: 'Idealista · plots', es: 'Idealista · parcelas' }, type: 'plots', url: 'https://www.idealista.com/venta-terrenos/villacastin-segovia/' }, { label: { en: '🏠 €257.5k · 235m² · 4bed · 2bath (Maello)', es: '🏠 257,5k€ · 235m² · 4 dorm · 2 baños (Maello)' }, type: 'web', url: 'https://www.idealista.com/inmueble/111717462/' }, { label: { en: '🏠 €195k · 160m² · 4bed · 2bath (Zarzuela)', es: '🏠 195k€ · 160m² · 4 dorm · 2 baños (Zarzuela)' }, type: 'web', url: 'https://www.idealista.com/inmueble/110877957/' }, { label: { en: 'Sierra Cathedral', es: 'Catedral de la Sierra' }, type: 'web', url: 'https://www.turismocastillayleon.com/es/patrimonio-cultura/iglesias-ermitas/iglesia-san-esteban-san-sebastian' }, { label: { en: 'Town map', es: 'Mapa del pueblo' }, type: 'map', url: maps('Villacastin Segovia') }] },
-      { icon: '📦', kind: { en: 'Optional showroom', es: 'Showroom opcional' }, title: { en: 'Casaredia (modular / mobil)', es: 'Casaredia (modular / mobil)' }, place: { en: 'Getafe', es: 'Getafe' }, drive: '30–40 min',
-        desc: { en: 'The type you de-prioritised — visit only if still curious about modular/mobil. Appointment needed.', es: 'El tipo que dejasteis en segundo plano — visitad solo si aún os pica la curiosidad por modular/mobil. Con cita.' },
-        tags: ['showroom', 'booking'], booking: { en: 'Appointment (web form)', es: 'Cita (formulario web)' }, links: [{ label: { en: 'Website', es: 'Web' }, type: 'web', url: 'https://casaredia.com/madrid/' }, { label: { en: 'Map', es: 'Mapa' }, type: 'map', url: maps('Casaredia Getafe Estrategia 15') }] },
     ],
   },
   {
@@ -353,14 +354,14 @@ export const days = [
 
 export const showrooms = [
   { type: { en: 'Concrete (finished house)', es: 'Hormigón (casa acabada)' }, name: 'Modulartis piloto', where: { en: 'Sierra NW (on booking)', es: 'Sierra NO (al reservar)' }, book: '910 467 187', day: 'Aug 6', star: true, url: 'https://modulartis.com/casa-piloto-modulartis/' },
-  { type: { en: 'Wood (full-size)', es: 'Madera (tamaño real)' }, name: 'Canexel', where: { en: 'Guadarrama (C/ Valle del Alberche 20E)', es: 'Guadarrama (C/ Valle del Alberche 20E)' }, book: '918 513 000 · American/Canadian style', day: 'Aug 6', star: true, url: 'https://www.canexel.es/casas-madera-madrid/' },
-  { type: { en: 'Modular / mobil (optional)', es: 'Modular / mobil (opcional)' }, name: 'Casaredia', where: { en: 'Getafe (C. Estrategia 15)', es: 'Getafe (C. Estrategia 15)' }, book: 'web form', day: 'Aug 13', star: false, url: 'https://casaredia.com/madrid/' },
+  { type: { en: 'Wood (450 m² pilot chalet)', es: 'Madera (chalet piloto de 450 m²)' }, name: 'Canexel', where: { en: 'Guadarrama (C/ Valle del Alberche 20E)', es: 'Guadarrama (C/ Valle del Alberche 20E)' }, book: '918 513 000 · written confirmation', day: 'Aug 6', star: true, url: 'https://www.canexel.es/blog/canexel-instala-placas-solares-en-su-chalet-piloto/' },
+  { type: { en: '12,000 m² · multiple walk-through homes', es: '12.000 m² · varias casas visitables' }, name: 'Casaredia', where: { en: 'Getafe (C. Estrategia 15)', es: 'Getafe (C. Estrategia 15)' }, book: '638 939 450 · live calendar', day: 'Aug 10', star: true, url: 'https://casaredia.com/cita-online/' },
   { type: { en: 'Concrete (optional, in-city)', es: 'Hormigón (opcional, en ciudad)' }, name: 'Atlántida Homes', where: { en: 'Retiro (C/ Pez Austral 2)', es: 'Retiro (C/ Pez Austral 2)' }, book: '914 09 71 80', day: '—', star: false, url: 'https://atlantidahomes.com/casas-prefabricadas-madrid/' },
 ]
 
 export const woodNote = {
-  en: 'Gardenhouse24 and Tocar Madera were both dropped — cabins/tiny-homes only, too small. The one real full-size wood option is Canexel (Guadarrama, right on the Aug 6 route) — they build Canadian/American-style family houses; call 918 513 000 to see a model or a nearby finished build.',
-  es: 'Gardenhouse24 y Tocar Madera descartados — solo cabañas/tiny-homes, demasiado pequeñas. La única opción real de madera a tamaño real es Canexel (Guadarrama, justo en la ruta del 6 ago) — construyen casas familiares estilo canadiense/americano; llama al 918 513 000 para ver un modelo o una obra terminada cercana.',
+  en: 'Gardenhouse24 and Tocar Madera were both dropped — cabins/tiny-homes only, too small. Canexel is the real full-size wood option: its Guadarrama headquarters is itself a 450 m² pilot chalet in Canadian/American style. The visit is not walk-in; get written confirmation for Aug 6.',
+  es: 'Gardenhouse24 y Tocar Madera descartados — solo cabañas/tiny-homes, demasiado pequeñas. Canexel es la opción real de madera a tamaño completo: su sede de Guadarrama es un chalet piloto de 450 m² estilo canadiense/americano. No se visita sin cita; consigue confirmación por escrito para el 6 de agosto.',
 }
 
 export const townsRef = [
@@ -376,10 +377,12 @@ export const townsRef = [
 ]
 
 export const bookingChecklist = [
-  { id: 'b1', text: { en: 'Confirm the Aug 6 showroom appointments before the Aug 10–18 shutdown — Modulartis + Canexel', es: 'Confirmar las citas de showroom del 6 ago antes del cierre del 10–18 ago — Modulartis + Canexel' },
+  { id: 'b1', text: { en: 'Book all three real-house visits: Modulartis + Canexel on Aug 6, then Casaredia’s multi-house exhibition on Aug 10', es: 'Reservar las tres visitas a casas reales: Modulartis + Canexel el 6 ago y la exposición de varias casas de Casaredia el 10 ago' },
     links: [
       { label: { en: 'Modulartis ☎', es: 'Modulartis ☎' }, type: 'phone', url: 'tel:+34910467187' },
       { label: { en: 'Canexel ☎', es: 'Canexel ☎' }, type: 'phone', url: 'tel:+34918513000' },
+      { label: { en: 'Book Casaredia', es: 'Reservar Casaredia' }, type: 'book', url: 'https://casaredia.com/cita-online/' },
+      { label: { en: 'Casaredia ☎', es: 'Casaredia ☎' }, type: 'phone', url: 'tel:+34638939450' },
     ] },
   { id: 'b2', text: { en: 'Arrange property viewings with local agents — Eurovillas, Galápagos and Urtajo', es: 'Concertar visitas de propiedades con agentes locales — Eurovillas, Galápagos y Urtajo' },
     links: [
