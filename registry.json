@@ -2,6 +2,13 @@
   "version": 1,
   "apps": [
     {
+      "id": "cosmo-math",
+      "name": "Cosmo's Math Planet",
+      "icon": "👽",
+      "path": "cosmo-math/",
+      "description": "Tablet maths game for a 7-year-old: feed a hungry alien by solving sums and take-aways, earn stars, and unlock hats."
+    },
+    {
       "id": "house-designer",
       "name": "House Designer",
       "icon": "🏠",

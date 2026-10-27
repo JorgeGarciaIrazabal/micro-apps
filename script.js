@@ -387,6 +387,19 @@ function initModalsAndCarousels() {
 
   // App-specific descriptions and specs for detail popups
   const APP_DETAILS = {
+    'cosmo-math': {
+      title: "Cosmo's Math Planet — Tablet Maths Game",
+      icon: '👽',
+      tech: ['React 19', 'WebAudio Kit', 'Inline SVG Character', 'localStorage Progress', 'Bilingual UI (EN/ES)', 'Vite'],
+      overview: 'A tablet-first maths game for a 7-year-old. Cosmo the alien is hungry: every correct sum or take-away feeds him a space snack, earns stars, and unlocks a new look for him. No typing, no timers, no red crosses — just four big bubbles to tap, counting beans to help when needed, and a wardrobe full of hats to collect.',
+      features: [
+        '<b>Tap-only answers:</b> Four giant bubble answers sized for small thumbs on a tablet, in portrait or landscape. No keyboard, no scrolling, no double-tap zoom.',
+        '<b>Three friendly difficulty steps:</b> Little Star (to 10), Moon Hopper (to 20, with carrying), and Galaxy Boss (to 100, tens and ones without borrowing).',
+        '<b>Counting beans helper:</b> Tap each bean to count it; tens become "10 bundles" for bigger numbers, and take-aways show the faded beans that flew away.',
+        '<b>Stars, combos and a wardrobe:</b> First-try answers earn double stars, every third in a row triggers a combo, and stars unlock seven looks (flower, top hat, shades, crown, sun hat, cap, rainbow halo).',
+        '<b>Synthesised sound + bilingual:</b> A tiny WebAudio kit makes the pops, chimes and fanfare with no audio files, and the whole UI switches between English and Spanish.'
+      ]
+    },
     'clara-summer-camps-madrid': {
       title: 'Clara Summer Camps Madrid 2026',
       icon: '🏕️',
