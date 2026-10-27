@@ -1,21 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  ACCESSORIES,
-  LEVELS,
-  OPS,
-  ROUND_SIZE,
+  FIRST_BONUS,
+  LOOKS,
+  MEDAL_BONUS,
+  PLANETS,
+  RUN_SIZE,
   STRINGS,
 } from './data.js'
-import { makeRound, tokenize } from './game.js'
+import { makeRun } from './game.js'
+import { Confetti, Cosmo, StarField } from './Cosmo.jsx'
+import ChallengeView from './Challenges.jsx'
 
-const SAVE_KEY = 'cosmo-math-v1'
+const SAVE_KEY = 'cosmo-math-v2'
 const DEFAULT_SAVE = {
-  stars: 0,
-  seen: [],
+  dust: 0,
+  best: {},
+  owned: [],
   equipped: 'none',
   muted: false,
-  level: 1,
-  op: 'mix',
   lang: 'en',
 }
 
@@ -23,11 +25,20 @@ function loadSave() {
   try {
     const raw = localStorage.getItem(SAVE_KEY)
     if (!raw) return DEFAULT_SAVE
-    return { ...DEFAULT_SAVE, ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw)
+    return {
+      ...DEFAULT_SAVE,
+      ...parsed,
+      best: parsed.best || {},
+      owned: Array.isArray(parsed.owned) ? parsed.owned : [],
+    }
   } catch {
     return DEFAULT_SAVE
   }
 }
+
+const pick = (list) => list[Math.floor(Math.random() * list.length)]
+const starsFor = (n) => [1, 2, 3].map((i) => i <= n)
 
 // ---------------------------------------------------------------------------
 // Tiny WebAudio sound kit — no assets, everything is synthesised.
@@ -73,6 +84,10 @@ const sound = {
     this.tone(320, 0, 0.16, 'sine', 0.1)
     this.tone(240, 0.12, 0.2, 'sine', 0.09)
   },
+  coin() {
+    this.tone(880, 0, 0.07, 'triangle', 0.1)
+    this.tone(1174, 0.06, 0.12, 'triangle', 0.1)
+  },
   fanfare() {
     const notes = [523.25, 659.25, 783.99, 1046.5]
     notes.forEach((f, i) => this.tone(f, i * 0.12, 0.3, 'triangle', 0.1))
@@ -83,232 +98,45 @@ const sound = {
   },
 }
 
-const pick = (list) => list[Math.floor(Math.random() * list.length)]
-const nextUnlock = (stars) => ACCESSORIES.find((a) => a.cos > stars) || null
-
 // ---------------------------------------------------------------------------
-// Cosmo, the hungry alien (pure SVG so he stays crisp on any tablet)
+// Small shared UI
 // ---------------------------------------------------------------------------
-function Cosmo({ mood = 'idle', accessory = null, size = 'clamp(180px, 34vh, 300px)' }) {
-  const bigMouth = mood === 'happy'
+function DustChip({ amount, label }) {
   return (
-    <div className={`cosmo cosmo--${mood}`} style={{ '--cosmo-size': size }}>
-      <svg viewBox="0 0 200 200" role="img" aria-label="Cosmo the alien">
-        <defs>
-          <radialGradient id="cosmoBody" cx="34%" cy="24%" r="82%">
-            <stop offset="0%" stopColor="#c9fff1" />
-            <stop offset="42%" stopColor="#5eeac0" />
-            <stop offset="100%" stopColor="#12a884" />
-          </radialGradient>
-          <radialGradient id="cosmoEye" cx="40%" cy="30%" r="80%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#dcf7f1" />
-          </radialGradient>
-        </defs>
+    <span className="dust-chip" aria-label={`${amount} ${label}`}>
+      <span className="dust-glyph">✨</span>
+      <strong>{amount}</strong>
+    </span>
+  )
+}
 
-        <ellipse cx="100" cy="188" rx="54" ry="8" fill="#03010c" opacity="0.35" />
-
-        <g className="cosmo-float">
-          {/* feet */}
-          <ellipse cx="76" cy="179" rx="17" ry="9" fill="#0f9a79" />
-          <ellipse cx="124" cy="179" rx="17" ry="9" fill="#0f9a79" />
-
-          {/* antennae */}
-          <path
-            d="M80 54 Q66 28 54 22"
-            stroke="#3fd0a7"
-            strokeWidth="6"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <path
-            d="M120 54 Q134 28 146 22"
-            stroke="#3fd0a7"
-            strokeWidth="6"
-            fill="none"
-            strokeLinecap="round"
-          />
-          <circle className="antenna-ball" cx="52" cy="20" r="9" fill="#ffd166" />
-          <circle className="antenna-ball alt" cx="148" cy="20" r="9" fill="#ff77ab" />
-
-          {/* body */}
-          <path
-            d="M100 44 C146 44 169 80 169 118 C169 158 139 184 100 184 C61 184 31 158 31 118 C31 80 54 44 100 44 Z"
-            fill="url(#cosmoBody)"
-          />
-          <ellipse cx="100" cy="146" rx="44" ry="31" fill="#e8fff8" opacity="0.3" />
-
-          {/* eyes */}
-          <g className="cosmo-eyes">
-            <ellipse cx="77" cy="99" rx="18" ry="20" fill="url(#cosmoEye)" />
-            <ellipse cx="123" cy="99" rx="18" ry="20" fill="url(#cosmoEye)" />
-            {mood === 'happy' ? (
-              <>
-                <path
-                  d="M68 100 Q77 90 86 100"
-                  stroke="#2a1c46"
-                  strokeWidth="4.5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M114 100 Q123 90 132 100"
-                  stroke="#2a1c46"
-                  strokeWidth="4.5"
-                  fill="none"
-                  strokeLinecap="round"
-                />
-              </>
-            ) : (
-              <>
-                <ellipse cx="79" cy="102" rx="9" ry="10" fill="#2a1c46" />
-                <ellipse cx="125" cy="102" rx="9" ry="10" fill="#2a1c46" />
-                <circle cx="82" cy="98" r="3.2" fill="#fff" />
-                <circle cx="128" cy="98" r="3.2" fill="#fff" />
-              </>
-            )}
-          </g>
-
-          {/* cheeks */}
-          <ellipse cx="56" cy="126" rx="9" ry="6" fill="#ff6f9c" opacity="0.5" />
-          <ellipse cx="144" cy="126" rx="9" ry="6" fill="#ff6f9c" opacity="0.5" />
-
-          {/* mouth */}
-          {bigMouth ? (
-            <g className="cosmo-mouth">
-              <path d="M82 132 Q100 168 118 132 Q100 142 82 132 Z" fill="#37204a" />
-              <ellipse cx="100" cy="150" rx="10" ry="6" fill="#ff6f9c" />
-            </g>
-          ) : mood === 'oops' ? (
-            <ellipse cx="100" cy="144" rx="7" ry="8" fill="#37204a" />
-          ) : (
-            <path
-              d="M87 139 Q100 150 113 139"
-              stroke="#1d7c63"
-              strokeWidth="5"
-              fill="none"
-              strokeLinecap="round"
-            />
-          )}
-        </g>
-      </svg>
-
-      {accessory ? (
-        <span
-          className="cosmo-acc"
-          key={accessory.id}
-          style={{
-            top: `${accessory.top}%`,
-            left: `${accessory.left}%`,
-            transform: `translate(-50%, -50%) rotate(${accessory.rot}deg)`,
-            fontSize: `calc(var(--cosmo-size) * ${0.36 * accessory.scale})`,
-          }}
-        >
-          {accessory.emoji}
+function Medals({ count, size = 'normal' }) {
+  return (
+    <span className={`medals medals--${size}`} aria-label={`best ${count} of 3`}>
+      {starsFor(count).map((on, i) => (
+        <span key={i} className={`medal ${on ? 'is-on' : ''}`} style={{ animationDelay: `${i * 120}ms` }}>
+          ★
         </span>
+      ))}
+    </span>
+  )
+}
+
+function TopControls({ save, t, onToggleSound, onToggleLang, onShop, onHome, dust }) {
+  return (
+    <div className="top-controls">
+      {onHome ? (
+        <button className="icon-btn" onClick={onHome} aria-label={t.map}>
+          🏠
+        </button>
       ) : null}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Background bits
-// ---------------------------------------------------------------------------
-function StarField() {
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 70 }, (_, i) => ({
-        id: i,
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size: 1 + Math.random() * 2.4,
-        delay: Math.random() * 4,
-        dur: 2.4 + Math.random() * 3,
-        warm: Math.random() > 0.7,
-      })),
-    [],
-  )
-  return (
-    <div className="starfield" aria-hidden="true">
-      {stars.map((s) => (
-        <span
-          key={s.id}
-          className={s.warm ? 'star warm' : 'star'}
-          style={{
-            top: `${s.top}%`,
-            left: `${s.left}%`,
-            width: `${s.size}px`,
-            height: `${s.size}px`,
-            animationDelay: `${s.delay}s`,
-            animationDuration: `${s.dur}s`,
-          }}
-        />
-      ))}
-      <span className="planet planet-a" />
-      <span className="planet planet-b" />
-      <span className="planet planet-c" />
-    </div>
-  )
-}
-
-function Confetti() {
-  const colors = ['#ffd166', '#ff6f9c', '#5eeac0', '#9b8cff', '#ffa45c']
-  const pieces = useMemo(
-    () =>
-      Array.from({ length: 54 }, (_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 0.9,
-        dur: 2 + Math.random() * 1.8,
-        rot: Math.random() * 360,
-        drift: (Math.random() - 0.5) * 160,
-        color: colors[i % colors.length],
-        size: 7 + Math.random() * 9,
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  )
-  return (
-    <div className="confetti" aria-hidden="true">
-      {pieces.map((p) => (
-        <span
-          key={p.id}
-          style={{
-            left: `${p.left}%`,
-            background: p.color,
-            width: `${p.size}px`,
-            height: `${p.size * 0.6}px`,
-            animationDelay: `${p.delay}s`,
-            animationDuration: `${p.dur}s`,
-            '--drift': `${p.drift}px`,
-            '--spin': `${p.rot}deg`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Top bar
-// ---------------------------------------------------------------------------
-function TopBar({ t, save, onToggleLang, onToggleSound, onHome, starCount }) {
-  return (
-    <header className="topbar">
-      <div className="topbar-left">
-        {onHome ? (
-          <button className="icon-btn" onClick={onHome} aria-label={t.home}>
-            🏠
-          </button>
-        ) : (
-          <span className="brand-dot">👽</span>
-        )}
-        <span className="star-chip" aria-label={`${starCount} ${t.stars}`}>
-          <span className="star-glyph">⭐</span>
-          <strong>{starCount}</strong>
-        </span>
-      </div>
-      <div className="topbar-right">
+      <DustChip amount={dust} label={t.dust} />
+      {onShop ? (
+        <button className="icon-btn" onClick={onShop} aria-label={t.shop}>
+          🛍️
+        </button>
+      ) : null}
+      {onToggleLang ? (
         <button
           className="icon-btn lang-btn"
           onClick={onToggleLang}
@@ -316,6 +144,8 @@ function TopBar({ t, save, onToggleLang, onToggleSound, onHome, starCount }) {
         >
           {save.lang === 'en' ? 'EN' : 'ES'}
         </button>
+      ) : null}
+      {onToggleSound ? (
         <button
           className="icon-btn"
           onClick={onToggleSound}
@@ -323,102 +153,93 @@ function TopBar({ t, save, onToggleLang, onToggleSound, onHome, starCount }) {
         >
           {save.muted ? '🔇' : '🔊'}
         </button>
-      </div>
-    </header>
+      ) : null}
+    </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Counting beans
+// Galaxy map
 // ---------------------------------------------------------------------------
-function HelperPanel({ question, t }) {
-  const [counted, setCounted] = useState({})
-
-  const groups = useMemo(() => {
-    if (question.op === '−') {
-      const tokens = tokenize(question.a).map((value) => ({ value, removed: false }))
-      let left = question.b
-      for (let i = tokens.length - 1; i >= 0 && left > 0; i -= 1) {
-        if (tokens[i].value <= left) {
-          tokens[i].removed = true
-          left -= tokens[i].value
-        }
-      }
-      return [{ key: 'a', tokens }]
-    }
-    return [
-      { key: 'a', tokens: tokenize(question.a).map((value) => ({ value, removed: false })) },
-      { key: 'b', tokens: tokenize(question.b).map((value) => ({ value, removed: false })) },
-    ]
-  }, [question])
-
-  useEffect(() => {
-    setCounted({})
-  }, [question.id])
-
-  const total = Object.entries(counted).reduce((sum, [key, on]) => {
-    if (!on) return sum
-    const [groupIndex, tokenIndex] = key.split('-').map(Number)
-    const token = groups[groupIndex]?.tokens[tokenIndex]
-    return token && !token.removed ? sum + token.value : sum
-  }, 0)
-
-  const toggle = (groupIndex, tokenIndex, token) => {
-    if (token.removed) return
-    sound.tap()
-    setCounted((prev) => ({
-      ...prev,
-      [`${groupIndex}-${tokenIndex}`]: !prev[`${groupIndex}-${tokenIndex}`],
-    }))
-  }
+function MapScreen({ save, t, onPlay, onShop, onToggleSound, onToggleLang }) {
+  const look = LOOKS.find((l) => l.id === save.equipped) || null
+  const completed = (id) => (save.best[id] || 0) > 0
+  const unlocked = (index) => index === 0 || completed(PLANETS[index - 1].id)
+  const nextPlanet = PLANETS.find((p, i) => unlocked(i) && !completed(p.id))
+  const done = PLANETS.every((p) => completed(p.id))
 
   return (
-    <div className="helper">
-      <div className="helper-head">
-        <span className="helper-title">🫘 {t.countWithMe}</span>
-        <span className={`helper-count ${total > 0 ? 'is-live' : ''}`}>
-          {t.counted}: {total}
-        </span>
-      </div>
-
-      <div className="helper-groups">
-        {groups.map((group, gi) => (
-          <div className="helper-group" key={group.key}>
-            {gi > 0 ? <span className="helper-op">{question.op}</span> : null}
-            <div className="tokens">
-              {group.tokens.map((token, ti) => {
-                const key = `${gi}-${ti}`
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    className={[
-                      'token',
-                      token.value === 10 ? 'token--bundle' : '',
-                      token.removed ? 'token--removed' : '',
-                      counted[key] ? 'token--on' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    onClick={() => toggle(gi, ti, token)}
-                    aria-pressed={Boolean(counted[key])}
-                    aria-label={token.removed ? 'taken away' : `${token.value}`}
-                  >
-                    {token.value === 10 ? '10' : ''}
-                  </button>
-                )
-              })}
-            </div>
+    <div className="screen screen--map">
+      <header className="map-header">
+        <div className="brand">
+          <Cosmo look={look} size="clamp(56px, 9vh, 82px)" />
+          <div className="brand-text">
+            <h1 className="title">{t.title}</h1>
+            <p className="subtitle">{t.subtitle}</p>
           </div>
-        ))}
+        </div>
+        <TopControls
+          save={save}
+          t={t}
+          dust={save.dust}
+          onShop={onShop}
+          onToggleSound={onToggleSound}
+          onToggleLang={onToggleLang}
+        />
+      </header>
+
+      <div className="map-body">
+        <div className="map-heading">
+          <h2>{done ? t.allDone : t.choosePlanet}</h2>
+          {done ? <p className="map-note">{t.keepPractising}</p> : null}
+        </div>
+
+        <ol className="path">
+          {PLANETS.map((planet, i) => {
+            const open = unlocked(i)
+            const medals = save.best[planet.id] || 0
+            const isNext = nextPlanet?.id === planet.id
+            const prev = PLANETS[i - 1]
+            return (
+              <li className="path-item" key={planet.id}>
+                <button
+                  type="button"
+                  className={`planet-card ${open ? '' : 'is-locked'} ${isNext ? 'is-next' : ''}`}
+                  style={{ '--accent': planet.accent, '--accent2': planet.accent2 }}
+                  onClick={() => {
+                    if (!open) {
+                      sound.wrong()
+                      return
+                    }
+                    onPlay(planet.id)
+                  }}
+                  aria-disabled={!open}
+                >
+                  <span className="planet-orb" aria-hidden="true">
+                    {planet.emoji}
+                  </span>
+                  <span className="planet-info">
+                    <span className="planet-name">{planet.name[save.lang]}</span>
+                    <span className="planet-blurb">
+                      {open
+                        ? planet.blurb[save.lang]
+                        : t.finishToUnlock.replace('{planet}', prev.name[save.lang])}
+                    </span>
+                    {open ? (
+                      <Medals count={medals} />
+                    ) : (
+                      <span className="lock-row">🔒 {t.locked}</span>
+                    )}
+                  </span>
+                  <span className={`planet-go ${isNext ? 'is-live' : ''}`}>
+                    {open ? '▶' : '🔒'}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ol>
       </div>
-      {question.op === '−' ? (
-        <p className="helper-note">
-          {t.helperSubNote
-            .replace('{a}', question.a)
-            .replace('{b}', question.b)}
-        </p>
-      ) : null}
     </div>
   )
 }
@@ -426,25 +247,26 @@ function HelperPanel({ question, t }) {
 // ---------------------------------------------------------------------------
 // Play screen
 // ---------------------------------------------------------------------------
-function PlayScreen({ save, t, onFinish, onExit, onAddStars, onToggleSound }) {
-  const [questions] = useState(() => makeRound(save.level, save.op, ROUND_SIZE))
+function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSound }) {
+  const [run] = useState(() => makeRun(planet, forcedType))
   const [index, setIndex] = useState(0)
-  const [wrong, setWrong] = useState([])
   const [solved, setSolved] = useState(false)
+  const [missed, setMissed] = useState(false)
   const [helperOpen, setHelperOpen] = useState(false)
   const [mood, setMood] = useState('idle')
-  const [speech, setSpeech] = useState(t.feedMe)
+  const [speech, setSpeech] = useState(t.letsGo)
   const [combo, setCombo] = useState(0)
   const [comboFlash, setComboFlash] = useState(false)
   const [floaters, setFloaters] = useState([])
 
-  const starsRef = useRef(0)
-  const perfectRef = useRef(0)
+  const dustRef = useRef(0)
+  const firstTryRef = useRef(0)
+  const missedRef = useRef(false)
   const solvedRef = useRef(false)
   const timers = useRef([])
 
-  const question = questions[index]
-  const accessory = ACCESSORIES.find((a) => a.id === save.equipped) || null
+  const challenge = run[index]
+  const look = LOOKS.find((l) => l.id === save.equipped) || null
 
   useEffect(
     () => () => {
@@ -462,99 +284,86 @@ function PlayScreen({ save, t, onFinish, onExit, onAddStars, onToggleSound }) {
   const resetMood = () => {
     if (solvedRef.current) return
     setMood('idle')
-    setSpeech(t.feedMe)
+    setSpeech(t.letsGo)
   }
 
-  const handleAnswer = (option) => {
-    if (solved || wrong.includes(option)) return
+  const handleAttempt = (ok) => {
+    if (solvedRef.current) return
 
-    if (option === question.answer) {
+    if (ok) {
       solvedRef.current = true
       setSolved(true)
       setMood('happy')
       setSpeech(pick(t.correctSpeech))
       sound.pop()
 
-      const firstTry = wrong.length === 0
+      const firstTry = !missedRef.current
       const nextCombo = firstTry ? combo + 1 : 0
       const comboBonus = firstTry && nextCombo % 3 === 0 ? 2 : 0
       const gained = (firstTry ? 2 : 1) + comboBonus
-      starsRef.current += gained
-      if (firstTry) perfectRef.current += 1
+      dustRef.current += gained
+      if (firstTry) firstTryRef.current += 1
 
       setCombo(nextCombo)
       if (comboBonus) {
-        sound.correct(1)
         setComboFlash(true)
         later(() => setComboFlash(false), 1200)
-        setFloaters([
-          { id: Date.now(), text: `+${gained} ⭐ ${t.combo}`, tone: 'combo' },
-        ])
+        setFloaters([{ id: Date.now(), text: `+${gained} ✨ ${t.combo}`, tone: 'combo' }])
       } else {
-        sound.correct(0)
-        setFloaters([{ id: Date.now(), text: `+${gained} ⭐`, tone: 'ok' }])
+        setFloaters([{ id: Date.now(), text: `+${gained} ✨`, tone: 'ok' }])
       }
+      later(() => setFloaters([]), 1150)
 
-      later(() => setFloaters([]), 1100)
+      sound.correct(comboBonus)
 
       later(() => {
-        if (index + 1 >= questions.length) {
+        if (index + 1 >= run.length) {
           onFinish({
-            stars: starsRef.current,
-            perfect: perfectRef.current,
-            total: questions.length,
+            dust: dustRef.current,
+            firstTry: firstTryRef.current,
+            total: run.length,
           })
           return
         }
         solvedRef.current = false
+        missedRef.current = false
         setIndex(index + 1)
-        setWrong([])
         setSolved(false)
+        setMissed(false)
         setHelperOpen(false)
         setMood('idle')
-        setSpeech(t.feedMe)
-      }, 1150)
+        setSpeech(t.letsGo)
+      }, 1450)
       return
     }
 
-    setWrong((prev) => [...prev, option])
+    missedRef.current = true
+    setMissed(true)
+    setHelperOpen(true)
     setMood('oops')
     setSpeech(pick(t.wrongSpeech))
-    setHelperOpen(true)
     sound.wrong()
     later(resetMood, 1300)
   }
 
   const handleExit = () => {
-    onAddStars(starsRef.current)
-    onExit()
+    onExit(dustRef.current)
   }
-
-  const progressPct = (index / questions.length) * 100
 
   return (
     <div className="screen screen--play">
-      <header className="topbar">
-        <div className="topbar-left">
-          <button className="icon-btn" onClick={handleExit} aria-label={t.home}>
+      <header className="play-header">
+        <div className="play-header-left">
+          <button className="icon-btn" onClick={handleExit} aria-label={t.map}>
             🏠
           </button>
-          <div className="round-pips" aria-label={`${t.question} ${Math.min(index + 1, questions.length)} ${t.of} ${questions.length}`}>
-            {questions.map((q, i) => (
-              <span
-                key={q.id}
-                className={`pip ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
-                  i === index && !solved ? 'pip--now' : ''
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="topbar-right">
-          <span className="star-chip" aria-label={`${save.stars + starsRef.current} ${t.stars}`}>
-            <span className="star-glyph">⭐</span>
-            <strong>{save.stars + starsRef.current}</strong>
+          <span className="play-planet" style={{ '--accent': planet.accent }}>
+            <span>{planet.emoji}</span>
+            <strong>{planet.name[save.lang]}</strong>
           </span>
+        </div>
+        <div className="play-header-right">
+          <DustChip amount={save.dust + dustRef.current} label={t.dust} />
           <button
             className="icon-btn"
             onClick={onToggleSound}
@@ -565,74 +374,45 @@ function PlayScreen({ save, t, onFinish, onExit, onAddStars, onToggleSound }) {
         </div>
       </header>
 
-      <div className="progress-line" aria-hidden="true">
-        <span style={{ width: `${progressPct}%` }} />
+      <div className="round-strip">
+        <div className="round-pips" aria-label={`${index + 1} ${t.of} ${run.length}`}>
+          {run.map((item, i) => (
+            <span
+              key={item.id + i}
+              className={`pip ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
+                i === index && !solved ? 'pip--now' : ''
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="play-body">
         <div className="cosmo-stage">
-          <div className={`speech ${mood === 'happy' ? 'speech--happy' : ''}`}>
-            {speech}
-          </div>
-          <Cosmo mood={mood} accessory={accessory} size="clamp(150px, 27vh, 250px)" />
-          <div className="combo-pill">
-            {combo >= 2 ? `🔥 ${t.combo} ×${combo}` : ''}
-          </div>
+          <div className={`speech ${mood === 'happy' ? 'speech--happy' : ''}`}>{speech}</div>
+          <Cosmo mood={mood} look={look} size="clamp(120px, 24vh, 210px)" />
+          <div className="combo-pill">{combo >= 2 ? `🔥 ${t.combo} ×${combo}` : ''}</div>
         </div>
 
-        <div className="quiz">
-          <div className={`problem ${solved ? 'problem--solved' : ''}`}>
-            <span className="problem-num">{question.a}</span>
-            <span className="problem-op">{question.op}</span>
-            <span className="problem-num">{question.b}</span>
-            <span className="problem-eq">=</span>
-            <span className={`problem-answer ${solved ? 'is-revealed' : ''}`}>
-              {solved ? question.answer : '?'}
-            </span>
-          </div>
-
-          <div className="options" role="group" aria-label={t.whatIs}>
-            {question.options.map((option, i) => {
-              const isWrong = wrong.includes(option)
-              const isRight = solved && option === question.answer
-              return (
-                <button
-                  key={`${question.id}-${option}`}
-                  type="button"
-                  className={`bubble bubble--${i % 4} ${isWrong ? 'bubble--wrong' : ''} ${
-                    isRight ? 'bubble--right' : ''
-                  }`}
-                  onClick={() => handleAnswer(option)}
-                  disabled={isWrong || solved}
-                >
-                  <span className="bubble-shine" aria-hidden="true" />
-                  <span className="bubble-num">{option}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="helper-bar">
-            <button
-              type="button"
-              className={`ghost-btn ${helperOpen ? 'is-open' : ''}`}
-              onClick={() => {
-                sound.tap()
-                setHelperOpen((v) => !v)
-              }}
-            >
-              🫘 {helperOpen ? t.hideHelper : t.countWithMe}
-            </button>
-          </div>
-
-          {helperOpen ? (
-            <HelperPanel question={question} t={t} />
-          ) : (
-            <p className="encourage">
-              {wrong.length > 0 ? t.almost : t.tagline}
-            </p>
-          )}
-        </div>
+        <section
+          className="challenge-card"
+          style={{ '--accent': planet.accent, '--accent2': planet.accent2 }}
+        >
+          <ChallengeView
+            key={`${challenge.id}-${index}`}
+            challenge={challenge}
+            t={t}
+            lang={save.lang}
+            solved={solved}
+            helperOpen={helperOpen}
+            onHelperToggle={() => {
+              sound.tap()
+              setHelperOpen((v) => !v)
+            }}
+            onAttempt={handleAttempt}
+          />
+          {missed && !solved ? <p className="encourage">{pick(t.almost)}</p> : null}
+        </section>
       </div>
 
       {floaters.map((f) => (
@@ -647,68 +427,68 @@ function PlayScreen({ save, t, onFinish, onExit, onAddStars, onToggleSound }) {
 }
 
 // ---------------------------------------------------------------------------
-// Round end
+// Results
 // ---------------------------------------------------------------------------
-function RoundEndScreen({ result, save, t, onAgain, onWardrobe, onHome }) {
-  const next = nextUnlock(save.stars)
-  const unlocked = result.unlocked || []
+function ResultsScreen({ planet, result, save, t, onAgain, onShop, onMap, onExplore }) {
+  const look = LOOKS.find((l) => l.id === save.equipped) || null
   return (
-    <div className="screen screen--end">
+    <div className="screen screen--results">
       <Confetti />
-      <div className="end-card">
-        <div className="end-top">
-          <Cosmo mood="happy" accessory={ACCESSORIES.find((a) => a.id === save.equipped)} size="clamp(140px, 24vh, 220px)" />
+      <div className="results-card">
+        <div className="results-hero">
+          <Cosmo mood="happy" look={look} size="clamp(120px, 20vh, 190px)" />
           <div>
-            <h1 className="end-title">{t.roundDone}</h1>
-            <p className="end-sub">
-              ⭐ {result.perfect} / {result.total} {t.firstTry}
+            <h1 className="results-title">{t.resultsTitle}</h1>
+            <p className="results-planet">
+              {planet.emoji} {planet.name[save.lang]}
             </p>
           </div>
         </div>
 
-        <div className="end-stats">
-          <div className="end-stat">
-            <span className="end-stat-value">+{result.stars}</span>
-            <span className="end-stat-label">{t.roundStars}</span>
+        <div className="results-medal">
+          <Medals count={result.medal} size="large" />
+          <span className="results-medal-label">
+            {t.medal} · {result.firstTry}/{result.total} {t.firstTry}
+          </span>
+        </div>
+
+        <div className="results-stats">
+          <div className="results-stat">
+            <span className="results-stat-value">+{result.gained}</span>
+            <span className="results-stat-label">{t.dustEarned}</span>
           </div>
-          <div className="end-stat">
-            <span className="end-stat-value">{save.stars}</span>
-            <span className="end-stat-label">{t.totalStars}</span>
+          <div className="results-stat">
+            <span className="results-stat-value">{save.best[planet.id] || 0}/3</span>
+            <span className="results-stat-label">{t.best}</span>
           </div>
         </div>
 
-        {unlocked.length > 0 ? (
+        {result.improved ? <p className="results-new-best">✨ {t.newBest}</p> : null}
+
+        {result.unlocked ? (
           <div className="unlock-card">
-            <span className="unlock-emojis">
-              {unlocked.map((item) => (
-                <span key={item.id} className="unlock-emoji">
-                  {item.emoji}
-                </span>
-              ))}
-            </span>
-            <div>
-              <strong>{t.newUnlock}</strong>
-              <span>{unlocked.map((item) => item.name[save.lang]).join(' · ')}</span>
+            <span className="unlock-emoji">{result.unlocked.emoji}</span>
+            <div className="unlock-text">
+              <strong>{t.unlockedPlanet}</strong>
+              <span>{result.unlocked.name[save.lang]}</span>
             </div>
-          </div>
-        ) : next ? (
-          <div className="next-unlock">
-            {next.emoji} <strong>{next.cos - save.stars}</strong> {t.nextUnlock}
+            <button className="btn btn--primary btn--small" onClick={onExplore}>
+              {t.explore}
+            </button>
           </div>
         ) : (
-          <div className="next-unlock">{t.allUnlocked}</div>
+          <p className="results-hint">{t.keepPractising}</p>
         )}
 
-        <div className="end-actions">
+        <div className="results-actions">
           <button className="btn btn--primary" onClick={onAgain}>
-            ▶ {t.playAgain}
+            ▶ {t.replay}
           </button>
-          <button className="btn btn--soft" onClick={onWardrobe}>
-            {unlocked.length > 0 ? '✨ ' : ''}
-            {t.dress}
+          <button className="btn btn--soft" onClick={onShop}>
+            🛍️ {t.shop}
           </button>
-          <button className="btn btn--ghost" onClick={onHome}>
-            {t.home}
+          <button className="btn btn--ghost" onClick={onMap}>
+            {t.toMap}
           </button>
         </div>
       </div>
@@ -717,168 +497,85 @@ function RoundEndScreen({ result, save, t, onAgain, onWardrobe, onHome }) {
 }
 
 // ---------------------------------------------------------------------------
-// Wardrobe
+// Shop
 // ---------------------------------------------------------------------------
-function WardrobeScreen({ save, t, onEquip, onBack, onPlay }) {
-  const equipped = ACCESSORIES.find((a) => a.id === save.equipped) || null
+function ShopScreen({ save, t, onBack, onBuy, onEquip, onToggleSound, onReset }) {
+  const [confirmReset, setConfirmReset] = useState(false)
+  const equipped = LOOKS.find((l) => l.id === save.equipped) || null
+
   return (
-    <div className="screen screen--wardrobe">
-      <header className="topbar">
-        <div className="topbar-left">
-          <button className="icon-btn" onClick={onBack} aria-label={t.home}>
-            🏠
+    <div className="screen screen--shop">
+      <header className="shop-header">
+        <div className="play-header-left">
+          <button className="icon-btn" onClick={onBack} aria-label={t.map}>
+            ←
           </button>
-          <h1 className="topbar-title">{t.wardrobe}</h1>
+          <h1 className="shop-title">{t.shopTitle}</h1>
         </div>
-        <div className="topbar-right">
-          <span className="star-chip">
-            <span className="star-glyph">⭐</span>
-            <strong>{save.stars}</strong>
-          </span>
+        <div className="play-header-right">
+          <DustChip amount={save.dust} label={t.dust} />
+          <button
+            className="icon-btn"
+            onClick={onToggleSound}
+            aria-label={save.muted ? t.soundOff : t.soundOn}
+          >
+            {save.muted ? '🔇' : '🔊'}
+          </button>
         </div>
       </header>
 
-      <div className="wardrobe-body">
-        <div className="wardrobe-preview">
-          <Cosmo mood="idle" accessory={equipped} size="clamp(170px, 30vh, 280px)" />
-          <p className="wardrobe-name">
-            {equipped ? equipped.name[save.lang] : t.takeOff}
-          </p>
-          <p className="wardrobe-hint">{t.wardrobeHint}</p>
-          <button className="btn btn--primary btn--wide" onClick={onPlay}>
-            ▶ {t.play}
-          </button>
+      <div className="shop-body">
+        <div className="shop-preview">
+          <Cosmo look={equipped} size="clamp(150px, 26vh, 240px)" />
+          <p className="shop-preview-name">{equipped ? equipped.name[save.lang] : t.none}</p>
+          <p className="shop-hint">{t.shopHint}</p>
         </div>
 
-        <div className="wardrobe-grid">
+        <div className="shop-grid">
           <button
             type="button"
             className={`look look--none ${!equipped ? 'is-on' : ''}`}
             onClick={() => onEquip('none')}
           >
-            <span className="look-emoji">🚫</span>
-            <span className="look-name">{t.takeOff}</span>
+            <span className="look-emoji">👽</span>
+            <span className="look-name">{t.none}</span>
+            <span className="look-cost">{!equipped ? t.wearing : ''}</span>
           </button>
 
-          {ACCESSORIES.map((item) => {
-            const unlocked = save.stars >= item.cos
-            const isOn = equipped?.id === item.id
+          {LOOKS.map((item) => {
+            const owned = save.owned.includes(item.id)
+            const isOn = save.equipped === item.id
+            const affordable = save.dust >= item.price
             return (
               <button
                 key={item.id}
                 type="button"
-                className={`look ${unlocked ? '' : 'is-locked'} ${isOn ? 'is-on' : ''}`}
-                onClick={() => {
-                  if (!unlocked) {
-                    sound.wrong()
-                    return
-                  }
-                  sound.pop()
-                  onEquip(item.id)
-                }}
-                aria-label={`${item.name[save.lang]}${unlocked ? '' : ` — ${item.cos} stars`}`}
+                className={`look ${owned ? 'is-owned' : ''} ${isOn ? 'is-on' : ''} ${
+                  owned || affordable ? '' : 'is-short'
+                }`}
+                onClick={() => (owned ? onEquip(item.id) : onBuy(item))}
               >
-                <span className="look-emoji">{unlocked ? item.emoji : '🔒'}</span>
+                <span className="look-emoji">{owned ? item.emoji : '🔒'}</span>
                 <span className="look-name">{item.name[save.lang]}</span>
-                <span className="look-cost">{unlocked ? (isOn ? '✓' : '') : `⭐ ${item.cos}`}</span>
+                <span className={`look-cost ${owned ? 'is-owned' : ''}`}>
+                  {owned ? (isOn ? t.wearing : t.owned) : `✨ ${item.price}`}
+                </span>
               </button>
             )
           })}
         </div>
       </div>
-    </div>
-  )
-}
 
-// ---------------------------------------------------------------------------
-// Home
-// ---------------------------------------------------------------------------
-function HomeScreen({ save, t, onPlay, onWardrobe, onLevel, onSelectOp, onToggleLang, onToggleSound, stars }) {
-  const accessory = ACCESSORIES.find((a) => a.id === save.equipped) || null
-  const next = nextUnlock(save.stars)
-  const toNext = next ? next.cos - save.stars : 0
-
-  return (
-    <div className="screen screen--home">
-      <TopBar
-        t={t}
-        save={save}
-        starCount={stars}
-        onToggleLang={onToggleLang}
-        onToggleSound={onToggleSound}
-      />
-
-      <div className="home-body">
-        <div className="home-hero">
-          <div className="speech speech--home">{t.feedMe}</div>
-          <Cosmo mood="idle" accessory={accessory} size="clamp(190px, 34vh, 320px)" />
-          <h1 className="title">{t.title}</h1>
-          <p className="tagline">{t.tagline}</p>
-        </div>
-
-        <div className="home-panel">
-          <section className="panel-block">
-            <h2 className="panel-title">{t.chooseLevel}</h2>
-            <div className="chips chips--levels">
-              {LEVELS.map((level) => (
-                <button
-                  key={level.id}
-                  type="button"
-                  className={`chip chip--level ${save.level === level.id ? 'is-on' : ''}`}
-                  onClick={() => onLevel(level.id)}
-                >
-                  <span className="chip-emoji">{level.emoji}</span>
-                  <span className="chip-text">
-                    <strong>{t.levelNames[level.id]}</strong>
-                    <small>{t.levelHints[level.id]}</small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="panel-block">
-            <h2 className="panel-title">{t.chooseOp}</h2>
-            <div className="chips chips--ops">
-              {OPS.map((op) => (
-                <button
-                  key={op.id}
-                  type="button"
-                  className={`chip chip--op ${save.op === op.id ? 'is-on' : ''}`}
-                  onClick={() => onSelectOp(op.id)}
-                >
-                  <span className="chip-emoji">{op.emoji}</span>
-                  <span className="chip-text">
-                    <strong>{t[op.id]}</strong>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <button className="btn btn--primary btn--hero" onClick={onPlay}>
-            ▶ {t.play}
-          </button>
-
-          <button className="btn btn--soft" onClick={onWardrobe}>
-            🎩 {t.dress}
-          </button>
-
-          {next ? (
-            <div className="next-unlock next-unlock--home">
-              <span className="next-emoji">{next.emoji}</span>
-              <span>
-                <strong>{toNext}</strong> {t.nextUnlock}
-              </span>
-              <div className="mini-bar">
-                <span style={{ width: `${Math.min(100, (save.stars / next.cos) * 100)}%` }} />
-              </div>
-            </div>
-          ) : (
-            <div className="next-unlock next-unlock--home">{t.allUnlocked}</div>
-          )}
-        </div>
-      </div>
+      <button
+        type="button"
+        className={`reset-btn ${confirmReset ? 'is-confirming' : ''}`}
+        onClick={() => {
+          if (confirmReset) onReset()
+          else setConfirmReset(true)
+        }}
+      >
+        {confirmReset ? t.resetConfirm : t.reset}
+      </button>
     </div>
   )
 }
@@ -886,13 +583,25 @@ function HomeScreen({ save, t, onPlay, onWardrobe, onLevel, onSelectOp, onToggle
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
+const FORCED_TYPES = ['choice', 'missing', 'pair', 'compare', 'sequence', 'build', 'word']
+
 export default function App() {
   const [save, setSave] = useState(loadSave)
-  const [screen, setScreen] = useState('home')
+  const [screen, setScreen] = useState('map')
+  const [planetId, setPlanetId] = useState(PLANETS[0].id)
+  const [runKey, setRunKey] = useState(0)
   const [result, setResult] = useState(null)
-  const [roundKey, setRoundKey] = useState(0)
+  const [toast, setToast] = useState(null)
+  const [toastKey, setToastKey] = useState(0)
 
   const t = STRINGS[save.lang] || STRINGS.en
+  const planet = PLANETS.find((p) => p.id === planetId) || PLANETS[0]
+
+  const forcedType = useMemo(() => {
+    if (!import.meta.env.DEV) return null
+    const value = new URLSearchParams(window.location.search).get('type')
+    return FORCED_TYPES.includes(value) ? value : null
+  }, [])
 
   useEffect(() => {
     try {
@@ -907,43 +616,88 @@ export default function App() {
     document.documentElement.lang = save.lang
   }, [save.lang])
 
-  const startRound = () => {
+  useEffect(() => {
+    if (!toast) return undefined
+    const id = setTimeout(() => setToast(null), 2300)
+    return () => clearTimeout(id)
+  }, [toast, toastKey])
+
+  const showToast = (message) => {
+    setToast(message)
+    setToastKey((k) => k + 1)
+  }
+
+  const startPlanet = (id) => {
     sound.ready()
-    setRoundKey((k) => k + 1)
+    sound.tap()
+    setPlanetId(id)
+    setRunKey((k) => k + 1)
     setScreen('play')
   }
 
-  const finishRound = (roundResult) => {
-    const total = save.stars + roundResult.stars
-    const unlocked = ACCESSORIES.filter((a) => a.cos <= total && !save.seen.includes(a.id))
-    const nextSave = {
+  const finishRun = (run) => {
+    const prevBest = save.best[planet.id] || 0
+    const medal = run.firstTry >= RUN_SIZE ? 3 : run.firstTry >= 6 ? 2 : 1
+    const best = Math.max(prevBest, medal)
+    const firstClear = prevBest === 0
+    const bonus = (firstClear ? FIRST_BONUS : 0) + MEDAL_BONUS[medal]
+    const gained = run.dust + bonus
+    const index = PLANETS.findIndex((p) => p.id === planet.id)
+    const next = PLANETS[index + 1] || null
+
+    setSave({
       ...save,
-      stars: total,
-      seen: [...save.seen, ...unlocked.map((a) => a.id)],
-    }
-    setSave(nextSave)
-    setResult({ ...roundResult, unlocked })
-    setScreen('roundEnd')
+      dust: save.dust + gained,
+      best: { ...save.best, [planet.id]: best },
+    })
+    setResult({
+      medal,
+      best,
+      firstClear,
+      gained,
+      dust: run.dust,
+      bonus,
+      total: run.total,
+      firstTry: run.firstTry,
+      improved: prevBest > 0 && medal > prevBest,
+      unlocked: firstClear ? next : null,
+    })
+    setScreen('results')
     sound.fanfare()
   }
 
-  const addStars = (amount) => {
-    if (!amount) return
-    setSave((prev) => ({ ...prev, stars: prev.stars + amount }))
+  const exitRun = (dust) => {
+    if (dust > 0) {
+      setSave((prev) => ({ ...prev, dust: prev.dust + dust }))
+    }
+    setScreen('map')
   }
 
-  const setLevel = (level) => {
-    sound.tap()
-    setSave((prev) => ({ ...prev, level }))
+  const buyLook = (item) => {
+    if (save.owned.includes(item.id)) {
+      setSave({ ...save, equipped: item.id })
+      sound.pop()
+      return
+    }
+    if (save.dust < item.price) {
+      sound.wrong()
+      showToast(t.needMore.replace('{n}', item.price - save.dust))
+      return
+    }
+    setSave({
+      ...save,
+      dust: save.dust - item.price,
+      owned: [...save.owned, item.id],
+      equipped: item.id,
+    })
+    sound.coin()
+    sound.fanfare()
+    showToast(`✨ −${item.price} · ${item.name[save.lang]}`)
   }
 
-  const setOp = (op) => {
-    sound.tap()
-    setSave((prev) => ({ ...prev, op }))
-  }
-
-  const toggleLang = () => {
-    setSave((prev) => ({ ...prev, lang: prev.lang === 'en' ? 'es' : 'en' }))
+  const equipLook = (id) => {
+    sound.pop()
+    setSave({ ...save, equipped: id })
   }
 
   const toggleSound = () => {
@@ -953,64 +707,80 @@ export default function App() {
     setSave((prev) => ({ ...prev, muted: nextMuted }))
   }
 
+  const toggleLang = () => {
+    setSave((prev) => ({ ...prev, lang: prev.lang === 'en' ? 'es' : 'en' }))
+  }
+
+  const resetProgress = () => {
+    try {
+      localStorage.removeItem(SAVE_KEY)
+    } catch {
+      /* ignore */
+    }
+    setSave(DEFAULT_SAVE)
+    setScreen('map')
+  }
+
   return (
     <div className="app">
       <StarField />
 
-      {screen === 'home' ? (
-        <HomeScreen
+      {screen === 'map' ? (
+        <MapScreen
           save={save}
           t={t}
-          stars={save.stars}
-          onPlay={startRound}
-          onWardrobe={() => {
+          onPlay={startPlanet}
+          onShop={() => {
             sound.tap()
-            setScreen('wardrobe')
+            setScreen('shop')
           }}
-          onLevel={setLevel}
-          onSelectOp={setOp}
-          onToggleLang={toggleLang}
           onToggleSound={toggleSound}
+          onToggleLang={toggleLang}
         />
       ) : null}
 
       {screen === 'play' ? (
         <PlayScreen
-          key={roundKey}
+          key={runKey}
+          planet={planet}
           save={save}
           t={t}
-          onFinish={finishRound}
-          onExit={() => setScreen('home')}
-          onAddStars={addStars}
+          forcedType={forcedType}
+          onFinish={finishRun}
+          onExit={exitRun}
           onToggleSound={toggleSound}
         />
       ) : null}
 
-      {screen === 'roundEnd' && result ? (
-        <RoundEndScreen
+      {screen === 'results' && result ? (
+        <ResultsScreen
+          planet={planet}
           result={result}
           save={save}
           t={t}
-          onAgain={startRound}
-          onWardrobe={() => {
+          onAgain={() => startPlanet(planet.id)}
+          onShop={() => {
             sound.tap()
-            setScreen('wardrobe')
+            setScreen('shop')
           }}
-          onHome={() => setScreen('home')}
+          onMap={() => setScreen('map')}
+          onExplore={() => startPlanet(result.unlocked.id)}
         />
       ) : null}
 
-      {screen === 'wardrobe' ? (
-        <WardrobeScreen
+      {screen === 'shop' ? (
+        <ShopScreen
           save={save}
           t={t}
-          onEquip={(id) => {
-            setSave((prev) => ({ ...prev, equipped: id }))
-          }}
-          onBack={() => setScreen('home')}
-          onPlay={startRound}
+          onBack={() => setScreen('map')}
+          onBuy={buyLook}
+          onEquip={equipLook}
+          onToggleSound={toggleSound}
+          onReset={resetProgress}
         />
       ) : null}
+
+      {toast ? <div className="toast">{toast}</div> : null}
     </div>
   )
 }
