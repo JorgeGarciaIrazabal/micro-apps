@@ -1,6 +1,5 @@
-import { QUESTS, makeQuest } from './quests.js'
 // Challenge generation for Cosmo's Math Odyssey.
-// Lessons keep their math tasks; the separate break screen offers 30 games.
+// Lessons keep their math tasks; the separate arcade runs between lesson blocks.
 
 import { RUN_SIZE, WORD_PROBLEMS } from './data.js'
 
@@ -251,26 +250,7 @@ function makeWord(planet) {
 }
 
 export function makeChallenge(type, planet) {
-  if (QUESTS.some(q => q.id === type)) return makeQuest(type)
   switch (type) {
-    case 'rocket': {
-      const step = planet.stage <= 2 ? 2 : pick(planet.steps)
-      const start = rand(0, Math.min(3, Math.max(0, Math.floor(planet.max / step) - 4))) * step
-      const target = start + step * rand(2, 4)
-      return { id: `rocket:${start}:${target}`, type, start, target, step }
-    }
-    case 'balance': {
-      const unit = planet.stage >= 4 ? 5 : 1
-      const fixed = rand(1, 3) * unit
-      const cargo = [1, 2, 3, 4].map(n => n * unit)
-      const target = fixed + cargo[0] + cargo[rand(1, 3)]
-      return { id: `balance:${fixed}:${target}`, type, fixed, target, cargo }
-    }
-    case 'share': {
-      const groups = planet.stage <= 2 ? 2 : rand(2, 4)
-      const each = rand(2, planet.stage >= 6 ? 5 : 3)
-      return { id: `share:${groups}:${each}`, type, groups, each, total: groups * each }
-    }
     case 'pair':
       return makePair(planet)
     case 'missing':

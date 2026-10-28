@@ -25,6 +25,8 @@ const DEFAULT_SAVE = {
   games: 0,
   comeback: 0,
   projects: [],
+  arcadeVisits: 0,
+  arcadeBest: {},
 }
 
 function loadSave() {
@@ -37,6 +39,7 @@ function loadSave() {
       ...parsed,
       lang: parsed.lang === 'es' ? 'es' : 'en',
       projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+      arcadeBest: parsed.arcadeBest && typeof parsed.arcadeBest === 'object' ? parsed.arcadeBest : {},
       best: parsed.best || {},
       owned: Array.isArray(parsed.owned) ? parsed.owned : [],
     }
@@ -261,6 +264,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
   const [index, setIndex] = useState(0)
   const [takingBreak, setTakingBreak] = useState(false)
   const breakGamesRef = useRef(0)
+  const arcadeBestRef = useRef({ ...save.arcadeBest })
   const [solved, setSolved] = useState(false)
   const [missed, setMissed] = useState(false)
   const [helperOpen, setHelperOpen] = useState(false)
@@ -334,6 +338,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
             firstTry: firstTryRef.current,
             total: run.length,
             games: breakGamesRef.current,
+            arcadeBest: arcadeBestRef.current,
           })
           return
         }
@@ -360,12 +365,18 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
   }
 
   const handleExit = () => {
-    onExit(dustRef.current)
+    onExit(dustRef.current, { games: breakGamesRef.current, arcadeBest: arcadeBestRef.current })
   }
 
   if (takingBreak) return <BreakScreen key={index} planet={planet} lang={save.lang} completed={index} total={run.length}
+    visit={save.arcadeVisits} records={arcadeBestRef.current}
     onContinue={() => { setTakingBreak(false); setSpeech(save.lang === 'es' ? '¡Vamos con la siguiente idea!' : 'Ready for your next bright idea!') }}
-    onExit={handleExit} onSolved={() => { dustRef.current += 3; breakGamesRef.current += 1; sound.correct() }} />
+    onEffect={event => { if (event === 'score') sound.pop(); if (event === 'complete') sound.fanfare() }}
+    onSolved={({ id, score }) => {
+      dustRef.current += 12
+      breakGamesRef.current += 1
+      arcadeBestRef.current[id] = Math.max(arcadeBestRef.current[id] || 0, score)
+    }} />
 
   return (
     <div className="screen screen--play">
@@ -395,9 +406,9 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
         <div className="round-pips" aria-label={`${index + 1} ${t.of} ${run.length}`}>
           {run.map((item, i) => (
             <span
-              title={['rocket', 'balance', 'share'].includes(item.type) ? (save.lang === 'es' ? 'Minijuego' : 'Minigame') : t.challenge}
+              title={t.challenge}
               key={item.id + i}
-              className={`pip ${['rocket', 'balance', 'share'].includes(item.type) ? 'pip--game' : ''} ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
+              className={`pip ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
                 i === index && !solved ? 'pip--now' : ''
               }`}
             />
@@ -429,7 +440,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
             }}
             onAttempt={handleAttempt}
           />
-          {missed && !solved && !['rocket', 'balance', 'share'].includes(challenge.type) ? <p className="encourage">{pick(t.almost)}</p> : null}
+          {missed && !solved ? <p className="encourage">{pick(t.almost)}</p> : null}
         </section>
       </div>
 
@@ -609,7 +620,7 @@ function ShopScreen({ save, t, onBack, onBuy, onEquip, onToggleSound, onReset })
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
-const FORCED_TYPES = ['choice', 'missing', 'pair', 'compare', 'sequence', 'build', 'word', 'rocket', 'balance', 'share']
+const FORCED_TYPES = ['choice', 'missing', 'pair', 'compare', 'sequence', 'build', 'word']
 
 export default function App() {
   const [save, setSave] = useState(loadSave)
@@ -678,6 +689,8 @@ export default function App() {
       best: { ...save.best, [planet.id]: best },
       xp: Math.max(save.xp, Object.values(save.best).filter(n => n > 0).length * 80) + xp,
       games: save.games + run.games,
+      arcadeVisits: save.arcadeVisits + run.games,
+      arcadeBest: run.arcadeBest,
       comeback: save.comeback + (run.firstTry < run.total ? 1 : 0),
     }
     const previousBadges = badges(save)
@@ -701,9 +714,9 @@ export default function App() {
     sound.fanfare()
   }
 
-  const exitRun = (dust) => {
+  const exitRun = (dust, arcade) => {
     if (dust > 0) {
-      setSave((prev) => ({ ...prev, dust: prev.dust + dust }))
+      setSave(prev => ({ ...prev, dust: prev.dust + dust, games: prev.games + arcade.games, arcadeVisits: prev.arcadeVisits + arcade.games, arcadeBest: arcade.arcadeBest }))
     }
     setScreen('map')
   }

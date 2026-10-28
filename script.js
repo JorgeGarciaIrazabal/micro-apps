@@ -388,16 +388,16 @@ function initModalsAndCarousels() {
   // App-specific descriptions and specs for detail popups
   const APP_DETAILS = {
     'cosmo-math': {
-      title: "Cosmo's Math Odyssey — Five-Planet Maths Adventure",
+      title: "Cosmo's Math Odyssey — Maths & Arcade Adventures",
       icon: '👽',
-      tech: ['React 19', 'WebAudio Kit', 'Inline SVG Character', 'localStorage Progress', 'Bilingual UI (EN/ES)', 'Vite'],
-      overview: 'A tablet-first maths adventure for a 7-year-old. Cosmo travels to five planets, each with its own mix of eight challenges: bubble sums, missing numbers, make-10 pairs, a tilting balance, number sequences, illustrated story problems and a place-value builder. Correct answers earn stardust, medals unlock the next planet, and the shop sells hats, goggles and a rainbow halo for Cosmo.',
+      tech: ['React 19', 'Canvas Arcade', 'WebAudio Kit', 'localStorage Progress', 'Bilingual UI (EN/ES)', 'Vite'],
+      overview: 'A phone-friendly maths adventure across twelve worlds. Complete eight maths tasks per mission, with an automatically assigned arcade game after tasks three and six. Each game has four stages lasting about three minutes twenty seconds of active play. Rescue companions, collect adventure badges, grow your explorer rank and build a sanctuary with stardust.',
       features: [
-        '<b>Five planets, seven mechanics:</b> Sprout Meadow (numbers to 10), Crystal Canyon (adding to 20), Bubble Reef (take-aways), Rocket Yard (tens and ones to 100) and Star Market (a bit of everything) — each with a hand-designed challenge mix, not just bigger numbers.',
-        '<b>Hands-on maths:</b> tap beans to count (tens become "10 bundles"), tap two tiles that make 10, balance two expressions with &lt;, = or &gt;, and build two-digit numbers with ten-sticks and ones. One-tap answers, no keyboard.',
-        '<b>Story problems and sequences:</b> illustrated one-line problems ("Cosmo finds 12 starberries…") and jump-counting stepping stones with a +2/+5/+10 hint.',
-        '<b>Medals and a stardust shop:</b> accuracy earns 1–3 stars per planet, first clears unlock the next stop, and stardust buys ten looks for Cosmo — flower, bow, top hat, shades, goggles, crown, sun hat, scarf, cap and rainbow halo.',
-        '<b>Kid-safe by design:</b> no timers, no ads, no typing and no way to lose. Mistakes dim the wrong answer and open the counting beans instead. Synthesised sound, a mute button and a full English/Spanish toggle.'
+        '<b>Twelve worlds:</b> practise addition, subtraction, missing numbers, comparisons, sequences and place value, progressing from numbers to 10 through numbers to 100.',
+        '<b>Proper arcade breaks:</b> 30 missions across Snake, flappy flight, slingshot knockdowns, brick breaking, space shooting, running, catching, asteroid dodging, platform jumping and racing. Games are assigned for the child; there is no game picker or duration selector.',
+        '<b>Made for phones:</b> swipe steering, drag aiming, large thumb controls and layouts for small portrait screens and landscape. Keyboard controls also work on desktop.',
+        '<b>Lasting rewards:</b> rescue a named companion from each world, earn badges and explorer ranks, and build six sanctuary projects with stardust. Arcade personal bests save alongside lesson progress.',
+        '<b>Gentle recovery:</b> bumps grant a temporary shield, games can be paused, and the child can return to the lesson early. Maths mistakes open counting support. English and Spanish, sound controls, no ads or typing.'
       ]
     },
     'clara-summer-camps-madrid': {
