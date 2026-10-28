@@ -8,7 +8,7 @@ export const MEDAL_BONUS = { 3: 12, 2: 8, 1: 4 }
 export const STRINGS = {
   en: {
     title: "Cosmo's Math Odyssey",
-    subtitle: 'Explore 5 planets, one sum at a time',
+    subtitle: '12 worlds. Big ideas. Little adventures.',
     dust: 'stardust',
     shop: 'Shop',
     map: 'Galaxy map',
@@ -55,7 +55,7 @@ export const STRINGS = {
     unlockedPlanet: 'New planet unlocked!',
     explore: 'Explore',
     allDone: 'You explored the whole galaxy!',
-    keepPractising: 'Replay a planet to earn more stardust.',
+    keepPractising: 'Rescue friends, build your sanctuary, and try a new strategy.',
     toMap: 'Galaxy map',
     toShop: 'Spend it in the shop',
     shopTitle: 'Cosmo’s shop',
@@ -73,7 +73,7 @@ export const STRINGS = {
   },
   es: {
     title: 'La Odisea Matemática de Cosmo',
-    subtitle: 'Explora 5 planetas, una suma a la vez',
+    subtitle: '12 mundos. Grandes ideas. Pequeñas aventuras.',
     dust: 'polvo de estrellas',
     shop: 'Tienda',
     map: 'Mapa galáctico',
@@ -120,7 +120,7 @@ export const STRINGS = {
     unlockedPlanet: '¡Nuevo planeta abierto!',
     explore: 'Explorar',
     allDone: '¡Has explorado toda la galaxia!',
-    keepPractising: 'Repite un planeta para ganar más polvo.',
+    keepPractising: 'Rescata amigos, construye tu refugio y prueba otra estrategia.',
     toMap: 'Mapa galáctico',
     toShop: 'Gástalo en la tienda',
     shopTitle: 'La tienda de Cosmo',
@@ -138,7 +138,7 @@ export const STRINGS = {
   },
 }
 
-// The five stops of the journey. `types` is the exact mix of challenges in
+// The twelve stops of the journey. `types` is the exact mix of challenges in
 // one run, so every planet feels different.
 export const PLANETS = [
   {
@@ -200,6 +200,62 @@ export const PLANETS = [
     accent: '#c9b6ff',
     accent2: '#7250d6',
     types: ['word', 'compare', 'missing', 'sequence', 'build', 'choice', 'pair', 'missing'],
+  },
+  {
+    id: 'aurora', emoji: '🌌',
+    name: { en: 'Aurora Crossing', es: 'Paso Aurora' },
+    blurb: { en: 'Navigate number jumps to 30', es: 'Saltos numéricos hasta 30' },
+    max: 30, stage: 6, steps: [2, 3],
+    accent: '#8ef9df', accent2: '#347f9c',
+    types: ['missing', 'sequence', 'choice', 'compare', 'word', 'build', 'choice', 'missing'],
+  },
+  {
+    id: 'hive', emoji: '🐝',
+    name: { en: 'Moon Hive', es: 'Colmena Lunar' },
+    blurb: { en: 'Equal groups and clever sharing', es: 'Grupos iguales y repartos' },
+    max: 40, stage: 7, steps: [3, 5],
+    accent: '#ffdc83', accent2: '#ac7424',
+    types: ['word', 'choice', 'compare', 'missing', 'sequence', 'choice', 'build', 'word'],
+  },
+  {
+    id: 'volcano', emoji: '🌋',
+    name: { en: 'Lava Lab', es: 'Laboratorio Lava' },
+    blurb: { en: 'Balance cargo and bridge tens', es: 'Equilibra cargas y cruza decenas' },
+    max: 50, stage: 8, steps: [5, 10],
+    accent: '#ffab8f', accent2: '#c54f45',
+    types: ['missing', 'sequence', 'choice', 'compare', 'word', 'build', 'choice', 'missing'],
+  },
+  {
+    id: 'clockwork', emoji: '⚙️',
+    name: { en: 'Clockwork Comet', es: 'Cometa Mecánico' },
+    blurb: { en: 'Patterns, jumps, and missing parts', es: 'Patrones, saltos y piezas perdidas' },
+    max: 60, stage: 9, steps: [3, 5, 10],
+    accent: '#a4d9ed', accent2: '#4b7fba',
+    types: ['word', 'choice', 'compare', 'missing', 'sequence', 'choice', 'build', 'word'],
+  },
+  {
+    id: 'garden', emoji: '🍄',
+    name: { en: 'Nebula Garden', es: 'Jardín Nebulosa' },
+    blurb: { en: 'Grow your number sense to 70', es: 'Cultiva los números hasta 70' },
+    max: 70, stage: 10, steps: [2, 5, 10],
+    accent: '#dbb5ff', accent2: '#8e4baf',
+    types: ['missing', 'sequence', 'choice', 'compare', 'word', 'build', 'choice', 'missing'],
+  },
+  {
+    id: 'ocean', emoji: '🐙',
+    name: { en: 'Midnight Ocean', es: 'Océano Medianoche' },
+    blurb: { en: 'Deep dives into numbers to 90', es: 'Bucea entre números hasta 90' },
+    max: 90, stage: 11, steps: [3, 5, 10],
+    accent: '#94c9ff', accent2: '#4660ac',
+    types: ['word', 'choice', 'compare', 'missing', 'sequence', 'choice', 'build', 'word'],
+  },
+  {
+    id: 'citadel', emoji: '🏰',
+    name: { en: 'Infinity Citadel', es: 'Ciudadela Infinita' },
+    blurb: { en: 'Your grand mixed-math expedition', es: 'Tu gran expedición matemática' },
+    max: 100, stage: 12, steps: [2, 5, 10],
+    accent: '#ffe5a0', accent2: '#ac7c4b',
+    types: ['missing', 'sequence', 'choice', 'compare', 'word', 'build', 'choice', 'missing'],
   },
 ]
 

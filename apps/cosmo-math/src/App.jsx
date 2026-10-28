@@ -10,6 +10,8 @@ import {
 import { makeRun } from './game.js'
 import { Confetti, Cosmo, StarField } from './Cosmo.jsx'
 import ChallengeView from './Challenges.jsx'
+import BreakScreen from './BreakScreen.jsx'
+import RewardsScreen, { ProgressBanner, companion, badges, rankName } from './Rewards.jsx'
 
 const SAVE_KEY = 'cosmo-math-v2'
 const DEFAULT_SAVE = {
@@ -19,6 +21,10 @@ const DEFAULT_SAVE = {
   equipped: 'none',
   muted: false,
   lang: 'en',
+  xp: 0,
+  games: 0,
+  comeback: 0,
+  projects: [],
 }
 
 function loadSave() {
@@ -29,6 +35,8 @@ function loadSave() {
     return {
       ...DEFAULT_SAVE,
       ...parsed,
+      lang: parsed.lang === 'es' ? 'es' : 'en',
+      projects: Array.isArray(parsed.projects) ? parsed.projects : [],
       best: parsed.best || {},
       owned: Array.isArray(parsed.owned) ? parsed.owned : [],
     }
@@ -161,7 +169,7 @@ function TopControls({ save, t, onToggleSound, onToggleLang, onShop, onHome, dus
 // ---------------------------------------------------------------------------
 // Galaxy map
 // ---------------------------------------------------------------------------
-function MapScreen({ save, t, onPlay, onShop, onToggleSound, onToggleLang }) {
+function MapScreen({ save, t, onPlay, onShop, onRewards, onToggleSound, onToggleLang }) {
   const look = LOOKS.find((l) => l.id === save.equipped) || null
   const completed = (id) => (save.best[id] || 0) > 0
   const unlocked = (index) => index === 0 || completed(PLANETS[index - 1].id)
@@ -189,6 +197,7 @@ function MapScreen({ save, t, onPlay, onShop, onToggleSound, onToggleLang }) {
       </header>
 
       <div className="map-body">
+        <ProgressBanner save={save} lang={save.lang} onOpen={onRewards} />
         <div className="map-heading">
           <h2>{done ? t.allDone : t.choosePlanet}</h2>
           {done ? <p className="map-note">{t.keepPractising}</p> : null}
@@ -250,6 +259,8 @@ function MapScreen({ save, t, onPlay, onShop, onToggleSound, onToggleLang }) {
 function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSound }) {
   const [run] = useState(() => makeRun(planet, forcedType))
   const [index, setIndex] = useState(0)
+  const [takingBreak, setTakingBreak] = useState(false)
+  const breakGamesRef = useRef(0)
   const [solved, setSolved] = useState(false)
   const [missed, setMissed] = useState(false)
   const [helperOpen, setHelperOpen] = useState(false)
@@ -322,12 +333,14 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
             dust: dustRef.current,
             firstTry: firstTryRef.current,
             total: run.length,
+            games: breakGamesRef.current,
           })
           return
         }
         solvedRef.current = false
         missedRef.current = false
         setIndex(index + 1)
+        if (!forcedType && [3, 6].includes(index + 1)) setTakingBreak(true)
         setSolved(false)
         setMissed(false)
         setHelperOpen(false)
@@ -349,6 +362,10 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
   const handleExit = () => {
     onExit(dustRef.current)
   }
+
+  if (takingBreak) return <BreakScreen key={index} planet={planet} lang={save.lang} completed={index} total={run.length}
+    onContinue={() => { setTakingBreak(false); setSpeech(save.lang === 'es' ? '¡Vamos con la siguiente idea!' : 'Ready for your next bright idea!') }}
+    onExit={handleExit} onSolved={() => { dustRef.current += 3; breakGamesRef.current += 1; sound.correct() }} />
 
   return (
     <div className="screen screen--play">
@@ -378,8 +395,9 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
         <div className="round-pips" aria-label={`${index + 1} ${t.of} ${run.length}`}>
           {run.map((item, i) => (
             <span
+              title={['rocket', 'balance', 'share'].includes(item.type) ? (save.lang === 'es' ? 'Minijuego' : 'Minigame') : t.challenge}
               key={item.id + i}
-              className={`pip ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
+              className={`pip ${['rocket', 'balance', 'share'].includes(item.type) ? 'pip--game' : ''} ${i < index || (i === index && solved) ? 'pip--done' : ''} ${
                 i === index && !solved ? 'pip--now' : ''
               }`}
             />
@@ -411,7 +429,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
             }}
             onAttempt={handleAttempt}
           />
-          {missed && !solved ? <p className="encourage">{pick(t.almost)}</p> : null}
+          {missed && !solved && !['rocket', 'balance', 'share'].includes(challenge.type) ? <p className="encourage">{pick(t.almost)}</p> : null}
         </section>
       </div>
 
@@ -429,7 +447,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
 // ---------------------------------------------------------------------------
 // Results
 // ---------------------------------------------------------------------------
-function ResultsScreen({ planet, result, save, t, onAgain, onShop, onMap, onExplore }) {
+function ResultsScreen({ planet, result, save, t, onAgain, onShop, onMap, onExplore, onRewards }) {
   const look = LOOKS.find((l) => l.id === save.equipped) || null
   return (
     <div className="screen screen--results">
@@ -461,6 +479,14 @@ function ResultsScreen({ planet, result, save, t, onAgain, onShop, onMap, onExpl
             <span className="results-stat-value">{save.best[planet.id] || 0}/3</span>
             <span className="results-stat-label">{t.best}</span>
           </div>
+        </div>
+
+        <div className="mission-rewards" aria-live="polite">
+          <strong>+{result.xp} XP · {rankName(save, save.lang)}</strong>
+          <p>{result.firstTry < result.total ? (save.lang === 'es' ? '¡Seguiste intentándolo y lo lograste! Eso es aprender.' : 'You kept trying and figured it out. That’s learning!') : (save.lang === 'es' ? '¡Gran estrategia! ¿Puedes resolverlo de otra manera?' : 'Great thinking! Could you solve it a different way?')}</p>
+          {result.firstClear && <p className="rescued-friend">{companion(planet.id, save.lang).emoji} {save.lang === 'es' ? '¡Nuevo amigo rescatado!' : 'New friend rescued!'} <strong>{companion(planet.id, save.lang).name}</strong></p>}
+          {result.badges.map(b => <p key={b.name[0]}>{b.emoji} {save.lang === 'es' ? 'Nueva insignia' : 'Badge earned'}: <strong>{b.name[save.lang === 'es' ? 1 : 0]}</strong></p>)}
+          <button className="btn btn--soft" onClick={onRewards}>🏡 {save.lang === 'es' ? 'Visitar mi refugio' : 'Visit my sanctuary'}</button>
         </div>
 
         {result.improved ? <p className="results-new-best">✨ {t.newBest}</p> : null}
@@ -583,7 +609,7 @@ function ShopScreen({ save, t, onBack, onBuy, onEquip, onToggleSound, onReset })
 // ---------------------------------------------------------------------------
 // App
 // ---------------------------------------------------------------------------
-const FORCED_TYPES = ['choice', 'missing', 'pair', 'compare', 'sequence', 'build', 'word']
+const FORCED_TYPES = ['choice', 'missing', 'pair', 'compare', 'sequence', 'build', 'word', 'rocket', 'balance', 'share']
 
 export default function App() {
   const [save, setSave] = useState(loadSave)
@@ -645,12 +671,21 @@ export default function App() {
     const index = PLANETS.findIndex((p) => p.id === planet.id)
     const next = PLANETS[index + 1] || null
 
-    setSave({
+    const xp = run.total * 10
+    const updated = {
       ...save,
       dust: save.dust + gained,
       best: { ...save.best, [planet.id]: best },
-    })
+      xp: Math.max(save.xp, Object.values(save.best).filter(n => n > 0).length * 80) + xp,
+      games: save.games + run.games,
+      comeback: save.comeback + (run.firstTry < run.total ? 1 : 0),
+    }
+    const previousBadges = badges(save)
+    const earned = badges(updated).filter((badge, i) => badge.done && !previousBadges[i].done)
+    setSave(updated)
     setResult({
+      xp,
+      badges: earned,
       medal,
       best,
       firstClear,
@@ -730,6 +765,7 @@ export default function App() {
           save={save}
           t={t}
           onPlay={startPlanet}
+          onRewards={() => setScreen('rewards')}
           onShop={() => {
             sound.tap()
             setScreen('shop')
@@ -759,6 +795,7 @@ export default function App() {
           save={save}
           t={t}
           onAgain={() => startPlanet(planet.id)}
+          onRewards={() => setScreen('rewards')}
           onShop={() => {
             sound.tap()
             setScreen('shop')
@@ -767,6 +804,12 @@ export default function App() {
           onExplore={() => startPlanet(result.unlocked.id)}
         />
       ) : null}
+
+      {screen === 'rewards' ? <RewardsScreen save={save} lang={save.lang} onBack={() => setScreen('map')} onBuild={item => {
+        setSave(prev => prev.projects.includes(item.id) || prev.dust < item.cost ? prev : ({ ...prev, dust: prev.dust - item.cost, projects: [...prev.projects, item.id] }))
+        sound.fanfare()
+        showToast(`🏡 ${item.name[save.lang === 'es' ? 1 : 0]}`)
+      }} /> : null}
 
       {screen === 'shop' ? (
         <ShopScreen

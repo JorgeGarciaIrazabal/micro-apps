@@ -1,3 +1,5 @@
+import QuestGame from './QuestGames.jsx'
+import Minigame from './Minigames.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { WORD_PROBLEMS } from './data.js'
 import { helperLayout, withRemoved } from './game.js'
@@ -501,6 +503,8 @@ export default function ChallengeView({
       data-op={challenge.op || ''}
     >
       {promptNode}
+      {challenge.mode ? <QuestGame challenge={challenge} lang={lang} solved={solved} onAttempt={onAttempt} /> : null}
+      {['rocket', 'balance', 'share'].includes(challenge.type) ? <Minigame challenge={challenge} lang={lang} solved={solved} onAttempt={onAttempt} /> : null}
 
       {['choice', 'missing', 'word', 'sequence'].includes(challenge.type) ? (
         <OptionGrid

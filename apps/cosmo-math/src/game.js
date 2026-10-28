@@ -1,7 +1,8 @@
+import { QUESTS, makeQuest } from './quests.js'
 // Challenge generation for Cosmo's Math Odyssey.
-// Every planet has its own mix of seven challenge types.
+// Lessons keep their math tasks; the separate break screen offers 30 games.
 
-import { PLANETS, RUN_SIZE, WORD_PROBLEMS } from './data.js'
+import { RUN_SIZE, WORD_PROBLEMS } from './data.js'
 
 export function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -73,6 +74,14 @@ function arithmetic(planet, forceOp) {
         ? '+'
         : '−')
 
+  if (stage >= 6) {
+    if (op === '+') {
+      const a = rand(5, planet.max - 5)
+      return { a, b: rand(2, planet.max - a), op }
+    }
+    const a = rand(12, planet.max)
+    return { a, b: rand(2, a - 1), op }
+  }
   if (stage === 4) return op === '+' ? yardAdd() : yardSub()
   if (stage === 5) {
     if (Math.random() < 0.45) return op === '+' ? yardAdd() : yardSub()
@@ -158,7 +167,7 @@ function wrapValue(value, planet) {
 }
 
 function makeCompare(planet) {
-  const max = planet.stage === 1 ? 10 : planet.stage >= 4 ? 90 : 20
+  const max = planet.stage === 1 ? 10 : planet.stage >= 4 ? planet.max : 20
   const equal = Math.random() < 0.28
   let lv = rand(4, max)
   let rv = lv
@@ -186,7 +195,7 @@ function makeCompare(planet) {
 function makeSequence(planet) {
   const step = pick(planet.steps)
   const slots = step >= 10 ? 5 : step === 5 ? 3 : 6
-  const start = step * rand(1, slots)
+  const start = step * rand(0, Math.min(slots, Math.max(0, Math.floor((planet.max - 4 * step) / step))))
   const terms = Array.from({ length: 5 }, (_, i) => start + i * step)
   const hide = rand(1, 3)
   const answer = terms[hide]
@@ -213,7 +222,7 @@ function makePair() {
 }
 
 function makeBuild(planet) {
-  const tens = rand(2, 8)
+  const tens = rand(1, Math.min(8, Math.floor((planet.max - 9) / 10)))
   const ones = rand(1, 9)
   const target = tens * 10 + ones
   return {
@@ -241,8 +250,27 @@ function makeWord(planet) {
   }
 }
 
-function makeChallenge(type, planet) {
+export function makeChallenge(type, planet) {
+  if (QUESTS.some(q => q.id === type)) return makeQuest(type)
   switch (type) {
+    case 'rocket': {
+      const step = planet.stage <= 2 ? 2 : pick(planet.steps)
+      const start = rand(0, Math.min(3, Math.max(0, Math.floor(planet.max / step) - 4))) * step
+      const target = start + step * rand(2, 4)
+      return { id: `rocket:${start}:${target}`, type, start, target, step }
+    }
+    case 'balance': {
+      const unit = planet.stage >= 4 ? 5 : 1
+      const fixed = rand(1, 3) * unit
+      const cargo = [1, 2, 3, 4].map(n => n * unit)
+      const target = fixed + cargo[0] + cargo[rand(1, 3)]
+      return { id: `balance:${fixed}:${target}`, type, fixed, target, cargo }
+    }
+    case 'share': {
+      const groups = planet.stage <= 2 ? 2 : rand(2, 4)
+      const each = rand(2, planet.stage >= 6 ? 5 : 3)
+      return { id: `share:${groups}:${each}`, type, groups, each, total: groups * each }
+    }
     case 'pair':
       return makePair(planet)
     case 'missing':
@@ -262,7 +290,7 @@ function makeChallenge(type, planet) {
 }
 
 export function makeRun(planet, forcedType) {
-  const types = forcedType ? Array(RUN_SIZE).fill(forcedType) : planet.types
+  const types = forcedType ? Array(RUN_SIZE).fill(forcedType) : [...planet.types]
   const run = []
   const seen = new Set()
   for (const type of types.slice(0, RUN_SIZE)) {
@@ -330,16 +358,13 @@ export function helperLayout(challenge) {
   }
 }
 
-// For subtraction we fade the last `b` worth of beans (counted from the end).
+// Regroup before fading so borrowing across tens still shows the exact amount.
 export function withRemoved(layout, b) {
   if (!layout || layout.mode !== 'sub') return layout
-  const tokens = layout.groups[0].tokens.map((token) => ({ ...token }))
-  let left = b
-  for (let i = tokens.length - 1; i >= 0 && left > 0; i -= 1) {
-    if (tokens[i].value <= left) {
-      tokens[i].state = 'gone'
-      left -= tokens[i].value
-    }
-  }
+  const total = layout.groups[0].tokens.reduce((sum, token) => sum + token.value, 0)
+  const tokens = [
+    ...beans(total - b).map(value => ({ value, state: 'plain' })),
+    ...beans(b).map(value => ({ value, state: 'gone' })),
+  ]
   return { ...layout, groups: [{ key: 'a', tokens }] }
 }
