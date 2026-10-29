@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { PLANETS } from './data.js'
-import { assignedGame, STAGE_SECONDS, SESSION_SECONDS } from './arcade/catalog.js'
+import { assignedGame, STAGE_SECONDS } from './arcade/catalog.js'
 import { ArcadeEngine, W, H } from './arcade/engine.js'
 import { draw } from './arcade/draw.js'
+import { flavorText, twistText, goalText, SHOT_NAMES, SHOT_ACTIONS } from './arcade/flavor.js'
 import './arcade/Arcade.css'
 
 const ACTION = { flap: ['FLAP', 'ALETEAR'], sling: ['LAUNCH', 'LANZAR'], blaster: ['BLAST', 'RAYO'], runner: ['JUMP', 'SALTAR'], asteroid: ['NOVA', 'NOVA'], racer: ['BOOST', 'TURBO'] }
@@ -18,7 +19,7 @@ export default function BreakScreen({ planet, lang, completed, total, visit=0, r
   const canvas=useRef(null), gesture=useRef(null), awarded=useRef(false), onSolvedRef=useRef(onSolved), effects=useRef(onEffect)
   onSolvedRef.current=onSolved;effects.current=onEffect
   const [phase,setPhase]=useState('ready'), [paused,setPaused]=useState(false)
-  const [hud,setHud]=useState({score:0,stage:1,progress:0,cooldown:0,busy:false})
+  const [hud,setHud]=useState({score:0,stage:1,progress:0,cooldown:0,busy:false,canPower:false,shot:'heavy',ammo:3,targets:0,round:1,combo:1,power:null,notice:null,fuel:100})
   const action=ACTION[game.kind], fourArrows=['snake','asteroid'].includes(game.kind)
   const horizontal=['snake','breakout','blaster','catch','asteroid','jumper','racer'].includes(game.kind)
   const clearInput=()=>{for(const key of Object.keys(engine.current.input))engine.current.input[key]=false;gesture.current=null;engine.current.dragging=false}
@@ -31,16 +32,16 @@ export default function BreakScreen({ planet, lang, completed, total, visit=0, r
     c.width=W*ratio;c.height=H*ratio;context.setTransform(ratio,0,0,ratio,0,0)
     const render=now=>{
       const e=engine.current
-      if(phase==='playing'&&!paused){e.update(Math.min((now-last)/1000,.05));if(e.events.length){if(now-lastEffect>110&&e.events.includes('score')){effects.current?.('score');lastEffect=now}e.events=[]}
+      if(phase==='playing'&&!paused){e.update(Math.min((now-last)/1000,.05));if(e.events.length){if(e.events.includes('power'))effects.current?.('power');if(e.events.includes('launch'))effects.current?.('launch');if(now-lastEffect>110&&e.events.includes('score')){effects.current?.('score');lastEffect=now}e.events=[]}
         if(e.completed){setPhase('complete');if(!awarded.current){awarded.current=true;onSolvedRef.current({id:game.id,score:e.score});effects.current?.('complete')}}
       }
-      last=now;draw(context,e)
-      if(now-lastHud>120){setHud({score:e.score,stage:e.stage,progress:(e.time%STAGE_SECONDS)/STAGE_SECONDS,cooldown:e.cooldown,busy:!!e.projectile});lastHud=now}
+      last=now;draw(context,e,lang)
+      if(now-lastHud>120){setHud({score:e.score,stage:e.stage,progress:(e.time%STAGE_SECONDS)/STAGE_SECONDS,cooldown:e.cooldown,busy:!!e.projectile,canPower:!!e.projectile&&!e.projectile.powerUsed&&e.projectile.age>.12,shot:e.projectile?.type||e.sling?.nextShot||'heavy',ammo:3-(e.sling?.shots||0),targets:e.sling?.targets||0,round:e.sling?.round||1,combo:e.combo,power:e.power,powerTime:e.powerTime,notice:e.notice?{type:e.notice.type,data:e.notice.data}:null,fuel:e.fuel});lastHud=now}
       frame=requestAnimationFrame(render)
     }
     frame=requestAnimationFrame(render)
     return()=>cancelAnimationFrame(frame)
-  },[phase,paused,game.id])
+  },[phase,paused,game.id,lang])
 
   useEffect(()=>{
     const visibility=()=>{if(document.hidden&&phase==='playing'){clearInput();setPaused(true)}}
@@ -68,26 +69,29 @@ export default function BreakScreen({ planet, lang, completed, total, visit=0, r
     if(type==='up')gesture.current=null
   }
   const control=(key,label,symbol,dx,dy)=> <button key={key} className="arcade-arrow" aria-label={label} disabled={phase!=='playing'||paused} onPointerDown={event=>{event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);engine.current.input[key]=true;engine.current.steer(dx,dy)}} onPointerUp={()=>{engine.current.input[key]=false}} onPointerCancel={()=>{engine.current.input[key]=false}} onLostPointerCapture={()=>{engine.current.input[key]=false}} onKeyDown={event=>{if(event.key==='Enter'){engine.current.steer(dx,dy);engine.current.input[key]=true}}} onKeyUp={()=>{engine.current.input[key]=false}}>{symbol}</button>
+  const slingAction=hud.busy?SHOT_ACTIONS[hud.shot][es?1:0]:ACTION.sling[es?1:0]
+  const status=hud.notice?flavorText(hud.notice.type,lang,hud.notice.data):hud.power?flavorText(hud.power,lang):game.kind==='sling'?`${es?'Torre':'Tower'} ${hud.round} · ${hud.targets} ${es?'aliens':'aliens'}`:goalText(game.kind,lang)
   const best=Math.max(records[game.id]||0,hud.score)
-  return <div className={`screen screen--arcade arcade--${game.kind}`} style={{'--game-color':game.color}}>
+  return <div className={`screen screen--arcade arcade--${game.kind} ${phase==='playing'&&!paused?'is-playing':'is-reading'}`} style={{'--game-color':game.color}}>
     <div className="arcade-shell">
       <header className="arcade-header"><div><span className="arcade-eyebrow">{t.unlocked} · {completed}/{total}</span><h1><span>{game.emoji}</span> {game.name[lang]}</h1></div><button className="arcade-pause" aria-label={t.pause} disabled={phase!=='playing'} onClick={()=>{clearInput();setPaused(true)}}>Ⅱ</button></header>
       <div className="arcade-hud"><div><span>{t.score}</span><strong aria-live="off">{hud.score.toString().padStart(4,'0')}</strong></div><div className="arcade-stage-count"><span>{t.stage} {hud.stage}/4</span><div className="arcade-stage-dots">{[1,2,3,4].map(n=><i key={n} className={n<=hud.stage?'is-lit':''}/>)}</div></div><div className="arcade-world"><span>{planet.emoji}</span><small>{planet.name[lang]}</small></div></div>
       <div className="arcade-act-track" aria-hidden="true"><span style={{width:`${phase==='complete'?100:((hud.stage-1)+hud.progress)/4*100}%`}}/></div>
-      <p className="arcade-instruction">{game.hint[lang]}</p>
-      <div className="arcade-stage">
+      <div className="arcade-status" aria-live="polite"><span>{status}</span>{hud.combo>1&&<strong>×{hud.combo}</strong>}{hud.power&&<span className="power-time">{Math.ceil(hud.powerTime)}s</span>}</div>
+      {game.kind==='sling'&&<div className="arcade-shot-info"><span>{SHOT_NAMES[hud.shot][lang]}</span><span>{es?'Tiros':'Shots'}: {hud.ammo}/3</span></div>}
+      <div className={`arcade-stage ${phase!=='playing'||paused?'is-dialog':''}`}>
         <canvas ref={canvas} data-game={game.id} data-kind={game.kind} aria-label={`${game.name[lang]}. ${game.hint[lang]}`} onPointerDown={e=>pointer(e,'down')} onPointerMove={e=>pointer(e,'move')} onPointerUp={e=>pointer(e,'up')} onPointerCancel={()=>{gesture.current=null;engine.current.dragging=false}} />
         {(phase==='ready'||paused||phase==='complete')&&<div className="arcade-overlay">
           {phase==='complete'?<div className="arcade-dialog"><div className="arcade-hero-icon">🏆</div><span className="arcade-eyebrow">{t.complete}</span><h2>{t.good}</h2><div className="arcade-final-score"><span>{t.total}</span><strong>{hud.score}</strong><small>{t.record}: {best}</small></div><p className="arcade-bonus">✨ +12 · {t.bonus}</p><button className="arcade-primary arcade-return" onClick={onContinue}>{t.finish} →</button></div>
-          :paused?<div className="arcade-dialog"><div className="arcade-hero-icon">🌙</div><h2>{t.paused}</h2><p>{t.pauseNote}</p><button className="arcade-primary" onClick={()=>setPaused(false)}>{t.resume} ▶</button><button className="arcade-return" onClick={onContinue}>{t.exit} →</button></div>
-          :<div className="arcade-dialog"><div className="arcade-hero-icon">{game.emoji}</div><span className="arcade-eyebrow">{t.ready}</span><h2>{game.name[lang]}</h2><p>{game.hint[lang]}</p><div className="arcade-ready-note"><span>✦ ✦ ✦ ✦</span><strong>{t.four}</strong><small>{t.next}</small></div><button className="arcade-primary" onClick={()=>{setPaused(false);setPhase('playing');if(game.kind==='flap')engine.current.action()}}>{t.start} ▶</button><button className="arcade-return" onClick={onContinue}>{t.skip} →</button></div>}
+          :paused?<div className="arcade-dialog"><div className="arcade-hero-icon">🌙</div><h2>{t.paused}</h2><p>{game.hint[lang]}</p><p className="arcade-flavor-tip">{twistText(game.kind,lang,game.variant)}</p><button className="arcade-primary" onClick={()=>setPaused(false)}>{t.resume} ▶</button><button className="arcade-return" onClick={onContinue}>{t.exit} →</button></div>
+          :<div className="arcade-dialog"><div className="arcade-hero-icon">{game.emoji}</div><span className="arcade-eyebrow">{t.ready}</span><h2>{game.name[lang]}</h2><p>{game.hint[lang]}</p><p className="arcade-flavor-tip">{twistText(game.kind,lang,game.variant)}</p><div className="arcade-ready-note"><span>✦ ✦ ✦ ✦</span><strong>{t.four}</strong><small>{t.next}</small></div><button className="arcade-primary" onClick={()=>{setPaused(false);setPhase('playing');if(game.kind==='flap')engine.current.action()}}>{t.start} ▶</button><button className="arcade-return" onClick={onContinue}>{t.skip} →</button></div>}
         </div>}
       </div>
       <div className={`arcade-controls ${!horizontal?'arcade-controls--action':''}`}>
         {horizontal&&<div className="arcade-direction-controls">{control('left',es?'Izquierda':'Left','←',-1,0)}{fourArrows&&control('up',es?'Arriba':'Up','↑',0,-1)}{fourArrows&&control('down',es?'Abajo':'Down','↓',0,1)}{control('right',es?'Derecha':'Right','→',1,0)}</div>}
-        {action&&<button className={`arcade-action ${hud.cooldown>0?'is-recharging':''}`} aria-label={action[es?1:0]} disabled={phase!=='playing'||paused||(hud.cooldown>0&&game.kind!=='racer')||(game.kind==='sling'&&hud.busy)} onPointerDown={event=>{event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);engine.current.input.held=true;engine.current.action()}} onPointerUp={()=>{engine.current.input.held=false}} onPointerCancel={()=>{engine.current.input.held=false}} onLostPointerCapture={()=>{engine.current.input.held=false}} onKeyDown={event=>{if(event.key==='Enter')engine.current.action()}}>{hud.cooldown>0?`${Math.ceil(hud.cooldown)} · `:''}{game.kind==='sling'&&hud.busy?(es?'EN VUELO':'IN FLIGHT'):action[es?1:0]} {game.kind==='racer'?'»':'✦'}</button>}
+        {action&&<button style={game.kind==='racer'?{'--fuel':`${hud.fuel}%`}:undefined} className={`arcade-action ${game.kind==='racer'?'has-fuel':''} ${hud.cooldown>0?'is-recharging':''}`} aria-label={game.kind==='sling'?slingAction:action[es?1:0]} disabled={phase!=='playing'||paused||(hud.cooldown>0&&game.kind!=='racer')||(game.kind==='sling'&&(hud.busy?!hud.canPower:hud.ammo===0))} onPointerDown={event=>{event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);engine.current.input.held=true;engine.current.action()}} onPointerUp={()=>{engine.current.input.held=false}} onPointerCancel={()=>{engine.current.input.held=false}} onLostPointerCapture={()=>{engine.current.input.held=false}} onKeyDown={event=>{if(event.key==='Enter')engine.current.action()}}>{hud.cooldown>0?`${Math.ceil(hud.cooldown)} · `:''}{game.kind==='sling'?slingAction:action[es?1:0]} {game.kind==='racer'?'»':'✦'}</button>}
       </div>
-      <p className="arcade-footer-note">{game.kind==='sling'?(es?'Tira hacia atrás para apuntar · suelta para lanzar':'Pull back to aim · let go to launch'):horizontal?t.hold:t.rescue}</p>
+      <p className="arcade-footer-note">{game.kind==='sling'?(hud.busy?(es?'¡Toca el botón para usar el poder!':'Tap the button to use your shot’s power!'):(es?'Tira para apuntar · suelta para lanzar':'Pull to aim · let go to launch')):horizontal?t.hold:t.rescue}</p>
     </div>
   </div>
 }

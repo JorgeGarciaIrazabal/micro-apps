@@ -2372,3 +2372,35 @@ button:disabled { cursor: default; }
   .reward-card { padding: 14px; }
   .rewards-body { padding: 6px 14px 35px; }
 }
+
+/* Children should not have to squint to read the adventure. */
+.subtitle, .map-note, .planet-blurb, .lock-row, .progress-copy > span,
+.progress-link, .mission-rewards p, .rank-note, .results-planet,
+.results-medal-label, .results-stat-label, .results-hint,
+.unlock-text strong, .unlock-text span, .shop-preview-name, .shop-hint,
+.look-name, .look-cost, .crew-card strong, .crew-card small,
+.reward-card p, .reward-card small, .reward-card .btn,
+.helper-title, .helper-count, .helper-note, .encourage,
+.pair-prompt, .prompt-line, .micro-hint, .place-name { font-size:16px; line-height:1.5; }
+.planet-name { font-size:20px; line-height:1.3; }
+.map-heading h2 { font-size:17px; letter-spacing:.05em; }
+.planet-card { padding:14px; }
+.progress-copy strong { font-size:20px; }
+.progress-link { max-width:120px; }
+.progress-banner { padding:16px; }
+.story-text, .cosmo-stage .speech { font-size:18px; line-height:1.5; }
+.reward-card h3, .shop-title { font-size:20px; }
+.reward-card .btn { min-height:50px; }
+.look { min-height:120px; padding:12px 6px; }
+.look-cost { min-height:24px; }
+.results-stat-label { text-transform:none; letter-spacing:0; }
+.reset-btn { font-size:16px; min-height:48px; }
+.token { width:30px; height:30px; font-size:16px; }
+.token--bundle { width:44px; }
+.planet-name, .planet-blurb { white-space:normal; overflow:visible; text-overflow:clip; }
+@media (max-width:520px) {
+ .progress-banner { display:grid; grid-template-columns:30px minmax(0,1fr); gap:12px; }
+ .progress-emblem { grid-row:1; }
+ .progress-copy { grid-column:2; }
+ .progress-link { grid-column:1 / -1; max-width:none; padding:10px; text-align:center; border-radius:12px; background:#5eeac015; }
+}

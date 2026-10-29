@@ -371,7 +371,7 @@ function PlayScreen({ planet, save, t, forcedType, onFinish, onExit, onToggleSou
   if (takingBreak) return <BreakScreen key={index} planet={planet} lang={save.lang} completed={index} total={run.length}
     visit={save.arcadeVisits} records={arcadeBestRef.current}
     onContinue={() => { setTakingBreak(false); setSpeech(save.lang === 'es' ? '¡Vamos con la siguiente idea!' : 'Ready for your next bright idea!') }}
-    onEffect={event => { if (event === 'score') sound.pop(); if (event === 'complete') sound.fanfare() }}
+    onEffect={event => { if (event === 'score') sound.pop(); if (event === 'power') sound.coin(); if (event === 'launch') sound.tap(); if (event === 'complete') sound.fanfare() }}
     onSolved={({ id, score }) => {
       dustRef.current += 12
       breakGamesRef.current += 1

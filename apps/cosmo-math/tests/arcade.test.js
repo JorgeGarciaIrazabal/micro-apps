@@ -1,3 +1,4 @@
+import Matter from 'matter-js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { ARCADE_GAMES, assignedGame, SESSION_SECONDS } from '../src/arcade/catalog.js'
@@ -29,6 +30,7 @@ test('each full game lasts over three minutes, recovers after crashes, and finis
       e.update(1/60)
       assert.ok(Number.isFinite(e.player.x)&&Number.isFinite(e.player.y),game.id)
       assert.ok(e.objects.length<250,game.id)
+      if(e.sling)assert.ok(e.sling.engine.world.bodies.length<100,game.id)
       assert.ok(e.particles.length<=220,game.id)
       assert.equal(e.completed,false,game.id)
     }
@@ -49,13 +51,80 @@ test('snake cannot reverse into itself, wraps at edges, and grows when eating',(
   e.snake=[{x:17,y:4},{x:16,y:4},{x:15,y:4}];advance(e,.17);assert.equal(e.snake[0].x,0)
 })
 
-test('slingshot pull launches a projectile, collides with a tower, and reloads',()=>{
+test('slingshot launch transfers impact, earns points, and reloads',()=>{
   const e=new ArcadeEngine(ARCADE_GAMES.find(g=>g.kind==='sling'),seeded())
-  e.pointer(70,360,'down');e.pointer(30,425,'move');e.pointer(30,425,'up')
+  e.action()
   assert.ok(e.projectile.vx>0&&e.projectile.vy<0)
-  advance(e,5);assert.equal(e.projectile,null)
-  e.projectile={x:252,y:260,vx:0,vy:100,r:12,age:0}
-  advance(e,.1);assert.ok(e.score>0)
+  advance(e,5)
+  assert.equal(e.projectile,null)
+  assert.ok(e.score>0)
+  assert.ok(e.sling.targets<2)
+})
+
+test('resting towers remain stable, while removing a support makes beams tilt and fall',()=>{
+  const e=new ArcadeEngine(ARCADE_GAMES.find(g=>g.id==='sling-0'),seeded())
+  e.sling.armed=true
+  const beam=e.sling.bodies.find(o=>o.material==='wood'&&o.w===120)
+  const start={...beam.body.position}, count=e.sling.bodies.length
+  advance(e,8)
+  assert.equal(e.sling.bodies.length,count)
+  assert.ok(e.sling.bodies.every(o=>Math.abs(o.hp-o.maxHp)<.001))
+  const support=e.sling.bodies.find(o=>o.material==='wood'&&o.x<240&&o.h===54)
+  e.sling.damage(support,100)
+  advance(e,1.3)
+  assert.ok(Math.abs(beam.body.angle)>.05||beam.body.position.y>start.y+12)
+})
+
+test('the same physical impact breaks wood but leaves heavy stone standing',()=>{
+  const result={}
+  for(const material of ['wood','stone']){
+    const e=new ArcadeEngine(ARCADE_GAMES.find(g=>g.id==='sling-0'),seeded())
+    for(const item of e.sling.bodies)Matter.Composite.remove(e.sling.engine.world,item.body)
+    e.sling.bodies=[]
+    const target=e.sling.add(240,397,22,54,material)
+    e.action()
+    Matter.Body.setPosition(e.projectile.body,{x:190,y:397})
+    Matter.Body.setVelocity(e.projectile.body,{x:4,y:0})
+    advance(e,.16)
+    result[material]=target
+  }
+  assert.equal(result.wood.dead,true)
+  assert.ok(!result.stone.dead&&result.stone.hp>0&&result.stone.hp<result.stone.maxHp)
+})
+
+test('special shots split into real bodies and bombs impart motion to the tower',()=>{
+  for(const type of ['split','bomb']){
+    const e=new ArcadeEngine(ARCADE_GAMES.find(g=>g.id==='sling-0'),seeded())
+    e.sling.shots=type==='split'?1:2
+    e.action();advance(e,.2)
+    if(type==='bomb')Matter.Body.setPosition(e.projectile.body,{x:235,y:350})
+    e.action()
+    if(type==='split'){
+      assert.equal(e.sling.projectiles.length,3)
+      assert.equal(new Set(e.sling.projectiles.map(o=>o.body.id)).size,3)
+      assert.ok(e.sling.projectiles[1].body.velocity.y!==e.sling.projectiles[2].body.velocity.y)
+    }else{
+      assert.equal(e.projectile,null)
+      assert.equal(e.sling.rings.length,1)
+      assert.ok(e.sling.bodies.some(o=>o.body.speed>1))
+    }
+  }
+})
+
+test('combos reward a streak, reset after bumps, and power pickups change actual gameplay',()=>{
+  const e=new ArcadeEngine(ARCADE_GAMES.find(g=>g.id==='sling-0'),seeded())
+  for(let i=0;i<4;i++)e.gain(0,0,10)
+  assert.equal(e.combo,2);assert.equal(e.score,50)
+  e.shield=0;e.crash();assert.equal(e.combo,1)
+  const breakout=new ArcadeEngine(ARCADE_GAMES.find(g=>g.kind==='breakout'),seeded())
+  breakout.pickups=[{x:breakout.player.x,y:breakout.player.y,w:26,h:26}]
+  advance(breakout,.05)
+  assert.equal(breakout.power,'multi');assert.equal(breakout.extraBalls.length,2)
+  assert.ok(breakout.player.w>88)
+  const blaster=new ArcadeEngine(ARCADE_GAMES.find(g=>g.kind==='blaster'),seeded())
+  advance(blaster,25)
+  assert.ok(blaster.objects.some(o=>o.type==='boss'))
+  assert.ok(blaster.enemyShots.length>0)
 })
 
 test('flight tap gives lift, runner double jump is bounded, and blaster recharge prevents spam',()=>{
