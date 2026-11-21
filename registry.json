@@ -23,6 +23,13 @@
         "Make the kitchen bigger",
         "Cambia el color del sofá a azul"
       ]
+    },
+    {
+      "id": "visita-valladolid",
+      "name": "Visita a Valladolid: guía para la familia",
+      "icon": "🗺️",
+      "path": "visita-valladolid/",
+      "description": "Guía móvil en español para recorrer pueblos y barrios cerca de Valladolid, comparar zonas, consultar requisitos de vivienda y enviar observaciones a Jorge y Marisa."
     }
   ]
 }

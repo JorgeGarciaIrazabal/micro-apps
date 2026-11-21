@@ -171,7 +171,8 @@ function initTerminal() {
 
   const APPS_LIST = [
     { id: 'cosmo', name: 'cosmo-math', label: "👽 Cosmo's Math Odyssey" },
-    { id: 'designer', name: 'house-designer', label: '📐 3D House & Floor Plan Designer' }
+    { id: 'designer', name: 'house-designer', label: '📐 3D House & Floor Plan Designer' },
+    { id: 'valladolid', name: 'visita-valladolid', label: '🗺️ Visita a Valladolid: guía para la familia' }
   ];
 
   // Toggle terminal height
@@ -285,7 +286,7 @@ function initTerminal() {
         writeLine(`  Environment:   <span style="color:#22c55e">Stable Production</span>`);
         writeLine(`  CPU Load:      <span style="color:#f59e0b">${(Math.random() * 8 + 2).toFixed(1)}%</span>`);
         writeLine(`  Browser Node:  <span style="color:#14b8a6">${navigator.userAgent.split(' ')[0]}</span>`);
-        writeLine(`  Active Nodes:  <span style="color:#a855f7">2 Isolated Sandboxes</span>`);
+        writeLine(`  Active Nodes:  <span style="color:#a855f7">3 Isolated Sandboxes</span>`);
       }, 100);
     } 
     else if (command === 'neofetch') {
@@ -300,7 +301,7 @@ function initTerminal() {
       writeLine('<b>Micro Apps Suite Console v2.1.0</b>');
       writeLine('<b>Uptime:</b> ' + Math.floor(performance.now() / 1000) + 's');
       writeLine('<b>Renderer:</b> CSS Hardware Accelerated Glass');
-      writeLine('<b>Apps Mounted:</b> 2 Active Subdirectories');
+      writeLine('<b>Apps Mounted:</b> 3 Active Subdirectories');
       writeLine('<b>License:</b> Open Source Developer Suite');
       writeLine('--------------------------------------------');
     } 
@@ -409,6 +410,18 @@ function initModalsAndCarousels() {
         '<b>Curated Furniture Directory:</b> Catalog of modern sofas, tables, cabinets, beds, and fixtures.',
         '<b>Realtime 3D Walkthrough:</b> Switch view modes from 2D blueprints to 3D Orbit camera or FPS walk-through, built directly using WebGL.',
         '<b>JSON import/export:</b> Save design configurations locally or export layout files to share with builders.'
+      ]
+    },
+    'visita-valladolid': {
+      title: 'Visita a Valladolid: guía para la familia',
+      icon: '🗺️',
+      tech: ['React 19', 'Vite', 'Mobile-First ES', 'Google Maps Deep Links', 'Idealista Filters', 'localStorage + WhatsApp'],
+      overview: 'Guía práctica en español diseñada para el móvil de los padres de Jorge mientras recorren pueblos y barrios del entorno de Valladolid para Jorge, Marisa y Clara.',
+      features: [
+        '<b>Ruta única de día completo:</b> Recorrido continuo en orden geográfico por 5 pueblos (Zaratán, Arroyo de la Encomienda, Simancas, Laguna de Duero y Boecillo), con parada al mediodía en Valladolid ciudad y C.C. Vallsur, más RÍO Shopping y desvíos opcionales de tarde.',
+        '<b>8 fichas detalladas con enlaces a Idealista:</b> Paradas concretas a comparar en cada pueblo, tiempos de referencia a RÍO Shopping y Vallsur, investigación previa de precios y búsquedas filtradas de chalets (≤ 350.000 €) y parcelas (≤ 120.000 €).',
+        '<b>Pantalla “Qué buscamos”:</b> Imprescindibles, preferencias familiares y guía para anotar casas, obra nueva (entrega de llaves) o parcelas urbanas.',
+        '<b>Cuaderno y envío por WhatsApp:</b> Valoraciones por pueblo, registro de casas/parcelas vistas en ruta y resumen listo para enviar en un toque.'
       ]
     }
   };
