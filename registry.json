@@ -23,41 +23,6 @@
         "Make the kitchen bigger",
         "Cambia el color del sofá a azul"
       ]
-    },
-    {
-      "id": "casa-prefab-madrid",
-      "name": "Casa Prefab Madrid",
-      "icon": "🏡",
-      "path": "casa-prefab-madrid/",
-      "description": "Prefab house comparison for Madrid."
-    },
-    {
-      "id": "clara-summer-camps-madrid",
-      "name": "Clara Summer Camps",
-      "icon": "⛺",
-      "path": "clara-summer-camps-madrid/",
-      "description": "Summer camp comparison in Madrid."
-    },
-    {
-      "id": "madrid-fire-planner",
-      "name": "Madrid FIRE Planner",
-      "icon": "🔥",
-      "path": "madrid-fire-planner/",
-      "description": "Interactive early-retirement budget what-if planner for a family relocating to Madrid."
-    },
-    {
-      "id": "spain-retirement-scouting",
-      "name": "Spain Retirement Scouting",
-      "icon": "🇪🇸",
-      "path": "spain-retirement-scouting/",
-      "description": "Bilingual sub-€50k plot comparison across Madrid, Guadalajara & Granada with wealth-tax analysis."
-    },
-    {
-      "id": "madrid-agosto-2026",
-      "name": "Madrid Agosto 2026",
-      "icon": "🧭",
-      "path": "madrid-agosto-2026/",
-      "description": "Bilingual 13-day family roadbook for Madrid & the Sierra (Aug 2–14), with prefab showrooms, town scouting, and kid/grandparent-friendly stops."
     }
   ]
 }

@@ -170,8 +170,7 @@ function initTerminal() {
   };
 
   const APPS_LIST = [
-    { id: 'camp', name: 'clara-summer-camps-madrid', label: '🏕️ Campamentos de Verano Clara' },
-    { id: 'prefab', name: 'casa-prefab-madrid', label: '🏗️ Modular House Cost Calculator' },
+    { id: 'cosmo', name: 'cosmo-math', label: "👽 Cosmo's Math Odyssey" },
     { id: 'designer', name: 'house-designer', label: '📐 3D House & Floor Plan Designer' }
   ];
 
@@ -286,7 +285,7 @@ function initTerminal() {
         writeLine(`  Environment:   <span style="color:#22c55e">Stable Production</span>`);
         writeLine(`  CPU Load:      <span style="color:#f59e0b">${(Math.random() * 8 + 2).toFixed(1)}%</span>`);
         writeLine(`  Browser Node:  <span style="color:#14b8a6">${navigator.userAgent.split(' ')[0]}</span>`);
-        writeLine(`  Active Nodes:  <span style="color:#a855f7">4 Isolated Sandboxes</span>`);
+        writeLine(`  Active Nodes:  <span style="color:#a855f7">2 Isolated Sandboxes</span>`);
       }, 100);
     } 
     else if (command === 'neofetch') {
@@ -301,7 +300,7 @@ function initTerminal() {
       writeLine('<b>Micro Apps Suite Console v2.1.0</b>');
       writeLine('<b>Uptime:</b> ' + Math.floor(performance.now() / 1000) + 's');
       writeLine('<b>Renderer:</b> CSS Hardware Accelerated Glass');
-      writeLine('<b>Apps Mounted:</b> 4 Active Subdirectories');
+      writeLine('<b>Apps Mounted:</b> 2 Active Subdirectories');
       writeLine('<b>License:</b> Open Source Developer Suite');
       writeLine('--------------------------------------------');
     } 
@@ -400,28 +399,6 @@ function initModalsAndCarousels() {
         '<b>Gentle recovery:</b> bumps grant a temporary shield, games can be paused, and the child can return to the lesson early. Maths mistakes open counting support. English and Spanish, sound controls, no ads or typing.'
       ]
     },
-    'clara-summer-camps-madrid': {
-      title: 'Clara Summer Camps Madrid 2026',
-      icon: '🏕️',
-      tech: ['React', 'Vite', 'CSS Flexbox', 'Dynamic Ordering', 'JSON Data Structs'],
-      overview: 'Interactive research portal designed to evaluate summer camps in Penagrande, Madrid for July & August 2026. Tailored specifically for 5-year-old Clara to find Spanish-language camps near grandparents\' homes.',
-      features: [
-        '<b>Priority Registration Alerts:</b> Uptime tracking of the Madrid municipal registration window (Apr 23 - Apr 29).',
-        '<b>Flexible Sorting Matrix:</b> Instantly sort options by weekly pricing, walking distance (Peñagrande center base), or age eligibility.',
-        '<b>Strategic Priority Advisor:</b> Built-in decision matrices highlighting optimal camp sequences to balance budget and dates.'
-      ]
-    },
-    'casa-prefab-madrid': {
-      title: 'Prefabricated House Calculator',
-      icon: '🏗️',
-      tech: ['React', 'Cost Matrix Engine', 'Vite', 'Modular CSS', 'Math Utility Kernels'],
-      overview: 'Bespoke modular building pricing engine and structural material analysis designed to compute "turnkey" (llave en mano) building budgets for Madrid properties.',
-      features: [
-        '<b>Turnkey Budget Calculator:</b> Input build sizes and material standards to see instant cimentación, structural, cladding, and architectural fee breakdowns.',
-        '<b>Materials Spectrum:</b> Interactive details comparing Structural Insulated Panels (SIP), steel frames, timber frame, concrete columns, and CLT.',
-        '<b>Exhibitions & Builder Auditing:</b> Compiled list of major manufacturers, modular models, upcoming expos, and crucial warnings about vendor pricing tricks.'
-      ]
-    },
     'house-designer': {
       title: 'House Designer 2D/3D Plan Editor',
       icon: '📐',
@@ -432,45 +409,6 @@ function initModalsAndCarousels() {
         '<b>Curated Furniture Directory:</b> Catalog of modern sofas, tables, cabinets, beds, and fixtures.',
         '<b>Realtime 3D Walkthrough:</b> Switch view modes from 2D blueprints to 3D Orbit camera or FPS walk-through, built directly using WebGL.',
         '<b>JSON import/export:</b> Save design configurations locally or export layout files to share with builders.'
-      ]
-    },
-    'madrid-fire-planner': {
-      title: 'Madrid FIRE Planner — What-If Budget',
-      icon: '🔥',
-      tech: ['React 19', 'Live Capital Engine', 'Capitalised-Cost Model', 'EUR/USD Toggle', 'Vite'],
-      overview: 'An interactive early-retirement (FIRE) planner for a family of 4 relocating to the eastern Madrid commuter belt (Alcalá de Henares) to live off investments with no earned income. Define your starting capital, then add, remove, or edit any expense to see in real time whether you reach the goal — and exactly what each choice costs your nest-egg.',
-      features: [
-        '<b>Starting-capital → goal engine:</b> Enter what you have; the app shows the tax-adjusted capital target, the gap, and a live "% of goal funded" bar.',
-        '<b>Capitalised cost per line:</b> Every recurring expense reveals what it truly ties up in your nest-egg (annual ÷ safe-withdrawal-rate) — a €250/mo line is really ~€86k of capital.',
-        '<b>Give-up / add what-ifs:</b> Toggle any expense off, edit amounts, or add custom lines; the "Biggest levers" panel ranks what closes the gap fastest.',
-        '<b>Fact-checked defaults:</b> Values verified against 2026 sources (idealista, Numbeo, INE, Adeslas/Sanitas, CRTM, Agencia Tributaria); switch to the original xlsx figures to compare.',
-        '<b>Faithful financial model:</b> Perpetual costs are capitalised at an adjustable SWR (default 3.5%), children funded as a finite lump through age 18, home/car/furniture bought outright.'
-      ]
-    },
-    'spain-retirement-scouting': {
-      title: 'Spain Retirement Scouting — Sub-€50k Plots',
-      icon: '🇪🇸',
-      tech: ['React 19', 'Bilingual UI (ES/EN)', 'Wealth-Tax Analysis', 'Legal Citation Engine', 'Vite'],
-      overview: 'A bilingual research dashboard comparing five affordable, family-oriented suburbs in Spain where urbanized building plots cost around or under €50,000. Covers Madrid Province, a Guadalajara border option, and a Granada value pick — with a full Wealth Tax analysis, the 50/50 spousal split strategy, and the critical pre-move asset-planning rule.',
-      features: [
-        '<b>Bilingual Switcher:</b> Full Spanish/English toggle for all content — text, tables, legal citations, and recommendations.',
-        '<b>Wealth Tax by Region:</b> Per-region breakdown (Madrid €0, Andalucía €0, Castilla-La Mancha ~€122/mo) with cited legal articles and DGT rulings.',
-        '<b>50/50 Split Strategy:</b> Detailed explanation of how joint-account asset attribution works under Spanish law, plus the essential pre-move rule to avoid Gift Tax.',
-        '<b>Side-by-Side Comparison:</b> Financial table comparing plot cost, ITP, build cost, monthly expenses, and Wealth Tax across all five locations.',
-        '<b>Location Detail Cards:</b> Each suburb has schools, shopping malls, sports/padel facilities, and commute times with direct links.'
-      ]
-    },
-    'madrid-agosto-2026': {
-      title: 'Madrid Agosto 2026 — Family Roadbook',
-      icon: '🧭',
-      tech: ['React 19', 'Bilingual UI (ES/EN)', 'Day-by-Day Agenda', 'Tag Filtering', 'Vite'],
-      overview: 'A bilingual day-by-day roadbook for a two-week family trip to Madrid and the Sierra (August 2–14, 2026). Built for a party of two adults, a 5-year-old, and grandparents (70+), it balances prefab-house showrooms (one of each build type), American-style low-density town scouting, and heat-safe sightseeing with rest days and a booking checklist.',
-      features: [
-        '<b>13-day itinerary strip:</b> Scrollable day pills with per-day corridor, emoji, and heat ("cooler day" badges for Sierra days); auto-centres on the active day.',
-        '<b>Tag filtering:</b> Toggle stops by Showroom, Town scouting, Kid-friendly, Grandparent-easy, Food, Nature, Culture, Water, Friends, Rest, or Needs-booking — days with no match dim themselves.',
-        '<b>August reality checks:</b> Heat windows (35–40 °C), August closures, cita-previa booking rules, and driving-time estimates folded into each stop.',
-        '<b>Booking checklist:</b> One-tap checklist with progress bar for the showrooms/towns that need confirmation calls, persisted to localStorage.',
-        '<b>Reference panels:</b> Collapsible showroom directory (starred picks, phone, day) and town comparison table with Idealista links — plus the excluded Las Gabias town and a wood-build caveat.'
       ]
     }
   };
